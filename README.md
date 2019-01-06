@@ -20,9 +20,9 @@ Further instance ID, can be representing Entity index. It will require additiona
 
 Work in progress.
 TODO: 
-Bounds vectors to check
-Comply with Burst
-Replace collision check List, with BufferArray
-Convert GameObjects into ECS mesh renderings
+Bounds vectors-floats to check.
+Comply with Burst.
+Replace collision check List, with BufferArray.
+Convert GameObjects into ECS mesh renderings.
 Implement multithreading into systems, for multiple parallel octrees checks.
 Convert some integers to bytes, and uInt, where applicable.
