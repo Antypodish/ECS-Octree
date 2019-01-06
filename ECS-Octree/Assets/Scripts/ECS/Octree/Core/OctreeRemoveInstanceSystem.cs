@@ -67,7 +67,7 @@ namespace ECS.Octree
 
 
 
-            for ( int i_instanceID = 0; i_instanceID < 50; i_instanceID ++ )
+            for ( int i_instanceID = 0; i_instanceID < 53; i_instanceID ++ )
             {            
                 int x = i_instanceID % 10 ;
                 int y = Mathf.FloorToInt ( i_instanceID / 10 ) ;
