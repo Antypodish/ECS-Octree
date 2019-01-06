@@ -1,0 +1,9 @@
+By using this Octree asset, you are agree, to not use it, its part, its derived, or modified version as asset, which is aimed, or used to be sold.
+
+You are permited to use it this asset, its part, its derived, or modified version, as part of final product, like game, or application, which may, or may not be further sold.
+
+This licence must be included on any further derived work, including, or base on this asset.
+
+
+Note side:
+This licence do not apply to the asset located in OOP-TestingStage/Originals directory.
