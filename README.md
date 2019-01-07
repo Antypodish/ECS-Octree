@@ -29,6 +29,11 @@ TODO:
 * Convert some integers to bytes, and uInt, where applicable.
 
 
+### Links
+Main Unity forum thread for this project.
+[WIP] Octree in Pure ECS : BufferArray based with source code
+https://forum.unity.com/threads/wip-octree-in-pure-ecs-bufferarray-based-with-source-code.546240/#post-4071661
+
 #### Rays - Octrees in parallel (Update 2019 January 07)
 
 Big code clean up.
