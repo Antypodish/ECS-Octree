@@ -22,7 +22,7 @@ Work in progress.
 
 TODO: 
 * Bounds vectors-floats to check.
-* * Comply with Burst.
+* Comply with Burst.
 * Replace collision check List, with BufferArray.
 * Convert GameObjects into ECS mesh renderings.
 * Implement multithreading into systems, for multiple parallel octrees checks.
@@ -37,7 +37,7 @@ Octree to Ray system checks, for collision between many octrees and one or more 
 Octree Entity to Ray Entity and Ray Entity to Octree Entity can be paired, for relevant checks.
 Two example systems with OnCreate () were added, which allows run selected method.
 
-Note
+Note:
 These systems has disbaled main debugging atm.
 
 TODO:
