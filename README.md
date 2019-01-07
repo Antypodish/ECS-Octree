@@ -19,13 +19,14 @@ When adding new instance, it is repsonsibility of user, to ensure, that ID do no
 Further instance ID, can be representing Entity index. It will require additional pairing with entity version, to construct actual entity, if that what is required.
 
 Work in progress.
+
 TODO: 
-Bounds vectors-floats to check.
-Comply with Burst.
-Replace collision check List, with BufferArray.
-Convert GameObjects into ECS mesh renderings.
-Implement multithreading into systems, for multiple parallel octrees checks.
-Convert some integers to bytes, and uInt, where applicable.
+* Bounds vectors-floats to check.
+* * Comply with Burst.
+* Replace collision check List, with BufferArray.
+* Convert GameObjects into ECS mesh renderings.
+* Implement multithreading into systems, for multiple parallel octrees checks.
+* Convert some integers to bytes, and uInt, where applicable.
 
 
 #### Rays - Octrees in parallel (Update 2019 January 07)
@@ -40,4 +41,4 @@ Note
 These systems has disbaled main debugging atm.
 
 TODO:
-Bounds octree-instance collision checks systems on multithreading.
+* Bounds octree-instance collision checks systems on multithreading.
