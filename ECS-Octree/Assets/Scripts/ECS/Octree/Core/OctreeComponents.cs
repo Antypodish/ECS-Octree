@@ -1,37 +1,133 @@
-﻿using System;
-using System.Collections.Generic;
-using Unity.Collections ;
-using Unity.Entities ;
-using Unity.Jobs ;
+﻿using Unity.Entities ;
 using Unity.Mathematics ;
 using UnityEngine;
-using Unity.Rendering ;
-using Unity.Burst ;
 
 namespace ECS.Octree
 {
 
-    // ******** Collision check Tags ************ //
+
+    // ******** Octree Initialization Data ************ //
+    
+    /// <summary>
+    /// Request to create new octree structure.
+    /// This tag is Immediately deleted from the entity, when job is executed and new octree structure is assaigned to this entity.
+    /// </summary>
+    public struct AddNewOctreeData : IComponentData 
+    {
+        public float f_initialSize ;
+        public float3 f3_initialPosition ;                        
+    }
+    
+
+
+    // ******** Instance Buffer ************ //
+    
+
+    /// <summary>
+    /// Contains a list of instances to add, with its properties.
+    /// Instance must be unique, and must not exists already in a octree.
+    /// </summary>
+    public struct AddInstanceBufferElement : IBufferElementData 
+    {
+        public int i_instanceID ;
+        public Bounds instanceBounds ;
+    }
+
+    /// <summary>
+    /// Contains a list of instances to remove, addressed by instance ID.
+    /// </summary>
+    public struct RemoveInstanceBufferElement : IBufferElementData 
+    {
+        public int i_instanceID ;
+    }
+
+
+
+    // ******** Collision check Tags / Data / Buffers ************ //
     
     // Use thse, to select octree collision checks. 
-    public struct GetCollidingBoundsInstancesTag : IComponentData {}
-    public struct GetCollidingRayInstancesTag : IComponentData {}
-    public struct IsBoundsCollidingTag : IComponentData {}
-    public struct IsRayCollidingTag : IComponentData {}
 
-
-
-    // ******** Instance Tags ************ //
+    /// <summary>
+    /// Paired ray entity, required for collision checks.
+    /// Can be used for example in many octrees to target ray.
+    /// </summary>
+    public struct RayEntityPair4CollisionData : IComponentData
+    {  
+        public Entity ray2CheckEntity ;
+    }
     
-    public struct AddInstanceTag : IComponentData {}
-    public struct RemoveInstanceTag : IComponentData {}
+    /// <summary>
+    /// Paired octree entity, required for collision checks.
+    /// Can be used for example in many raycst to target octree.
+    /// </summary>
+    public struct OctreeEntityPair4CollisionData : IComponentData
+    {  
+        public Entity octree2CheckEntity ;
+    }
 
+
+    /// <summary>
+    /// 0 means it is not colliding.
+    /// >= 1 means is colliding, and possible information, about number of collisions, if applicable.
+    /// </summary>
+    public struct IsCollidingData : IComponentData
+    {
+        /// <summary>
+        /// 0 means it is not colliding.
+        /// >= 1 means is colliding, and possible information, about number of collisions, if applicable.
+        /// </summary>
+        public int i_collisionsCount ;
+        /// <summary>
+        /// If applicable.
+        /// Index to nearest collision instances in buffer array.
+        /// </summary>
+        public int i_nearestInstanceCollisionIndex ;
+        /// <summary>
+        /// If applicable.
+        /// </summary>
+        public float f_nearestDistance ;
+    }
+
+    /// <summary>
+    /// Collection of colliding instances.
+    /// Use with conjunction of IsCollidingData, storing number of currently used buffer elements.
+    /// This is to prevent clearing and allocting buffer every time is accessed.
+    /// Its size grows as required, and stay of that size, as long entity holding this buffer exists.
+    /// </summary>
+    public struct CollisionInstancesBufferElement : IBufferElementData
+    {
+        public int i_ID ;
+    }
+
+    /// <summary>
+    /// Returns true, if bounds overlap, otherwise false.
+    /// Also returns list of overlapping bounds instances.
+    /// </summary>
+    public struct GetCollidingBoundsInstancesTag : IComponentData {}    
+    /// <summary>
+    /// Returns true, if ray intersects, otherwise false.
+    /// Also returns list of overlapping bounds instances.
+    /// And closes instance distance and instance's ID.
+    /// </summary>
+    public struct GetCollidingRayInstancesTag : IComponentData {}
+    /// <summary>
+    /// Returns true, if bounds overlap, otherwise false.
+    /// </summary>
+    public struct IsBoundsCollidingTag : IComponentData {}
+    /// <summary>
+    /// Returns true, if ray intersects, otherwise false.
+    /// </summary>
+    public struct IsRayCollidingTag : IComponentData {}
+    public struct GetMaxBoundsTag : IComponentData {}
 
 
 
     // ******** Common components ************ //
 
 
+    /// <summary>
+    /// Core data of octree structure.
+    /// </summary>
     public struct RootNodeData : IComponentData 
     {
         
@@ -66,7 +162,10 @@ namespace ECS.Octree
         public int i_nodeSpareLastIndex ;
 
         public int i_instancesSpareLastIndex ;
-
+                
+        /// <summary>
+        /// Number of instances allowed per octree node.
+        /// </summary>
         public int i_instancesAllowedCount ;
                 
     }
@@ -75,19 +174,13 @@ namespace ECS.Octree
     public struct NodeBufferElement : IBufferElementData 
     {
         public float f_baseLength ;
-        // private List <float> l_nodeBaseLength ;
         public float f_adjLength ;
-        // private List <float> l_nodeAdjLength ;
         public float f_minSize ;
-        // private List <float> l_nodeMinSize ;
         public float3 f3_center ;
-        // private List <Vector3> l_nodeCenters ;
             
         public Bounds bounds ;
-        // public List <Bounds> l_nodeBounds ;
                   
         public int i_childrenCount ;
-        // private List <int> l_nodeChildrenCount ;   
         
         /// <summary>
         /// Count of instances per node.
@@ -95,7 +188,6 @@ namespace ECS.Octree
         /// Same idex refers to the instance Boundry
         /// </summary>  
         public int i_instancesCount ;
-        // private List <int> l_nodeInstancesCount ;
     }
     
 
@@ -110,13 +202,11 @@ namespace ECS.Octree
         /// Reference to child node by index, if any
         /// </summary>
         public int i_nodesIndex ;
-        // private List <int> l_nodeChildrenNodesIndex ;  
 
         /// <summary>
         /// Group of 8 children per node
         /// </summary>
         public Bounds bounds ;
-        // private List <Bounds> l_childrenBounds ;
     
     }
     
@@ -149,7 +239,6 @@ namespace ECS.Octree
         /// Index from list should be returned, when testing for collision, new element is added, or removed.
         /// </summary>
         public int i ;
-        // private List <int> l_nodeInstancesIndex ;
     }
 
 
@@ -162,7 +251,6 @@ namespace ECS.Octree
         /// Mandatory
         /// </summary>
         public int i ;
-        // private List <int> l_instancesSpare ;
     }
 
 
@@ -178,13 +266,10 @@ namespace ECS.Octree
         /// Store instance ID's which must be unique.
         /// </summary>
         public int i_ID ;
-        // Entity?
-        // private List <int> l_instancesID ;
-
-        // You can add more lists with desired properties, wich maching list size of total instance bounds count (list size)
+// Entity?
     }
 
-
+    /*
     /// <summary>
     /// Result of GetCollision, which outputs number instances, that boundery, or raycas has interact with.
     /// Should be read only. Is reset, every time GeCollision is executed.
@@ -192,7 +277,7 @@ namespace ECS.Octree
     public struct GetCollidingWithInstenceBufferElement : IBufferElementData 
     {     
         public int i ;
-        // public List <int> l_collidingWith ;
     }
+    */
 
 }

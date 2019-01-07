@@ -1,32 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using Unity.Collections ;
+﻿using Unity.Collections ;
 using Unity.Entities ;
 using Unity.Jobs ;
-using Unity.Mathematics ;
 using UnityEngine;
-using Unity.Rendering ;
 using Unity.Burst ;
 
 namespace ECS.Octree
 {
 
-    [UpdateAfter ( typeof ( AddInstanceSystem ) ) ]    
-    class OctreeRemoveInstanceSystem : JobComponentSystem
+    public class RemoveInstanceBarrier : BarrierSystem {} ;
+
+        
+    class RemoveInstanceSystem : JobComponentSystem
     {
 
+        [Inject] private RemoveInstanceBarrier barrier ;
         ComponentGroup group ;
 
         protected override void OnCreateManager ( )
         {
             
-            Debug.Log ( "Start Add New Octree Instance System" ) ;
+            Debug.Log ( "Start Remove Octree Instance System" ) ;
 
             base.OnCreateManager ( );
 
             group = GetComponentGroup ( 
-                //typeof (EntityArray),
-                typeof (RemoveInstanceTag), 
+                typeof (IsActiveTag), 
+                typeof (RemoveInstanceBufferElement), 
                 typeof (RootNodeData) 
             ) ;
 
@@ -37,7 +36,7 @@ namespace ECS.Octree
             
             Debug.Log ( "Remove Octree Instance." ) ;
 
-
+            /*
             EntityArray a_entities                                                                        = group.GetEntityArray () ;
             Entity rootNodeEntity                                                                         = a_entities [0] ;
                         
@@ -59,11 +58,11 @@ namespace ECS.Octree
             BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement                        = GetBufferFromEntity <NodeChildrenBufferElement> () ;
             DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer                                = nodeChildrenBufferElement [rootNodeEntity] ;    
 
-            BufferFromEntity <InstanceBufferElement> instanceBufferElement                                  = GetBufferFromEntity <InstanceBufferElement> () ;
-            DynamicBuffer <InstanceBufferElement> a_instanceBuffer                                          = instanceBufferElement [rootNodeEntity] ;   
+            BufferFromEntity <InstanceBufferElement> instanceBufferElement                                = GetBufferFromEntity <InstanceBufferElement> () ;
+            DynamicBuffer <InstanceBufferElement> a_instanceBuffer                                        = instanceBufferElement [rootNodeEntity] ;   
 
-            BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement            = GetBufferFromEntity <InstancesSpareIndexBufferElement> () ;
-            DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer                    = instancesSpareIndexBufferElement [rootNodeEntity] ;    
+            BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement          = GetBufferFromEntity <InstancesSpareIndexBufferElement> () ;
+            DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer                  = instancesSpareIndexBufferElement [rootNodeEntity] ;    
 
 
 
@@ -89,13 +88,157 @@ namespace ECS.Octree
             
             a_rootNodeData [0] = rootNodeData ;
             
-            EntityManager.RemoveComponent <RemoveInstanceTag> ( rootNodeEntity ) ; // Instance added.
+            EntityManager.RemoveComponent <RemoveInstanceBufferElement> ( rootNodeEntity ) ; // Instance added.
 
             return base.OnUpdate ( inputDeps );
+            */
+
+            int i_groupLength = group.CalculateLength () ;
+
+            var removeInstanceJob = new RemoveInstanceJob 
+            {            
+                a_octreeEntities                    = group.GetEntityArray (),
+
+                // Contains a list of instances to add, with its properties.
+                removeInstanceBufferElement         = GetBufferFromEntity <RemoveInstanceBufferElement> (),
+
+                a_rootNodeData                      = GetComponentDataFromEntity <RootNodeData> (),
+
+                nodeSparesBufferElement             = GetBufferFromEntity <NodeSparesBufferElement> (),
+                nodeBufferElement                   = GetBufferFromEntity <NodeBufferElement> (),
+                nodeInstancesIndexBufferElement     = GetBufferFromEntity <NodeInstancesIndexBufferElement> (),
+                nodeChildrenBufferElement           = GetBufferFromEntity <NodeChildrenBufferElement> (),
+                instanceBufferElement               = GetBufferFromEntity <InstanceBufferElement> (),
+                instancesSpareIndexBufferElement    = GetBufferFromEntity <InstancesSpareIndexBufferElement> ()
+
+            }.Schedule ( i_groupLength, 8, inputDeps ) ;
+
+
+            
+            var completeRemoveInstanceJob = new CompleteRemoveInstanceJob 
+            {
+                
+                ecb                              = barrier.CreateCommandBuffer ().ToConcurrent (),                
+                a_octreeEntities                 = group.GetEntityArray ()
+
+            }.Schedule ( i_groupLength, 8, removeInstanceJob ) ;
+
+            return completeRemoveInstanceJob ;
 
         }
 
-        
+        [BurstCompile]
+        [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
+        struct RemoveInstanceJob : IJobParallelFor 
+        {
+
+            [ReadOnly] public EntityArray a_octreeEntities ;
+
+            // Contains a list of instances to add, with its properties.
+            [NativeDisableParallelForRestriction]            
+            public BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement ;
+            
+            [NativeDisableParallelForRestriction]
+            public ComponentDataFromEntity <RootNodeData> a_rootNodeData ;
+            
+            [NativeDisableParallelForRestriction]
+            public BufferFromEntity <NodeSparesBufferElement> nodeSparesBufferElement ;
+            [NativeDisableParallelForRestriction]
+            public BufferFromEntity <NodeBufferElement> nodeBufferElement ;
+            [NativeDisableParallelForRestriction]
+            public BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement ;
+            [NativeDisableParallelForRestriction]
+            public BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement ;
+            [NativeDisableParallelForRestriction]
+            public BufferFromEntity <InstanceBufferElement> instanceBufferElement ;
+            [NativeDisableParallelForRestriction]
+            public BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement ;
+
+
+            public void Execute ( int i_arrayIndex )
+            {
+                
+                Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
+
+                DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement           = removeInstanceBufferElement [octreeRootNodeEntity] ;    
+                            
+                // RootNodeData rootNodeData                                                           = a_rootNodeData [octreeRootNodeEntity] ;
+
+                DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer                          = nodeSparesBufferElement [octreeRootNodeEntity] ;
+                DynamicBuffer <NodeBufferElement> a_nodesBuffer                                     = nodeBufferElement [octreeRootNodeEntity] ;
+                DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer          = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
+                DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer                      = nodeChildrenBufferElement [octreeRootNodeEntity] ;    
+                
+                DynamicBuffer <InstanceBufferElement> a_instanceBuffer                              = instanceBufferElement [octreeRootNodeEntity] ;   
+                DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer        = instancesSpareIndexBufferElement [octreeRootNodeEntity] ;
+
+
+
+                // Iterate through number of instances to add, from the buffer
+                for ( int i = 0; i < a_removeInstanceBufferElement.Length; i ++ )
+                {
+                    
+                    RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
+
+                    RemoveInstanceBufferElement removeInstanceBuffer = a_removeInstanceBufferElement [i] ;
+
+                    bool removed = _NodeRemoveInstance ( 
+                        ref rootNodeData, 
+                        rootNodeData.i_rootNodeIndex, 
+                        removeInstanceBuffer.i_instanceID, 
+                        ref a_nodesBuffer, 
+                        ref a_nodeSparesBuffer, 
+                        a_nodeChildrenBuffer,                    
+                        a_nodeInstancesIndexBuffer,
+                        ref a_instanceBuffer,
+                        ref a_instancesSpareIndexBuffer
+                    );
+
+		            // See if we can shrink the octree down now that we've removed the item
+		            if ( removed ) 
+                    {            
+			            rootNodeData.i_totalInstancesCountInTree -- ;
+                
+                        // Shrink if possible.
+                        rootNodeData.i_rootNodeIndex = _ShrinkIfPossible ( 
+                            rootNodeData, 
+                            rootNodeData.i_rootNodeIndex, 
+                            rootNodeData.f_initialSize, 
+                            a_nodesBuffer, 
+                            ref a_nodeChildrenBuffer,
+                            a_nodeInstancesIndexBuffer,
+                            a_instanceBuffer
+                        ) ;
+		            }
+                    
+                    a_rootNodeData [octreeRootNodeEntity] = rootNodeData ;
+
+                } // for
+            }
+
+        }
+
+
+        [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
+        struct CompleteRemoveInstanceJob : IJobParallelFor 
+        {
+
+            [ReadOnly] public EntityCommandBuffer.Concurrent ecb ;
+            [ReadOnly] public EntityArray a_octreeEntities ;
+                        
+            public void Execute ( int i_arrayIndex )
+            {
+                
+                Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
+
+                // Remove component, as instances has been already removed.
+                ecb.RemoveComponent <RemoveInstanceBufferElement> ( i_arrayIndex, octreeRootNodeEntity ) ;
+
+            }
+
+        }
+
+
         /// <summary>
 	    /// Remove an instance. Makes the assumption that the instance only exists once in the tree.
 	    /// </summary>
@@ -144,13 +287,12 @@ namespace ECS.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="i_instanceID">External instance index ID to remove. Is assumed, only one unique instance ID exists in the tree.</param>
 	    /// <returns>True if the object was removed successfully.</returns>
-	    private bool _NodeRemoveInstance ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private bool _NodeRemoveInstance ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
         {
 
 		    bool removed = false;
 
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
-            //int i_nodeInstanceCount = l_nodeInstancesCount [i_nodeIndex] ;
                 
             int i_nodeInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
 
@@ -159,13 +301,11 @@ namespace ECS.Octree
 
                 // Try remove instance from this node
                 for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
-		        // for (int i = 0; i < l_nodeInstancesCount [i_nodeIndex]; i++) 
                 {
 
                     
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
                     int i_existingInstanceIndex = nodeInstancesIndexBuffer.i ;
-                    // int i_existingInstanceIndex = l_nodeInstancesIndex [i_nodeInstancesIndexOffset + i] ;
 
                     // If instance exists
                     if ( i_existingInstanceIndex >= 0 )
@@ -178,8 +318,8 @@ namespace ECS.Octree
                             
                             // Remove from here
                             CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_existingInstanceIndex, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
-                            //CommonMethods._PutBackSpareInstance ( i_existingInstanceIndex, i_nodeIndex ) ;
-
+                            
+/*
                             // Debugging
     GameObject go = GameObject.Find ( "Instance " + i_instanceID.ToString () ) ;
 
@@ -191,15 +331,13 @@ namespace ECS.Octree
     }
 
                             nodeBuffer.i_instancesCount -- ;
-                            // l_nodeInstancesCount [i_nodeIndex] -- ;
                             instanceBuffer.i_ID = -1 ; // Reset
                             a_instanceBuffer [i_existingInstanceIndex] = instanceBuffer ; // Set back
-                            // l_instancesID [i_existingInstanceIndex] = -1 ;
                     
                             
     Debug.LogWarning ( "Node: Remove #" + i_nodeIndex ) ;
     GameObject.Destroy ( GameObject.Find ( "Node " + i_nodeIndex.ToString () ) ) ;
-
+*/
 				            break;
 			            }
                 
@@ -212,9 +350,7 @@ namespace ECS.Octree
             }
 
             
-            // nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
             int i_nodeChildrenCount = nodeBuffer.i_childrenCount ;
-            // int i_nodeChildrenCount = l_nodeChildrenCount [i_nodeIndex] ;
             int i_nodeChildrenIndexOffset = i_nodeIndex * 8 ;
 
             // Try remove instance from this node children, if node don't have this instance
@@ -226,7 +362,6 @@ namespace ECS.Octree
                     
                     NodeChildrenBufferElement nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
                     int i_childNodeIndex = nodeChildrenBuffer.i_nodesIndex ;
-                    // int i_childNodeIndex = l_nodeChildrenNodesIndex [i_nodeChildrenIndexOffset + i] ;
 
                     // Ignore negative index
                     if ( i_childNodeIndex >= 0 )
@@ -274,7 +409,7 @@ namespace ECS.Octree
 	    /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <returns>True there are less or the same abount of objects in this and its children than numObjectsAllowed.</returns>
-	    private bool _ShouldMerge ( ref RootNodeData rootNodeData, int i_nodeIndex, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer ) 
+	    static private bool _ShouldMerge ( ref RootNodeData rootNodeData, int i_nodeIndex, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer ) 
         {
                         
             NodeBufferElement nodeBuffer    = a_nodesBuffer [i_nodeIndex] ;
@@ -328,7 +463,7 @@ namespace ECS.Octree
 	    /// since THAT won't happen unless there are already too many objects to merge.
 	    /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>
-	    private void _MergeNodes ( ref RootNodeData rootNodeData, int i_nodeIndex, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private void _MergeNodes ( ref RootNodeData rootNodeData, int i_nodeIndex, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
         {
 
             NodeBufferElement nodeBuffer ;
@@ -365,8 +500,7 @@ namespace ECS.Octree
                             
                             nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_unusedInstanceIndexOffset] ;
 
-                            if ( nodeInstancesIndexBuffer.i == -1 )
-                            // if ( l_nodeInstancesIndex [i_unusedInstanceIndexOffset] == -1 )
+                            if ( nodeInstancesIndexBuffer.i == -1 )                            
                             {
                               
                                 // Iterate through number of children instances.
@@ -376,7 +510,7 @@ namespace ECS.Octree
                                     // Store old instance index
                                     nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_childModeInstancesIndexOffset + j] ;
                                     int i_childInstanceIndex = nodeInstancesIndexBuffer.i ;
-                                    // int i_childInstanceIndex = l_nodeInstancesIndex [i_childModeInstancesIndexOffset + j] ;
+                                    
                                 
                                     // If node instance exists (none negative), assign to node
                                     if ( i_childInstanceIndex >= 0 )
@@ -384,20 +518,19 @@ namespace ECS.Octree
                                         // Reassign instance index, to next available spare index.                        
                                         nodeInstancesIndexBuffer.i                                       = i_childInstanceIndex ;
                                         a_nodeInstancesIndexBuffer [i_unusedInstanceIndexOffset]         = nodeInstancesIndexBuffer ; // Set back
-                                        //l_nodeInstancesIndex [i_unusedInstanceIndexOffset]             = i_childInstanceIndex ;
+                                        
                                         nodeBuffer                                                       = a_nodesBuffer [i_nodeIndex] ;
                                         nodeBuffer.i_instancesCount ++ ;
                                         a_nodesBuffer [i_nodeIndex]                                      = nodeBuffer ; // Set back
-                                        // l_nodeInstancesCount [i_nodeIndex] ++ ;
+                                        
                 
                                         nodeInstancesIndexBuffer.i                                       = -1 ; // Reset
                                         a_nodeInstancesIndexBuffer [i_childModeInstancesIndexOffset + j] = nodeInstancesIndexBuffer ; // Set back
-                                        // l_nodeInstancesIndex [i_childModeInstancesIndexOffset + j]    = -1 ; // Reset
+                                        
                                         nodeBuffer                                                       = a_nodesBuffer [i_childNodeIndex] ;
                                         nodeBuffer.i_instancesCount -- ;
                                         a_nodesBuffer [i_childNodeIndex]                                 = nodeBuffer ; // Set back
-                                        // l_nodeInstancesCount [i_childNodeIndex] -- ;
-
+                                        
                                         i_childNodeInstanceCount -- ;
                                     }
 
@@ -436,29 +569,24 @@ namespace ECS.Octree
                         // Reset node children node index reference.
                         for (int j = 0; j < 8; j++) 
                         {
-                            // int i_childIndexOffset = i_childNodeIndex + j ;
-                            
-                            // nodeChildrenBuffer = a_nodeChildrenBuffer [i_childIndexOffset] ;
                             // Reset child
                             nodeChildrenBuffer.i_nodesIndex = -1 ; // Bounds are ignored
-                            a_nodeChildrenBuffer [i_childNodeIndex + j] = nodeChildrenBuffer ; // Set back
-                            //l_nodeChildrenNodesIndex [i_childNodeIndex + j] = -1 ; // Reset child
+                            a_nodeChildrenBuffer [i_childNodeIndex + j] = nodeChildrenBuffer ; // Set back                            
                         }
             
                         nodeBuffer.i_instancesCount = 0 ; // Reset
                         a_nodesBuffer [i_childNodeIndex] = nodeBuffer ; // Set back
-                        // l_nodeInstancesCount [i_childNodeIndex] = 0 ;
-
+                        
                         // Put back node instances to spare instance.
                         for (int j = 0; j < rootNodeData.i_instancesAllowedCount; j++) 
                         {
                             
                             nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_childNodeIndex] ; // Set back
                             int i_instanceIndex = nodeInstancesIndexBuffer.i ;
-                            // int i_instanceIndex = l_nodeInstancesIndex [i_childNodeIndex] ;
+                            
                             // Remove from here
                             CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_instanceIndex + j, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
-                            // _PutBackSpareInstance ( i_instanceIndex + j, i_nodeIndex ) ; 
+                            
                         }
 
                     }
@@ -466,12 +594,10 @@ namespace ECS.Octree
                     // Pu back child nodes to spares
                     rootNodeData.i_nodeSpareLastIndex ++ ;
                     a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex]  = new NodeSparesBufferElement () { i = i_childNodeIndex } ;
-                    // l_nodeSpares [rootNodeData.i_nodeSpareLastIndex]     = i_childNodeIndex ;
              
                     // Reset child
                     nodeChildrenBuffer.i_nodesIndex                         = -1 ; // Bounds are ignored
                     a_nodeChildrenBuffer [i_childNodeIndexOffset]           = nodeChildrenBuffer ; // Set back
-                    // nodeChildrenBuffer                                   = a_nodeChildrenBuffer [i_childNodeIndexOffset] ;   
                 }
             }
 
@@ -479,7 +605,6 @@ namespace ECS.Octree
             nodeBuffer                   = a_nodesBuffer [i_nodeIndex] ;
             nodeBuffer.i_childrenCount   = 0 ;
             a_nodesBuffer [i_nodeIndex]  = nodeBuffer ; // Set back
-            // l_nodeChildrenCount [i_nodeIndex] = 0 ;
 
 	    }
         
@@ -495,10 +620,10 @@ namespace ECS.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="minLength">Minimum dimensions of a node in this octree.</param>
 	    /// <returns>The new root index, or the existing one if we didn't shrink.</returns>
-	    private int _ShrinkIfPossible ( RootNodeData rootNodeData, int i_nodeIndex, float minLength, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 
+	    static private int _ShrinkIfPossible ( RootNodeData rootNodeData, int i_nodeIndex, float minLength, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 
         {
+
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
-            // float f_baseLength = nodeBuffer.f_baseLength ;
             
                 
             NodeChildrenBufferElement nodeChildrenBuffer ;
@@ -508,9 +633,6 @@ namespace ECS.Octree
             {
 			    return i_nodeIndex ;
 		    }
-        
-            // int i_nodeChildrenCount = l_nodeChildrenCount [i_nodeIndex] ;
-            // int i_nodeInstanceCount = l_nodeInstancesCount [i_nodeIndex] ;
 
 		    if ( nodeBuffer.i_instancesCount == 0 && nodeBuffer.i_childrenCount == 0 ) 
             {
@@ -531,16 +653,13 @@ namespace ECS.Octree
                 if ( nodeBuffer.i_instancesCount == 0 )  break ;
 
                 NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
-                // int i_instanceIndex = l_nodeInstancesIndex [i_nodeInstancesIndexOffset + i] ;
 
 
                 if ( nodeInstancesIndexBuffer.i >= 0 )
                 {
                     InstanceBufferElement instanceBuffer = a_instanceBuffer [nodeInstancesIndexBuffer.i] ;
-                    // Bounds instanceBounds = l_instancesBounds [nodeInstancesIndexBuffer.i] ;
 
                     int newBestFit = CommonMethods._BestFitChild ( i_nodeIndex, instanceBuffer.bounds, a_nodesBuffer ) ;
-			        // int newBestFit = CommonMethods._BestFitChild ( i_nodeIndex, instanceBounds ) ;
 			
                     if (i == 0 || newBestFit == i_bestFit) 
                     {
@@ -549,7 +668,6 @@ namespace ECS.Octree
 
 				        // In same octant as the other(s). Does it fit completely inside that octant?
                         if ( CommonMethods._Encapsulates ( nodeChildrenBuffer.bounds, instanceBuffer.bounds ) ) 
-                        // if ( CommonMethods._Encapsulates ( l_nodeChildrenBounds [i_nodeChildrenIndexOffset + newBestFit], instanceBuffer.bounds ) ) 
                         {
 					        if ( i_bestFit < 0 ) 
                             {
@@ -586,8 +704,6 @@ namespace ECS.Octree
 
                     // Has child any instances
                     if ( CommonMethods._HasAnyInstances ( nodeChildrenBuffer.i_nodesIndex, a_nodesBuffer, a_nodeChildrenBuffer ) )
-                    //if ( CommonMethods._HasAnyInstances ( l_nodeChildrenNodesIndex [ i_nodeChildrenIndexOffset + i ], a_nodesBuffer, a_nodeChildrenBuffer ) )
-				    // if ( _HasAnyInstances ( l_nodeChildrenNodesIndex [ i_nodeChildrenIndexOffset + i ] ) ) 
                     {
                     
                         if ( childHadContent ) 
@@ -609,7 +725,6 @@ namespace ECS.Octree
             {
                 nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i_bestFit] ;
                 Bounds childBounds = nodeChildrenBuffer.bounds ;
-                // Bounds childBounds = l_nodeChildrenBounds [i_nodeChildrenIndexOffset + i_bestFit] ;
 
 			    // We don't have any children, so just shrink this node to the new size
 			    // We already know that everything will still fit in it
@@ -628,7 +743,7 @@ namespace ECS.Octree
 		    // We have children. Use the appropriate child as the new root node
             nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i_bestFit] ;
             return nodeChildrenBuffer.i_nodesIndex ;
-            // return l_nodeChildrenNodesIndex [i_nodeChildrenIndexOffset + i_bestFit] ;
+
 	    }
 
 

@@ -22,6 +22,7 @@ namespace ECS.Octree
             base.OnCreateManager ( );
 
             group = GetComponentGroup ( 
+                typeof (IsActiveTag), 
                 typeof (IsBoundsCollidingTag), 
                 typeof (RootNodeData) 
             ) ;
@@ -69,16 +70,6 @@ namespace ECS.Octree
 
         }
 
-
-        /// <summary>
-	    /// Check if the specified bounds intersect with anything in the tree. See also: GetColliding.
-	    /// </summary>
-	    /// <param name="checkBounds">bounds to check.</param>
-	    /// <returns>True if there was a collision.</returns>
-	    //public bool _IsOctreeColliding ( Bounds checkBounds ) 
-        //{	
-		//    return _IsNodeColliding ( i_rootNodeIndex, ref checkBounds ) ;
-	    //}
 
 
         /// <summary>

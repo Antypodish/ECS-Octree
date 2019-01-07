@@ -4,7 +4,6 @@ using Unity.Mathematics ;
 using UnityEngine;
 using Unity.Burst ;
 
-
 namespace ECS.Octree
 {
     
@@ -18,11 +17,12 @@ namespace ECS.Octree
         protected override void OnCreateManager ( )
         {
             
-            Debug.Log ( "Start Octree Bounds Colliding System" ) ;
+            Debug.Log ( "Start Octree Ray Colliding System" ) ;
 
             base.OnCreateManager ( );
 
             group = GetComponentGroup ( 
+                typeof (IsActiveTag), 
                 typeof (IsRayCollidingTag), 
                 typeof (RootNodeData) 
             ) ;

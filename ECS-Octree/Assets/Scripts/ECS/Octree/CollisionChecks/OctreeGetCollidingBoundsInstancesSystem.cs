@@ -24,6 +24,7 @@ namespace ECS.Octree
             base.OnCreateManager ( );
 
             group = GetComponentGroup ( 
+                typeof (IsActiveTag), 
                 typeof (GetCollidingBoundsInstancesTag), 
                 typeof (RootNodeData) 
             ) ;

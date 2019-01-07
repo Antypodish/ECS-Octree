@@ -1,31 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using Unity.Collections ;
-using Unity.Entities ;
-using Unity.Jobs ;
+﻿using Unity.Entities ;
 using Unity.Mathematics ;
 using UnityEngine;
-using Unity.Rendering ;
-using Unity.Burst ;
+
 
 namespace ECS.Octree
 {
 
-    class CommonMethods
+    internal class CommonMethods
     {
-
-        /// <summary>
-        /// Number of instances allowed per node
-        /// </summary>
-        // static public int numInstancesAllowed = 1 ;
-                
+        
         public const int numOfSpareInstances2Add = 100 ;
 
         /// <summary>
 	    /// Node Constructor.
 	    /// </summary>
-        static public void _CreateNewNode ( ref RootNodeData rootNodeData, int i_nodeIndex, float f_baseLength, float3 f3_center, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer )
-        // private void _CreateNewNode ( Entity entity, int i_nodeIndex, float f_baseLength, Vector3 V3_center )
+        static public void _CreateNewNode ( ref RootNodeData rootNodeData, int i_nodeIndex, float f_baseLength, float3 f3_center, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer )        
         {
 
             // Expand storage if needed
@@ -59,14 +48,6 @@ namespace ECS.Octree
                     a_nodesBuffer.Add ( nodeBuffer ) ;
                     nodeBuffer.i_childrenCount                         = 0 ;
                     nodeBuffer.i_instancesCount                        = 0 ;
-
-                    // l_nodeBaseLength.Add (-1) ;
-                    // l_nodeCenters.Add ( Vector3.zero ) ;
-                    // l_nodeAdjLength.Add (-1) ;
-                    // l_nodeBounds.Add ( new Bounds () ) ;
-                    
-                    // l_nodeChildrenCount.Add ( 0 ) ;
-                    // l_nodeInstancesCount.Add ( 0 ) ;
                            
 
                     for ( int j = 0; j < rootNodeData.i_instancesAllowedCount; j ++ )
@@ -82,9 +63,7 @@ namespace ECS.Octree
                     {
                         nodeChildrenBuffer.i_nodesIndex = -1 ;
                         nodeChildrenBuffer.bounds = new Bounds () ;
-                        a_nodeChildrenBuffer.Add ( new NodeChildrenBufferElement () ) ;
-                        //l_childrenBounds.Add ( new Bounds () ) ;        
-                        //l_nodeChildrenNodesIndex.Add ( -1 ) ;                           
+                        a_nodeChildrenBuffer.Add ( new NodeChildrenBufferElement () ) ;                
                     }
                 }
             }
@@ -108,28 +87,17 @@ namespace ECS.Octree
             NodeBufferElement nodeBuffer       = new NodeBufferElement () ;
             
             nodeBuffer.f_baseLength            = f_baseLength ;
-		    // l_nodeBaseLength [i_nodeIndex]  = f_baseLength;
             nodeBuffer.f3_center               = f3_center ;
-		    // l_nodeCenters [i_nodeIndex]     = f3_center ;
             float f_adjustLength               = rootNodeData.f_looseness * f_baseLength ;
-            nodeBuffer.f_adjLength             = f_adjustLength ;
-		    //l_nodeAdjLength [i_nodeIndex]    = f_adjustLength ;
-
-		    // Create the bounding box.
-		    Vector3 size                       = new Vector3 ( f_adjustLength, f_adjustLength, f_adjustLength ) ;
-
-            nodeBuffer.bounds                  = new Bounds ( f3_center, size ) ;
-		    //l_nodeBounds [i_nodeIndex]       = new Bounds ( f3_center, size ) ;
+            nodeBuffer.f_adjLength             = f_adjustLength ;		    
+		    float3 size                        = new float3 ( f_adjustLength, f_adjustLength, f_adjustLength ) ;
+            // Create the bounding box.
+            nodeBuffer.bounds                  = new Bounds ( f3_center, size ) ;            
+            a_nodesBuffer [i_nodeIndex]        = nodeBuffer ;
             
-            a_nodesBuffer [i_nodeIndex]         = nodeBuffer ;
-
-
-
 		    float f_quarter                    = f_baseLength / 4f ;
-		    float f_childActualLength          = ( f_baseLength / 2) * rootNodeData.f_looseness ;
-            
+		    float f_childActualLength          = ( f_baseLength / 2) * rootNodeData.f_looseness ;            
 		    float3 f3_childActualSize          = new float3 ( f_childActualLength, f_childActualLength, f_childActualLength );
-
             int i_childrenIndexOffset          = i_nodeIndex * 8 ;
 
 
@@ -174,7 +142,6 @@ namespace ECS.Octree
             rootNodeData.i_instancesSpareLastIndex -- ;
                     
             int i_initialSparesCount                                   = a_instanceBuffer.Length ;
-            //int i_initialSparesCount                                 = l_instancesID.Count ;
         
             InstancesSpareIndexBufferElement instancesSpareIndexBuffer = new InstancesSpareIndexBufferElement () ;            
             instancesSpareIndexBuffer.i                                = -1 ;
@@ -188,10 +155,7 @@ namespace ECS.Octree
             {        
                 // Need to expand spare store.
                 a_instancesSpareIndexBuffer.Add ( instancesSpareIndexBuffer ) ;
-                // l_instancesSpare.Add ( -1 ) ;
                 a_instanceBuffer.Add ( instanceBuffer ) ;
-                // l_instancesID.Add ( -1 ) ;
-                // l_instancesBounds.Add ( new Bounds () ) ;
             }
 
             // Populate indexes references, with new spares.
@@ -202,8 +166,7 @@ namespace ECS.Octree
                 // Add new spares.
                 // Add spares in reversed order, from higher index, to lower index.                
                 instancesSpareIndexBuffer.i                                             = i_initialSparesCount + numOfSpareInstances2Add - i - 1 ;
-                a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex]    = instancesSpareIndexBuffer ;
-                // a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex] = i_initialSparesCount + numOfSpareInstances2Add - i - 1 ;                     
+                a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex]    = instancesSpareIndexBuffer ;                   
             
             }
                 
@@ -225,13 +188,11 @@ namespace ECS.Octree
             InstancesSpareIndexBufferElement instancesSpareIndexBuffer = new InstancesSpareIndexBufferElement () ;
             instancesSpareIndexBuffer.i = i_instanceIndex ;
             a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex] = instancesSpareIndexBuffer ;
-            // l_instancesSpare [i_instancesSpareLastIndex] = i_instanceIndex ;
                     
             // Is assumed, that size of spares store, is appropriate.
             NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = new NodeInstancesIndexBufferElement () ;
             nodeInstancesIndexBuffer.i = -1 ; // Reset instance index.
             a_nodeInstancesIndexBuffer [i_nodeIntstanceIndex] = nodeInstancesIndexBuffer ;
-            // l_nodeInstancesIndex [i_nodeIntstanceIndex] = -1 ; // Reset instance index.
                 
         }
 
@@ -257,7 +218,6 @@ namespace ECS.Octree
 	    static public int _BestFitChild ( int i_nodeIndex, Bounds objBounds, DynamicBuffer <NodeBufferElement> a_nodesBuffer ) 
         {
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
-            // Vector3 V3_center = l_nodeCenters [i_nodeIndex] ;
 		    return ( objBounds.center.x <= nodeBuffer.f3_center.x ? 0 : 1) + (objBounds.center.y >= nodeBuffer.f3_center.y ? 0 : 4) + (objBounds.center.z <= nodeBuffer.f3_center.z ? 0 : 2);
 	    }
         
@@ -287,7 +247,6 @@ namespace ECS.Octree
 
                     // Has child any instances
                     if ( _HasAnyInstances ( nodeChildBuffer.i_nodesIndex, a_nodesBuffer, a_nodeChildrenBuffer ) ) return true ;
-				    // if ( _HasAnyInstances ( l_nodeChildrenNodesIndex [ i_nodeChildrenIndexOffset + i ] ) ) return true ;
 			    }
 		    }
 
