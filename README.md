@@ -31,6 +31,9 @@ TODO:
 
 #### Rays - Octrees in parallel (Update 2019 January 07)
 
+Big code clean up.
+Removed debugging commented out references, to linearized form.
+
 Implemented two Rays to Octree and Octrees to Ray multithreaded collision checks systems.
 Ray to Octree system checks, for collision between many rays and one or more octrees.
 Octree to Ray system checks, for collision between many octrees and one or more rays.
