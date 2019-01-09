@@ -34,7 +34,7 @@ Main Unity forum thread for this project.
 [WIP] Octree in Pure ECS : BufferArray based with source code
 https://forum.unity.com/threads/wip-octree-in-pure-ecs-bufferarray-based-with-source-code.546240/#post-4071661
 
-#### Ray Highlight implemented  (Update 2019 January 07)
+#### Ray Highlight implemented  (Update 2019 January 09)
 
 So now most relevant systems are burst complaiant. There may be still a bit room to work on that.
 Implemented ray, highlighting blocks, for conferming working raycast.
