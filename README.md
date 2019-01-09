@@ -22,10 +22,10 @@ Work in progress.
 
 TODO: 
 * Bounds vectors-floats to check.
-* Comply with Burst.
-* Replace collision check List, with BufferArray.
-* Convert GameObjects into ECS mesh renderings.
-* Implement multithreading into systems, for multiple parallel octrees checks.
+* Comply with Burst. (mostly done now)
+* ~~Replace collision check List, with BufferArray.~~
+* ~~Convert GameObjects into ECS mesh renderings.~~
+* ~~Implement multithreading into systems, for multiple parallel octrees checks.~~
 * Convert some integers to bytes, and uInt, where applicable.
 
 
@@ -33,6 +33,20 @@ TODO:
 Main Unity forum thread for this project.
 [WIP] Octree in Pure ECS : BufferArray based with source code
 https://forum.unity.com/threads/wip-octree-in-pure-ecs-bufferarray-based-with-source-code.546240/#post-4071661
+
+#### Ray Highlight implemented  (Update 2019 January 07)
+
+So now most relevant systems are burst complaiant. There may be still a bit room to work on that.
+Implemented ray, highlighting blocks, for conferming working raycast.
+There is in total 8 example systems. 4 for Ray-Octree, and 4 for Bounds-Octree.
+Where 2 of each are checking only if is colliding, and other two of each, returns list of colliding instances.
+In case of Ray-Octree examples, nearest collision instance is returned, allong with its ID and distance.
+One example should be run at the time. Multiple example at the same time were not tested.
+
+Instances now hold additional information, allowing to store either single ID, which must be unique per tree, or using this ID as Entity index, with conjunction of Entity version. Otherwise version can be ignored.
+
+TODO:
+* Optimise examples
 
 #### Rays - Octrees in parallel (Update 2019 January 07)
 
@@ -49,4 +63,4 @@ Note:
 These systems has disbaled main debugging atm.
 
 TODO:
-* Bounds octree-instance collision checks systems on multithreading.
+* ~~Bounds octree-instance collision checks systems on multithreading.~~
