@@ -19,10 +19,34 @@ When adding new instance, it is repsonsibility of user, to ensure, that ID do no
 Further instance ID, can be representing Entity index. It will require additional pairing with entity version, to construct actual entity, if that what is required.
 
 Work in progress.
+
 TODO: 
-Bounds vectors-floats to check.
-Comply with Burst.
-Replace collision check List, with BufferArray.
-Convert GameObjects into ECS mesh renderings.
-Implement multithreading into systems, for multiple parallel octrees checks.
-Convert some integers to bytes, and uInt, where applicable.
+* Bounds vectors-floats to check.
+* Comply with Burst.
+* Replace collision check List, with BufferArray.
+* Convert GameObjects into ECS mesh renderings.
+* Implement multithreading into systems, for multiple parallel octrees checks.
+* Convert some integers to bytes, and uInt, where applicable.
+
+
+### Links
+Main Unity forum thread for this project.
+[WIP] Octree in Pure ECS : BufferArray based with source code
+https://forum.unity.com/threads/wip-octree-in-pure-ecs-bufferarray-based-with-source-code.546240/#post-4071661
+
+#### Rays - Octrees in parallel (Update 2019 January 07)
+
+Big code clean up.
+Removed debugging commented out references, to linearized form.
+
+Implemented two Rays to Octree and Octrees to Ray multithreaded collision checks systems.
+Ray to Octree system checks, for collision between many rays and one or more octrees.
+Octree to Ray system checks, for collision between many octrees and one or more rays.
+Octree Entity to Ray Entity and Ray Entity to Octree Entity can be paired, for relevant checks.
+Two example systems with OnCreate () were added, which allows run selected method.
+
+Note:
+These systems has disbaled main debugging atm.
+
+TODO:
+* Bounds octree-instance collision checks systems on multithreading.
