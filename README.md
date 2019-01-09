@@ -36,17 +36,17 @@ https://forum.unity.com/threads/wip-octree-in-pure-ecs-bufferarray-based-with-so
 
 #### Ray Highlight implemented  (Update 2019 January 09)
 
-So now most relevant systems are burst complaiant. There may be still a bit room to work on that.
-Implemented ray, highlighting blocks, for conferming working raycast.
+Most relevant systems are burst complaint. There may be still a bit room to work on that.
+Implemented ray, highlighting blocks, for confirming working raycast.
 There is in total 8 example systems. 4 for Ray-Octree, and 4 for Bounds-Octree.
 Where 2 of each are checking only if is colliding, and other two of each, returns list of colliding instances.
-In case of Ray-Octree examples, nearest collision instance is returned, allong with its ID and distance.
+In case of Ray-Octree examples, nearest collision instance is returned, along with its ID and distance.
 One example should be run at the time. Multiple example at the same time were not tested.
 
 Instances now hold additional information, allowing to store either single ID, which must be unique per tree, or using this ID as Entity index, with conjunction of Entity version. Otherwise version can be ignored.
 
 TODO:
-* Optimise examples
+* Optimize examples
 
 #### Rays - Octrees in parallel (Update 2019 January 07)
 
@@ -60,7 +60,7 @@ Octree Entity to Ray Entity and Ray Entity to Octree Entity can be paired, for r
 Two example systems with OnCreate () were added, which allows run selected method.
 
 Note:
-These systems has disbaled main debugging atm.
+These systems has disabled main debugging atm.
 
 TODO:
 * ~~Bounds octree-instance collision checks systems on multithreading.~~
