@@ -9,16 +9,16 @@ namespace ECS.Octree
 {
     
     
-    public class OctreeGetCollidingRayInstances_Octree2RayBarrier : BarrierSystem {} ;
+    public class GetCollidingRayInstancesBarrier_Octrees2Ray : BarrierSystem {} ;
 
     /// <summary>
     /// Octree to ray system, checks one or more octress, against its paired target ray entity.
     /// </summary>
     [UpdateAfter ( typeof ( UnityEngine.Experimental.PlayerLoop.PostLateUpdate ) ) ]    
-    class OctreeGetCollidingRayInstances_Octree2RaySystem : JobComponentSystem
+    class GetCollidingRayInstancesSystem_Octrees2Ray : JobComponentSystem
     {
         
-        [Inject] private OctreeGetCollidingRayInstances_Octree2RayBarrier barrier ;
+        [Inject] private GetCollidingRayInstancesBarrier_Octrees2Ray barrier ;
         ComponentGroup group ;
 
         protected override void OnCreateManager ( )
@@ -30,9 +30,10 @@ namespace ECS.Octree
 
             group = GetComponentGroup ( 
                 typeof (IsActiveTag),
+                typeof (GetCollidingRayInstancesTag),
                 typeof (RayEntityPair4CollisionData),
-                // typeof (RayData),
-                // typeof (RayMaxDistanceData),
+                // typeof (RayData), // Not used by octree entity
+                // typeof (RayMaxDistanceData), // Not used by octree entity
                 typeof (IsCollidingData),
                 typeof (CollisionInstancesBufferElement),
                 typeof (RootNodeData) 
@@ -45,7 +46,8 @@ namespace ECS.Octree
         {
             
             
-            // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
+            EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
+
             EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;    
             
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData       = GetComponentDataFromEntity <RayEntityPair4CollisionData> () ;
@@ -54,8 +56,7 @@ namespace ECS.Octree
             BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement        = GetBufferFromEntity <CollisionInstancesBufferElement> () ;
                         
             ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData                               = GetComponentDataFromEntity <RootNodeData> () ;
-
-            BufferFromEntity <NodeSparesBufferElement> nodeSparesBufferElement                        = GetBufferFromEntity <NodeSparesBufferElement> () ;          
+       
             BufferFromEntity <NodeBufferElement> nodeBufferElement                                    = GetBufferFromEntity <NodeBufferElement> () ;         
             BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement        = GetBufferFromEntity <NodeInstancesIndexBufferElement> () ;            
             BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement                    = GetBufferFromEntity <NodeChildrenBufferElement> () ;        
@@ -71,10 +72,7 @@ namespace ECS.Octree
             
 
 
-            // Test ray
-            
- //           ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
- //           EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;     
+            // Test ray            
             Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
             
 
@@ -82,11 +80,10 @@ namespace ECS.Octree
             // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
             
             
-            
-            /*
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
-            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < a_collisionChecksEntities.Length; i_collisionChecksIndex ++ )
+            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < 1; i_collisionChecksIndex ++ )
+            // for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < a_collisionChecksEntities.Length; i_collisionChecksIndex ++ )
             {
                   
                 Entity octreeEntity                = a_collisionChecksEntities [i_collisionChecksIndex] ;
@@ -125,12 +122,22 @@ namespace ECS.Octree
                         s_collidingIDs += collisionInstancesBuffer.i_ID + ", " ;
                     }
 
+                    CollisionInstancesBufferElement closestCollisionInstance = a_collisionInstancesBuffer [isCollidingData.i_nearestInstanceCollisionIndex] ;
+                    Entity closestInstanceEntity = new Entity () 
+                    { 
+                        Index = closestCollisionInstance.i_ID, 
+                        Version = closestCollisionInstance.i_version 
+                    } ;
+
+                    // Test highlight
+                    Highlight.SwitchMethods._Switch ( ecb, closestInstanceEntity ) ;
+
+
                     Debug.Log ( "Is colliding with #" + isCollidingData.i_collisionsCount + " instances of IDs: " + s_collidingIDs + "; Nearest collided instance is at " + isCollidingData.f_nearestDistance + "m, with ID #" + a_collisionInstancesBuffer [isCollidingData.i_nearestInstanceCollisionIndex].i_ID ) ;
                     
                 }
                 
             }
-            */
             
 
 
@@ -166,7 +173,6 @@ namespace ECS.Octree
                 
                 a_octreeRootNodeData                = a_octreeRootNodeData,
 
-                nodeSparesBufferElement             = nodeSparesBufferElement,
                 nodeBufferElement                   = nodeBufferElement,
                 nodeInstancesIndexBufferElement     = nodeInstancesIndexBufferElement,
                 nodeChildrenBufferElement           = nodeChildrenBufferElement,
@@ -188,7 +194,6 @@ namespace ECS.Octree
 
         
         [BurstCompile]
-        // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
         struct SetRayTestJob : IJobParallelFor 
         {
             
@@ -196,39 +201,30 @@ namespace ECS.Octree
 
             [ReadOnly] public EntityArray a_collisionChecksEntities ;
             [ReadOnly] public ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData ;
-            // [ReadOnly] public EntityCommandBuffer ecb ;
             
-
-
-            
-            //[ReadOnly] public ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData ;  
+             
             [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity <RayData> a_rayData ;           
-            // [ReadOnly] public ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData ;
+
             
             public void Execute ( int i_arrayIndex )
             {
 
                 Entity octreeEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
-                // RayData rayData = new RayData () { ray = ray } ;                
-                // a_rayData [octreeRayEntity] = rayData ;
-
-
                 RayEntityPair4CollisionData rayEntityPair4CollisionData =  a_rayEntityPair4CollisionData [octreeEntity] ;
                 Entity octreeRayEntity = rayEntityPair4CollisionData.ray2CheckEntity ;
 
                 RayData rayData = new RayData () { ray = ray } ;                
                 a_rayData [octreeRayEntity] = rayData ;
-            }
 
-            
+            }
+                        
         }
         
 
 
-        [BurstCompile]
-        // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
+        [BurstCompile]        
         struct Job : IJobParallelFor 
         {
             
@@ -236,17 +232,14 @@ namespace ECS.Octree
 
                         
             [NativeDisableParallelForRestriction]
-            public ComponentDataFromEntity <IsCollidingData> a_isCollidingData ;   
-            
+            public ComponentDataFromEntity <IsCollidingData> a_isCollidingData ;               
             [NativeDisableParallelForRestriction]
             public BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement ; 
             
             [ReadOnly] public ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData ; 
 
             [ReadOnly] public ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData ;
-                         
-
-            [ReadOnly] public BufferFromEntity <NodeSparesBufferElement> nodeSparesBufferElement ;            
+          
             [ReadOnly] public BufferFromEntity <NodeBufferElement> nodeBufferElement ;            
             [ReadOnly] public BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement ;            
             [ReadOnly] public BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement ;            
@@ -285,7 +278,7 @@ namespace ECS.Octree
                 isCollidingData.i_collisionsCount               = 0 ; // Reset colliding instances counter.
 
                 
-                RootNodeData rootNodeData                                                           = a_octreeRootNodeData [octreeRootNodeEntity] ;
+                RootNodeData octreeRootNodeData                                                     = a_octreeRootNodeData [octreeRootNodeEntity] ;
                 
                 DynamicBuffer <NodeBufferElement> a_nodesBuffer                                     = nodeBufferElement [octreeRootNodeEntity] ;
                 DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer          = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
@@ -308,11 +301,11 @@ namespace ECS.Octree
             
 
                     // To even allow instances collision checks, octree must have at least one instance.
-                    if ( rootNodeData.i_totalInstancesCountInTree > 0 )
+                    if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
                     {
                     
                         
-                        if ( OctreeGetCollidingRayInstances_Common._GetNodeColliding ( rootNodeData, rootNodeData.i_rootNodeIndex, rayData.ray, ref a_collisionInstancesBuffer, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer, rayMaxDistanceData.f ) )
+                        if ( GetCollidingRayInstances_Common._GetNodeColliding ( octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref a_collisionInstancesBuffer, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer, rayMaxDistanceData.f ) )
                         {   
                             /*
                             // Debug
@@ -337,6 +330,7 @@ namespace ECS.Octree
                 a_isCollidingData [octreeRootNodeEntity] = isCollidingData ; // Set back.
                     
             }
+
         }
 
 

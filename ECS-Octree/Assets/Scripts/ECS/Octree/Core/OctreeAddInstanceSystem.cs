@@ -140,7 +140,8 @@ namespace ECS.Octree
 
 		            while ( 
                         !_AddNodeInstance ( ref rootNodeData, 
-                            addInstanceBuffer.i_instanceID, 
+                            addInstanceBuffer.i_instanceID,                             
+                            addInstanceBuffer.i_version, 
                             addInstanceBuffer.instanceBounds, 
                             ref a_nodesBuffer, 
                             ref a_nodeSparesBuffer, 
@@ -204,10 +205,11 @@ namespace ECS.Octree
 	    /// Add an object.
 	    /// </summary>
         /// <param name="i_rootNodeIndex">Internal octree node index.</param>
-	    /// <param name="i_instanceID">External instance index ID to remove. Is assumed, only one unique instance ID exists in the tree.</param>
+	    /// <param name="i_instanceID">External instance index ID to remove. Is assumed, only one unique instance ID exists in the tree.</param>        
+        /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance.</param>
 	    /// <returns>True if the object fits entirely within this node.</returns>
-	    static private bool _AddNodeInstance ( ref RootNodeData rootNodeData, int i_instanceID, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private bool _AddNodeInstance ( ref RootNodeData rootNodeData, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
         {
 
             NodeBufferElement nodeBufferElement = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
@@ -217,7 +219,9 @@ namespace ECS.Octree
             _NodeInstanceSubAdd ( 
                 ref rootNodeData, 
                 rootNodeData.i_rootNodeIndex, 
-                i_instanceID, instanceBounds, 
+                i_instanceID, 
+                i_entityVersion,
+                instanceBounds, 
                 ref a_nodesBuffer, 
                 ref a_nodeSparesBuffer, 
                 ref a_nodeChildrenBuffer, 
@@ -379,9 +383,10 @@ namespace ECS.Octree
 	    /// Private counterpart to the public Add method.
 	    /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>
-	    /// <param name="i_instanceIndex">External instance ID to add.</param>
+        /// <param name="i_instanceID">External instance index, ot unique entity index.</param>
+        /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance to add.</param>
-	    static private void _NodeInstanceSubAdd ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private void _NodeInstanceSubAdd ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
         {
 
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
@@ -394,7 +399,7 @@ namespace ECS.Octree
             if ( i_instancesCount < rootNodeData.i_instancesAllowedCount || ( nodeBuffer.f_baseLength / 2) < rootNodeData.f_minSize)         
             {
             
-                _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
+                _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
                             
                 if ( rootNodeData.i_instancesSpareLastIndex == 0 )
                 {
@@ -477,7 +482,9 @@ namespace ECS.Octree
                                 _NodeInstanceSubAdd ( 
                                     ref rootNodeData, 
                                     nodeChildrenBuffer.i_nodesIndex, 
-                                    existingInstanceBuffer.i_ID, existingInstanceBuffer.bounds, 
+                                    existingInstanceBuffer.i_ID, 
+                                    existingInstanceBuffer.i_entityVersion,
+                                    existingInstanceBuffer.bounds, 
                                     ref a_nodesBuffer, 
                                     ref a_nodeSparesBuffer, 
                                     ref a_nodeChildrenBuffer, 
@@ -511,7 +518,9 @@ namespace ECS.Octree
                     _NodeInstanceSubAdd ( 
                         ref rootNodeData, 
                         nodeChildrenBuffer.i_nodesIndex, 
-                        i_instanceID, instanceBounds, 
+                        i_instanceID, 
+                        i_entityVersion,
+                        instanceBounds, 
                         ref a_nodesBuffer, 
                         ref a_nodeSparesBuffer, 
                         ref a_nodeChildrenBuffer, 
@@ -523,7 +532,7 @@ namespace ECS.Octree
 			    else 
                 {
                 
-                    _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
+                    _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
                     
                     if ( rootNodeData.i_instancesSpareLastIndex == 0 )
                     {
@@ -626,9 +635,11 @@ newGameObject.name = i_instanceID.ToString () ;
         /// Assign instance to node.
         /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>
-        /// <param name="i_instanceID">External instance index.</param>
+        /// <param name="i_instanceID">External instance index, ot unique entity index.</param>
+        /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
+        /// // Optional, used when Id is used as entity index
         /// <param name="instanceBounds">Boundary of external instance index.</param>
-        static private void _AssingInstance2Node ( RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
+        static private void _AssingInstance2Node ( RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
         {
             int i_nodeInstanceIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
 
@@ -662,6 +673,7 @@ newGameObject.name = i_instanceID.ToString () ;
             InstanceBufferElement instanceBuffer = new InstanceBufferElement () 
             { 
                 i_ID = i_instanceID, 
+                i_entityVersion = i_entityVersion, // Optional, used when Id is used as entity index.
                 bounds = instanceBounds 
             } ;
             

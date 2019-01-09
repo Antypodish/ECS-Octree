@@ -149,6 +149,7 @@ namespace ECS.Octree
             InstanceBufferElement instanceBuffer                       = new InstanceBufferElement () ;
             instanceBuffer.bounds                                      = new Bounds () ;
             instanceBuffer.i_ID                                        = -1 ;
+            instanceBuffer.i_entityVersion                                   = -1 ; // Optional, used when Id is used as entity index
 
             // Add new spares, from the end of storage.
             for ( int i = 0; i < numOfSpareInstances2Add; i ++ )

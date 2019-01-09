@@ -9,7 +9,7 @@ namespace ECS.Octree
     
 
     [UpdateAfter ( typeof ( UnityEngine.Experimental.PlayerLoop.PostLateUpdate ) ) ]    
-    class OctreeGetMaxBoundsSystem : JobComponentSystem
+    class GetMaxBoundsSystem : JobComponentSystem
     {
         
         ComponentGroup group ;
@@ -21,7 +21,8 @@ namespace ECS.Octree
 
             base.OnCreateManager ( );
 
-            group = GetComponentGroup ( 
+            group = GetComponentGroup (                 
+                typeof (IsActiveTag), 
                 typeof (GetMaxBoundsTag), 
                 typeof (RootNodeData) 
             ) ;

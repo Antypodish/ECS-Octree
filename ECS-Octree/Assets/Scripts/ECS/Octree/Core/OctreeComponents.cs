@@ -30,6 +30,10 @@ namespace ECS.Octree
     public struct AddInstanceBufferElement : IBufferElementData 
     {
         public int i_instanceID ;
+        /// <summary>
+        /// Optional, can be used by entity.
+        /// </summary>
+        public int i_version ;
         public Bounds instanceBounds ;
     }
 
@@ -39,6 +43,10 @@ namespace ECS.Octree
     public struct RemoveInstanceBufferElement : IBufferElementData 
     {
         public int i_instanceID ;
+        /// <summary>
+        /// Optional, can be used by entity.
+        /// </summary>
+        // public int i_version ; // not required for removal. Is not checked.
     }
 
 
@@ -46,6 +54,15 @@ namespace ECS.Octree
     // ******** Collision check Tags / Data / Buffers ************ //
     
     // Use thse, to select octree collision checks. 
+    
+    /// <summary>
+    /// Paired octree entity, required for collision checks.
+    /// Can be used for example in many raycast/bounds to target octree.
+    /// </summary>
+    public struct OctreeEntityPair4CollisionData : IComponentData
+    {  
+        public Entity octree2CheckEntity ;
+    }
 
     /// <summary>
     /// Paired ray entity, required for collision checks.
@@ -57,13 +74,15 @@ namespace ECS.Octree
     }
     
     /// <summary>
-    /// Paired octree entity, required for collision checks.
-    /// Can be used for example in many raycst to target octree.
+    /// Paired bounds entity, required for collision checks.
+    /// Can be used for example in many octrees to target bound.
     /// </summary>
-    public struct OctreeEntityPair4CollisionData : IComponentData
+    public struct BoundsEntityPair4CollisionData : IComponentData
     {  
-        public Entity octree2CheckEntity ;
+        public Entity bounds2CheckEntity ;
     }
+
+    
 
 
     /// <summary>
@@ -91,12 +110,17 @@ namespace ECS.Octree
     /// <summary>
     /// Collection of colliding instances.
     /// Use with conjunction of IsCollidingData, storing number of currently used buffer elements.
-    /// This is to prevent clearing and allocting buffer every time is accessed.
+    /// This is to prevent clearing and allocting buffer, every time is accessed.
     /// Its size grows as required, and stay of that size, as long entity holding this buffer exists.
     /// </summary>
     public struct CollisionInstancesBufferElement : IBufferElementData
     {
         public int i_ID ;
+
+        /// <summary>
+        /// Optional, can be used by entity.
+        /// </summary>
+        public int i_version ;
     }
 
     /// <summary>
@@ -118,6 +142,7 @@ namespace ECS.Octree
     /// Returns true, if ray intersects, otherwise false.
     /// </summary>
     public struct IsRayCollidingTag : IComponentData {}
+
     public struct GetMaxBoundsTag : IComponentData {}
 
 
@@ -264,8 +289,15 @@ namespace ECS.Octree
 
         /// <summary>
         /// Store instance ID's which must be unique.
+        /// If used as entity index, use also i_version.
         /// </summary>
         public int i_ID ;
+        
+        /// <summary>
+        /// Optional, can be used by entity.
+        /// </summary>
+        public int i_entityVersion ;
+
 // Entity?
     }
 

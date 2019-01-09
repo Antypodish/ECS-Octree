@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using Unity.Collections ;
-using Unity.Entities ;
-using Unity.Jobs ;
+﻿using Unity.Entities ;
 using Unity.Mathematics ;
 using UnityEngine;
-using Unity.Rendering ;
-using Unity.Burst ;
 
 namespace ECS.Octree
 {
 
-  
-    class OctreeTestSystem : JobComponentSystem
+    class OctreeExample_IsBoundsCollidingBarrier_Bounds2Octrees : BarrierSystem { }
+
+    class OctreeExample_IsBoundsCollidingSystem_Bounds2Octrees : JobComponentSystem
     {
 
-        [Inject] private AddNewOctreeBarrier barrier ;
+        [Inject] private OctreeExample_IsBoundsCollidingBarrier_Bounds2Octrees barrier ;
         
         EntityArchetype octreeArchetype ;        
         ComponentGroup group ;
@@ -25,17 +20,20 @@ namespace ECS.Octree
             base.OnCreateManager ( );
 
 
-            // Test rays
-            // Many rays, to many octrees
-            // Where each ray has one entity target.
+            // Test bounds
+            // Many bounds, to many octrees
+            // Where each bounds has one entity target.
+            // Results return, weather collision with an instance occured.
 
 
             // Toggle manually only one example systems at the time
             if ( true ) return ; // Early exit
 
 
-            Debug.Log ( "Start Test Octree System" ) ;
+            Debug.Log ( "Start Test Is Bounds Colliding Octree System" ) ;
 
+
+            // ***** Initialize Octree ***** //
 
             // Create new octree
             // See arguments details (names) of _CreateNewOctree and coresponding octree readme file.
@@ -43,16 +41,17 @@ namespace ECS.Octree
             Entity newOctreeEntity = EntityManager.CreateEntity ( ) ;
 
             AddNewOctreeSystem._CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero, 1, 1, 1 ) ;
+            
+            EntityManager.AddComponent ( newOctreeEntity, typeof ( IsBoundsCollidingTag ) ) ;
 
 
 
-
-            // ***** Instance Optional Components ***** //
+            // ***** Example Components To Add / Remove Instance ***** //
             
             // Request to add 100 instances
-            // User is responsible to ensure, that instances IDs are unique in the octrtree.
-            EntityManager.AddBuffer <AddInstanceBufferElement> ( newOctreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.         
-
+            // User is responsible to ensure, that instances IDs are unique in the octrtree.    
+            
+            EntityManager.AddBuffer <AddInstanceBufferElement> ( newOctreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.     
             BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
             DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [newOctreeEntity] ;  
 
@@ -102,17 +101,19 @@ namespace ECS.Octree
 
 
 
-            // Create test rays
-            // Many rays, to many octrees
-            // Where each ray has one entity target.
-            for ( int i = 0; i < 1000; i ++ ) 
+            // ***** Example Bounds Components For Collision Checks ***** //
+
+            // Create test bounds
+            // Many bounds, to many octrees
+            // Where each bounds has one entity target.
+            for ( int i = 0; i < 10; i ++ ) 
             {
-                ecb.CreateEntity ( ) ; // Check bounds collision with octree and return colliding instances.                
+                ecb.CreateEntity ( ) ; // Check bounds collision with octree and return colliding instances.                     
                 ecb.AddComponent ( new IsActiveTag () ) ; 
-                ecb.AddComponent ( new RayData () ) ; 
-                ecb.AddComponent ( new RayMaxDistanceData ()
+                ecb.AddComponent ( new IsBoundsCollidingTag () ) ; 
+                ecb.AddComponent ( new BoundsData ()
                 {
-                    f = 100f
+                    bounds = new Bounds () { center = float3.zero, size = new float3 ( 5, 5, 5 ) }
                 } ) ; 
                 // Check bounds collision with octree and return colliding instances.
                 ecb.AddComponent ( new OctreeEntityPair4CollisionData () 
@@ -120,25 +121,9 @@ namespace ECS.Octree
                     octree2CheckEntity = newOctreeEntity
                 } ) ;
                 ecb.AddComponent ( new IsCollidingData () ) ; // Check bounds collision with octree and return colliding instances.
-                ecb.AddBuffer <CollisionInstancesBufferElement> () ;
+                // ecb.AddBuffer <CollisionInstancesBufferElement> () ; // Not required in this system
             } // for
-
-
-            
-            
-
-            // ***** Collision Detection Components, Check List ***** //
-
-// TODO: replace instance ID with entity?
-            // ecb.AddComponent ( newOctreeEntity, new IsBoundsCollidingTag () ) ; // Check boundary collision with octree instances.
-            // ecb.AddComponent ( newOctreeEntity, new IsRayCollidingTag () ) ; // Check ray collision with octree instances.
-            // ecb.AddComponent ( newOctreeEntity, new GetCollidingBoundsInstancesTag () ) ; // Check bounds collision with octree and return colliding instances.
-            // ecb.AddComponent ( newOctreeEntity, new GetCollidingRayInstancesTag () ) ; // Check bounds collision with octree and return colliding instances.
-
-// TODO: incomplete Get max bounds
-            // ecb.AddComponent ( newOctreeEntity, new GetMaxBoundsTag () ) ;
-
-                         
+                            
         }
         
     }

@@ -36,63 +36,6 @@ namespace ECS.Octree
             
             Debug.Log ( "Remove Octree Instance." ) ;
 
-            /*
-            EntityArray a_entities                                                                        = group.GetEntityArray () ;
-            Entity rootNodeEntity                                                                         = a_entities [0] ;
-                        
-            ComponentDataArray <RootNodeData> a_rootNodeData                                              = group.GetComponentDataArray <RootNodeData> ( ) ;
-            RootNodeData rootNodeData                                                                     = a_rootNodeData [0] ;
-
-
-
-
-            BufferFromEntity <NodeSparesBufferElement> nodeSparesBufferElement                            = GetBufferFromEntity <NodeSparesBufferElement> () ;
-            DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer                                    = nodeSparesBufferElement [rootNodeEntity] ;
-
-            BufferFromEntity <NodeBufferElement> nodeBufferElement                                        = GetBufferFromEntity <NodeBufferElement> () ;
-            DynamicBuffer <NodeBufferElement> a_nodesBuffer                                               = nodeBufferElement [rootNodeEntity] ;
-
-            BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement            = GetBufferFromEntity <NodeInstancesIndexBufferElement> () ;
-            DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer                    = nodeInstancesIndexBufferElement [rootNodeEntity] ;   
-
-            BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement                        = GetBufferFromEntity <NodeChildrenBufferElement> () ;
-            DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer                                = nodeChildrenBufferElement [rootNodeEntity] ;    
-
-            BufferFromEntity <InstanceBufferElement> instanceBufferElement                                = GetBufferFromEntity <InstanceBufferElement> () ;
-            DynamicBuffer <InstanceBufferElement> a_instanceBuffer                                        = instanceBufferElement [rootNodeEntity] ;   
-
-            BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement          = GetBufferFromEntity <InstancesSpareIndexBufferElement> () ;
-            DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer                  = instancesSpareIndexBufferElement [rootNodeEntity] ;    
-
-
-
-            for ( int i_instanceID = 0; i_instanceID < 53; i_instanceID ++ )
-            {            
-                int x = i_instanceID % 10 ;
-                int y = Mathf.FloorToInt ( i_instanceID / 10 ) ;
-                Debug.Log ( "Test instance remove #" + i_instanceID + " x: " + x + " y: " + y ) ;
-
-                _OctreeRemoveInstance ( 
-                    ref rootNodeData, 
-                    i_instanceID, 
-                    a_nodesBuffer, 
-                    ref a_nodeSparesBuffer,
-                    ref a_nodeChildrenBuffer,                    
-                    a_nodeInstancesIndexBuffer,
-                    ref a_instanceBuffer,
-                    ref a_instancesSpareIndexBuffer
-                ) ;
-
-            }
-
-            
-            a_rootNodeData [0] = rootNodeData ;
-            
-            EntityManager.RemoveComponent <RemoveInstanceBufferElement> ( rootNodeEntity ) ; // Instance added.
-
-            return base.OnUpdate ( inputDeps );
-            */
-
             int i_groupLength = group.CalculateLength () ;
 
             var removeInstanceJob = new RemoveInstanceJob 

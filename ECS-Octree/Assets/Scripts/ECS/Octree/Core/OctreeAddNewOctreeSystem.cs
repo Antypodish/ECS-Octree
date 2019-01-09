@@ -28,12 +28,6 @@ namespace ECS.Octree
             group = GetComponentGroup ( 
                 typeof (AddNewOctreeData)    
             ) ;
-
-
-            //EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            //Entity newOctreeEntity = EntityManager.CreateEntity ( ) ;
-
-            //_CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero, 1, 1, 1 ) ;
             
             base.OnCreateManager ( );
 
@@ -56,8 +50,7 @@ namespace ECS.Octree
 
             var initialiseOctreeJob = new InitialiseOctreeJob 
             {
-                
-                // ecb                                 = barrier.CreateCommandBuffer ().ToConcurrent (),                
+                          
                 a_newOctreeEntities                 = group.GetEntityArray (),
 
                 a_addNewOctreeData                  = GetComponentDataFromEntity <AddNewOctreeData> (),
@@ -184,7 +177,7 @@ namespace ECS.Octree
         {
                         
             Debug.Log ( "Create new octree #" + newOctreeEntity.Index ) ;
-
+            
             ecb.AddComponent ( newOctreeEntity, new AddNewOctreeData ()
             {
                 f3_initialPosition = f3_initialPosition,
@@ -219,7 +212,7 @@ namespace ECS.Octree
 
             // ***** Core Components ***** //
 
-
+            
             ecb.AddComponent ( newOctreeEntity, rootNodeData ) ; // Core of octree structure.
 
             // Add buffer arrays

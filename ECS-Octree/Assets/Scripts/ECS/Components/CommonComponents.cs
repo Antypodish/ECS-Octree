@@ -10,6 +10,11 @@ namespace ECS
     {
         public Ray ray ;
     }
+
+    public struct BoundsData : IComponentData 
+    {
+        public Bounds bounds ;
+    }
     
     public struct RayMaxDistanceData : IComponentData 
     {
