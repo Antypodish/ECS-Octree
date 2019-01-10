@@ -1,16 +1,64 @@
-﻿using System.Collections.Generic;
-using Unity.Collections ;
-using Unity.Entities ;
-using Unity.Jobs ;
-using UnityEngine;
-using Unity.Burst ;
+﻿using Unity.Entities ;
+using UnityEngine ;
 
 
 namespace ECS.Octree
 {
 
+
     internal class IsRayColliding_Common
     {
+
+        static public void _DebugRays ( EntityArray a_collisionChecksEntities, ComponentDataFromEntity <RayData> a_rayData, ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
+        {
+
+            // Debug all, or only one check
+            int i_debugCollisionChecksCount = canDebugAllChecks ? a_collisionChecksEntities.Length : 1 ;
+
+
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < i_debugCollisionChecksCount; i_collisionChecksIndex ++ )
+            {              
+
+                Entity octreeRayEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;                
+                Entity octreeRayEntity2 ;
+
+                if ( !a_rayData.Exists ( octreeRayEntity ) )
+                {
+                    RayEntityPair4CollisionData rayEntityPair4CollisionData =  a_rayEntityPair4CollisionData [octreeRayEntity] ;
+                    octreeRayEntity2 = rayEntityPair4CollisionData.ray2CheckEntity ;
+
+                }
+                else
+                {
+                    octreeRayEntity2 = octreeRayEntity ;
+                }
+
+                // Draw all available rays, or signle ray
+                if ( canDebugAllrays ) 
+                {
+                    RayData rayData = a_rayData [octreeRayEntity2] ;
+                    RayMaxDistanceData rayMaxDistanceData = a_rayMaxDistanceData [octreeRayEntity2] ;
+
+                    Debug.DrawLine ( rayData.ray.origin, rayData.ray.origin + rayData.ray.direction * rayMaxDistanceData.f, Color.red )  ;
+                }
+                else if ( i_collisionChecksIndex == 0 ) 
+                {                    
+                    RayData rayData = a_rayData [octreeRayEntity2] ;
+                    RayMaxDistanceData rayMaxDistanceData = a_rayMaxDistanceData [octreeRayEntity2] ;
+
+                    Debug.DrawLine ( rayData.ray.origin, rayData.ray.origin + rayData.ray.direction * rayMaxDistanceData.f, Color.red )  ;
+                }
+
+
+                IsCollidingData isCollidingData = a_isCollidingData [octreeRayEntity] ;
+
+                if ( isCollidingData.i_collisionsCount > 0 ) Debug.Log ( "Is colliding." ) ;                
+            }
+
+        }
+
 
         /// <summary>
 	    /// Check if the specified ray intersects with anything in the tree. See also: GetColliding.

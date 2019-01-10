@@ -4,8 +4,10 @@ using UnityEngine ;
 using UnityEngine.SceneManagement ;
 using Unity.Rendering ;
 
+
 namespace ECS
 {
+
     public sealed class Bootstrap
     {
             

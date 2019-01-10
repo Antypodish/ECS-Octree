@@ -5,8 +5,106 @@ using UnityEngine;
 namespace ECS.Octree
 {
 
+
     internal class GetCollidingRayInstances_Common
     {
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a_collisionChecksEntities"></param>
+        /// <param name="a_rayData"></param>
+        /// <param name="a_rayMaxDistanceData"></param>
+        /// <param name="a_isCollidingData"></param>
+        /// <param name="collisionInstancesBufferElement"></param>
+        /// <param name="canDebugAllChecks">Debug Log all checks, or only one (first one)</param>
+        /// <param name="canDebugAllrays">Draw all, or only single ray (first one).</param>
+        static public void _DebugRays ( EntityCommandBuffer ecb, EntityArray a_collisionChecksEntities, ComponentDataFromEntity <RayData> a_rayData, ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
+        {
+
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+
+
+            // if ( !canDebugAllrays ) 
+
+            // Debug all, or only one check
+            int i_debugCollisionChecksCount = canDebugAllChecks ? a_collisionChecksEntities.Length : 1 ;
+
+            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < i_debugCollisionChecksCount; i_collisionChecksIndex ++ )
+            {
+                  
+                Entity octreeRayEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;
+                Entity octreeRayEntity2 ;
+
+                if ( !a_rayData.Exists ( octreeRayEntity ) )
+                {
+                    RayEntityPair4CollisionData rayEntityPair4CollisionData =  a_rayEntityPair4CollisionData [octreeRayEntity] ;
+                    octreeRayEntity2 = rayEntityPair4CollisionData.ray2CheckEntity ;
+
+                }
+                else
+                {
+                    octreeRayEntity2 = octreeRayEntity ;
+                }
+
+                // Draw all available rays, or signle ray
+                if ( canDebugAllrays ) 
+                {
+                    RayData rayData = a_rayData [octreeRayEntity2] ;
+                    RayMaxDistanceData rayMaxDistanceData = a_rayMaxDistanceData [octreeRayEntity2] ;
+
+                    Debug.DrawLine ( rayData.ray.origin, rayData.ray.origin + rayData.ray.direction * rayMaxDistanceData.f, Color.red )  ;
+                }
+                else if ( i_collisionChecksIndex == 0 ) 
+                {                    
+                    RayData rayData = a_rayData [octreeRayEntity2] ;
+                    RayMaxDistanceData rayMaxDistanceData = a_rayMaxDistanceData [octreeRayEntity2] ;
+
+                    Debug.DrawLine ( rayData.ray.origin, rayData.ray.origin + rayData.ray.direction * rayMaxDistanceData.f, Color.red )  ;
+                }
+                //}
+
+
+                // Last known instances collisions count.
+                IsCollidingData isCollidingData = a_isCollidingData [octreeRayEntity] ;
+
+                if ( isCollidingData.i_collisionsCount > 0 )
+                {
+                    
+                    // Debug.Log ( "Octree: Last known instances collisions count #" + isCollidingData.i_collisionsCount ) ;
+
+                    // Stores reference to detected colliding instance.
+                    DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer = collisionInstancesBufferElement [octreeRayEntity] ;    
+
+                    
+                    string s_collidingIDs = "" ;
+
+                    CollisionInstancesBufferElement collisionInstancesBuffer ;
+
+                    for ( int i = 0; i < isCollidingData.i_collisionsCount; i ++ )
+                    {
+                        collisionInstancesBuffer = a_collisionInstancesBuffer [i] ;
+                        s_collidingIDs += collisionInstancesBuffer.i_ID + ", " ;
+                    }
+
+                    CollisionInstancesBufferElement closestCollisionInstance = a_collisionInstancesBuffer [isCollidingData.i_nearestInstanceCollisionIndex] ;
+                    Entity closestInstanceEntity = new Entity () 
+                    { 
+                        Index = closestCollisionInstance.i_ID, 
+                        Version = closestCollisionInstance.i_version 
+                    } ;
+                    
+                    // Test highlight
+                    Highlight.SwitchMethods._Switch ( ecb, closestInstanceEntity ) ;
+
+                    Debug.Log ( "Is colliding with #" + isCollidingData.i_collisionsCount + " instances of IDs: " + s_collidingIDs + "; Nearest collided instance is at " + isCollidingData.f_nearestDistance + "m, with ID #" + a_collisionInstancesBuffer [isCollidingData.i_nearestInstanceCollisionIndex].i_ID ) ;
+                    
+                }
+                
+            } // for
+
+        }
 
         /// <summary>
 	    /// Returns an array of objects that intersect with the specified ray, if any. Otherwise returns an empty array. See also: IsColliding.

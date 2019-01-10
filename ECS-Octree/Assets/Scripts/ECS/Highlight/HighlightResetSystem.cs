@@ -1,7 +1,8 @@
-﻿using Unity.Entities ;
-using Unity.Collections ;
+﻿using Unity.Collections ;
 using Unity.Rendering ;
+using Unity.Entities ;
 using Unity.Jobs ;
+
 
 namespace ECS.Highlight
 {

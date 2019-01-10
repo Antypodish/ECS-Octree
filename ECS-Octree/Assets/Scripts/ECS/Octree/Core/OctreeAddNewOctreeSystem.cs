@@ -1,12 +1,14 @@
 ﻿using Unity.Collections ;
-using Unity.Entities ;
-using Unity.Jobs ;
 using Unity.Mathematics ;
-using UnityEngine;
+using Unity.Entities ;
 using Unity.Burst ;
+using Unity.Jobs ;
+using UnityEngine ;
+
 
 namespace ECS.Octree
 {
+
 
     public class AddNewOctreeBarrier : BarrierSystem {} ;
 

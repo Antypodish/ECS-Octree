@@ -15,7 +15,18 @@
 // However, this code has been converted into linearized form,
 // initially to List representation, then further to be more appropriate for into ECS conversion.
 
+// See OctreeExample_Selector.cs for details, to select examples.
+
 // By Dobromil K Duda
+
+// 2019 January 10
+// Debug optimisation, and duplicate code reduction
+// See OctreeExample_Selector.cs for details, to select examples.
+
+// 2019 January 08
+// Most relevant octree check systems, are nonw in parallel and burst optimised.
+// Examples files added.
+// Ray(cast) block highlight support added.
 
 
 // 2019 January 06

@@ -1,8 +1,8 @@
 ﻿using Unity.Collections ;
 using Unity.Entities ;
-using Unity.Jobs ;
-using UnityEngine;
 using Unity.Burst ;
+using Unity.Jobs ;
+using UnityEngine ;
 
 namespace ECS.Octree
 {
@@ -61,14 +61,12 @@ namespace ECS.Octree
 
 
 
+            // Test ray  
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+            IsRayColliding_Common._DebugRays ( a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, a_rayEntityPair4CollisionData, false, false ) ;
 
-            // Test ray            
-            Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
-
-            Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
-            // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
-
-            
+            /*
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
             for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < 1; i_collisionChecksIndex ++ )
@@ -79,13 +77,18 @@ namespace ECS.Octree
 
                 if ( isCollidingData.i_collisionsCount > 0 ) Debug.Log ( "Is colliding." ) ;                
             }
-            
+            */
             
 
 
             int i_groupLength = group.CalculateLength () ;
 
             
+            // Test ray            
+            Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
+
+            // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
+
             var setRayTestJob = new SetRayTestJob 
             {
                 
@@ -154,11 +157,7 @@ namespace ECS.Octree
 
                 Entity octreeEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
-                // RayData rayData = new RayData () { ray = ray } ;                
-                // a_rayData [octreeRayEntity] = rayData ;
-
-
-                RayEntityPair4CollisionData rayEntityPair4CollisionData =  a_rayEntityPair4CollisionData [octreeEntity] ;
+                RayEntityPair4CollisionData rayEntityPair4CollisionData = a_rayEntityPair4CollisionData [octreeEntity] ;
                 Entity octreeRayEntity = rayEntityPair4CollisionData.ray2CheckEntity ;
 
                 RayData rayData = new RayData () { ray = ray } ;                

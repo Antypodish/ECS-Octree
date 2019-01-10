@@ -1,9 +1,9 @@
 ﻿using Unity.Collections ;
+using Unity.Mathematics ;
 using Unity.Entities ;
+using Unity.Burst ;
 using Unity.Jobs ;
 using UnityEngine;
-using Unity.Burst ;
-using Unity.Mathematics ;
 
 
 namespace ECS.Octree
@@ -73,12 +73,7 @@ namespace ECS.Octree
                 center = new float3 ( 10, 2, 10 ), 
                 size = new float3 ( 1, 1, 1 ) * 5 // Total size of boundry 
             } ;
-
-// ...             Bray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
             
-
-            //Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
-            // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
             
             
             // Debug

@@ -1,11 +1,13 @@
 ﻿using Unity.Collections ;
 using Unity.Entities ;
-using Unity.Jobs ;
-using UnityEngine;
 using Unity.Burst ;
+using Unity.Jobs ;
+using UnityEngine ;
+
 
 namespace ECS.Octree
 {
+
 
     public class RemoveInstanceBarrier : BarrierSystem {} ;
 

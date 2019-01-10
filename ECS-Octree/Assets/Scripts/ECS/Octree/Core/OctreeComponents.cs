@@ -1,6 +1,7 @@
-﻿using Unity.Entities ;
-using Unity.Mathematics ;
-using UnityEngine;
+﻿using Unity.Mathematics ;
+using Unity.Entities ;
+using UnityEngine ;
+
 
 namespace ECS.Octree
 {

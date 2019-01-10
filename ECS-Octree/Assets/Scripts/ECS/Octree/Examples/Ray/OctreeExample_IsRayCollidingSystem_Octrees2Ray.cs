@@ -1,8 +1,10 @@
-﻿using Unity.Entities ;
+﻿using Unity.Collections ;
 using Unity.Mathematics ;
-using UnityEngine;
+using Unity.Entities ;
+using UnityEngine ;
 
-namespace ECS.Octree
+
+namespace ECS.Octree.Examples
 {
 
 
@@ -27,7 +29,7 @@ namespace ECS.Octree
             // Results return, weather collision with an instance occured.
 
             // Toggle manually only one example systems at the time
-            if ( true ) return ; // Early exit
+            if ( !( ExampleSelector.selector == Selector.IsRayCollidingSystem_Octrees2Ray ) ) return ; // Early exit
 
             
             Debug.Log ( "Start Test Is Ray Colliding Octree System" ) ;
@@ -58,10 +60,8 @@ namespace ECS.Octree
 
             // ***** Initialize Octree ***** //
 
-            int i_octreesCount = 100 ;
-
-            // NativeArray <Entity> a_entities = new NativeArray<Entity> ( i_octreesCount, Allocator.Temp ) ;
-
+            int i_octreesCount = 100 ; // Example of x octrees.
+            
             for ( int i_octreeEntityIndex = 0; i_octreeEntityIndex < i_octreesCount; i_octreeEntityIndex ++ ) 
             {
 
@@ -91,56 +91,36 @@ namespace ECS.Octree
                 
                 // ***** Example Components To Add / Remove Instance ***** //
             
-                // Request to add 100 instances
+                // Example of adding and removing some instanceses, hence entity blocks.
+
+
+                // Add
+
+                int i_instances2AddCount = 100 ;
+                NativeArray <Entity> a_instanceEntities =Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
+                
+                // Request to add n instances.
                 // User is responsible to ensure, that instances IDs are unique in the octrtree.
-                EntityManager.AddBuffer <AddInstanceBufferElement> ( newOctreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.         
-
+                EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
                 BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
-                DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [newOctreeEntity] ;  
 
-                for ( int i_instanceID = 0; i_instanceID < 100; i_instanceID ++ )
-                {  
+                Common._RequesAddInstances ( ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
 
-                    int x = i_instanceID % 10 ;
-                    int y = Mathf.FloorToInt ( i_instanceID / 10 ) ;
 
-     //               Debug.Log ( "Test instance spawn #" + i_instanceID + " x: " + x + " y: " + y ) ;
 
-                    Bounds bounds = new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ;
+                // Remove
                 
-                    AddInstanceBufferElement addInstanceBuffer = new AddInstanceBufferElement () 
-                    {
-                        i_instanceID = i_instanceID,
-                        instanceBounds = bounds
-                    };
-
-                    a_addInstanceBufferElement.Add ( addInstanceBuffer ) ;
-                }
-
-
-                
-
-                // Request to remove 53 instances.
-                // User is responsible to ensure, that requested instance ID to delete exists in the octree.            
-                EntityManager.AddBuffer <RemoveInstanceBufferElement> ( newOctreeEntity ) ; // Once system executed and instances were removed, tag will be deleted.
-
+                EntityManager.AddBuffer <RemoveInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were removed, component will be deleted.
                 BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement = GetBufferFromEntity <RemoveInstanceBufferElement> () ;
-                DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement = removeInstanceBufferElement [newOctreeEntity] ;  
-            
-                for ( int i_instanceID = 0; i_instanceID < 53; i_instanceID ++ )
-                {            
-                    int x = i_instanceID % 10 ;
-                    int y = Mathf.FloorToInt ( i_instanceID / 10 ) ;
-     //               Debug.Log ( "Test instance remove #" + i_instanceID + " x: " + x + " y: " + y ) ;
-                                         
-                    RemoveInstanceBufferElement removeInstanceBuffer = new RemoveInstanceBufferElement () 
-                    {
-                        i_instanceID = i_instanceID,                    
-                    };
                 
-                    a_removeInstanceBufferElement.Add ( removeInstanceBuffer ) ;
-
-                }
+                // Request to remove some instances
+                // Se inside method, for details
+                int i_instances2RemoveCount = 53 ;
+                Common._RequestRemoveInstances ( ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
+                
+                
+                // Ensure example array is disposed.
+                a_instanceEntities.Dispose () ;
 
             } // for
 

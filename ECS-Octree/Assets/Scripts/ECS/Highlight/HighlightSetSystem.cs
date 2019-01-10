@@ -1,6 +1,7 @@
-﻿using Unity.Entities;
+﻿using Unity.Rendering;
+using Unity.Entities;
 using Unity.Jobs;
-using Unity.Rendering;
+
 
 namespace ECS.Highlight
 {
@@ -43,7 +44,7 @@ namespace ECS.Highlight
                 // Renderer
                 Common.previousMeshInstanceRenderer = entityManager.GetSharedComponentData <MeshInstanceRenderer> ( entity ) ;
 
-                // assigne new renderrer
+                // Assign new renderrer
                 Unity.Rendering.MeshInstanceRenderer renderer = Bootstrap.highlightRenderer ;
                                          
                 ecb.SetSharedComponent <MeshInstanceRenderer> ( entity, renderer ) ; // replace renderer with material and mesh

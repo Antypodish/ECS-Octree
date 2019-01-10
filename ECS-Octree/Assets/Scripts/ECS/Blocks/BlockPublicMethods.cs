@@ -1,10 +1,11 @@
-﻿using Unity.Entities ;
-using Unity.Mathematics ;
+﻿using Unity.Mathematics ;
+using Unity.Entities ;
+
 
 namespace ECS.Blocks
 {   
 
-    public class Methods
+    public class PublicMethods
     {
         
         /// <summary>
@@ -70,6 +71,8 @@ namespace ECS.Blocks
 
             return ecb ;
         }
+
+
 
 
         

@@ -1,8 +1,8 @@
 ﻿using Unity.Collections ;
 using Unity.Entities ;
-using Unity.Jobs ;
-using UnityEngine;
 using Unity.Burst ;
+using Unity.Jobs ;
+using UnityEngine ;
 
 
 namespace ECS.Octree
@@ -68,18 +68,13 @@ namespace ECS.Octree
             BufferFromEntity <InstanceBufferElement> instanceBufferElement                            = GetBufferFromEntity <InstanceBufferElement> () ;
             
 
-            // Test ray
-            
- //           ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
- //           EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;     
-            Ray ray                               = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
-            
+            // Test ray  
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+            ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData = new ComponentDataFromEntity<RayEntityPair4CollisionData> () ; // As empty.
+            IsRayColliding_Common._DebugRays ( a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, a_rayEntityPair4CollisionData, false, false ) ;
 
-            Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
-            // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
-            
-            
-            
+            /*
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
             for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < 1; i_collisionChecksIndex ++ )
@@ -90,8 +85,12 @@ namespace ECS.Octree
 
                 if ( isCollidingData.i_collisionsCount > 0 ) Debug.Log ( "Is colliding." ) ;                
             }
+            */
             
+            // Test ray
+            Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
 
+            Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
 
             int i_groupLength = group.CalculateLength () ;
 

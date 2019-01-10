@@ -1,12 +1,11 @@
-﻿using Unity.Collections;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Jobs;
-using Unity.Mathematics;
-using UnityEngine;
+
 
 namespace ECS.Octree
 {
     
+
     public struct ForceCollisionCheckTag : IComponentData { }
 
     

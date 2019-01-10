@@ -1,5 +1,5 @@
 ﻿using Unity.Entities ;
-using UnityEngine;
+using UnityEngine ;
 
 
 namespace ECS.Octree

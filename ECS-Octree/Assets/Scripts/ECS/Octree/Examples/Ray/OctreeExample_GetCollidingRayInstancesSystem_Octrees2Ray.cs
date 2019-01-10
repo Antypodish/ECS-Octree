@@ -1,15 +1,16 @@
 ﻿using Unity.Collections ;
-using Unity.Entities ;
 using Unity.Mathematics ;
-using UnityEngine;
+using Unity.Entities ;
+using UnityEngine ;
 
-namespace ECS.Octree
+
+namespace ECS.Octree.Examples
 {
 
 
     public class OctreeExample_GetCollidingRayInstancesBarrier_Octrees2Ray : BarrierSystem {} ;
  
-
+    
     class OctreeExample_GetCollidingRayInstancesSystem_Octrees2Ray : JobComponentSystem
     {
 
@@ -30,7 +31,7 @@ namespace ECS.Octree
             // and distance to the nearest instance.
 
             // Toggle manually only one example systems at the time
-            if ( false ) return ; // Early exit
+            if ( !( ExampleSelector.selector == Selector.GetCollidingRayInstancesSystem_Octrees2Ray ) ) return ; // Early exit
 
             
             Debug.Log ( "Start Test Get Colliding Ray Instances System" ) ;
@@ -59,15 +60,12 @@ namespace ECS.Octree
             } ) ; 
 
 
+
+
             // ***** Initialize Octree ***** //
-
-
-
-
-
-
-
-            int i_octreesCount = 1 ;
+            
+            int i_octreesCount = 1 ; // Example of x octrees.
+            // int i_octreesCount = 100 ; // Example of x octrees.
 
             NativeArray <Entity> a_entities = new NativeArray<Entity> ( i_octreesCount, Allocator.Temp ) ;
 
@@ -76,7 +74,7 @@ namespace ECS.Octree
 
                 ecb = barrier.CreateCommandBuffer () ;
                 Entity newOctreeEntity = EntityManager.CreateEntity ( ) ;
-                //Entity newOctreeEntity = a_entities [i_octreeEntityIndex] ;
+
                 AddNewOctreeSystem._CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero, 1, 1, 1 ) ;
             
                 EntityManager.AddComponent ( newOctreeEntity, typeof ( GetCollidingRayInstancesTag ) ) ;
@@ -100,97 +98,36 @@ namespace ECS.Octree
                 
                 // ***** Example Components To Add / Remove Instance ***** //
             
+                // Example of adding and removing some instanceses, hence entity blocks.
 
+
+                // Add
+
+                int i_instances2AddCount = 100 ;
+                NativeArray <Entity> a_instanceEntities =Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
-                Entity newBlockEntity = new Entity () ; // empty entity
-                NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( 100, Allocator.Temp ) ;
-                int i_instanceEntityIndex = 0 ;
-            
-                for ( int i_instanceID = 0; i_instanceID < 100; i_instanceID ++ )
-                {  
-                    newBlockEntity = EntityManager.CreateEntity () ;
-                    a_instanceEntities [i_instanceID] = newBlockEntity ;                  
-                    // i_instanceEntityIndex ++ ;
-                }
-
-            
-
-
-                // Request to add 100 instances
+                // Request to add n instances.
                 // User is responsible to ensure, that instances IDs are unique in the octrtree.
-                EntityManager.AddBuffer <AddInstanceBufferElement> ( newOctreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.         
-
+                EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
                 BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
-                DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [newOctreeEntity] ;  
 
-                for ( int i_instanceID = 0; i_instanceID < 100; i_instanceID ++ )
-                {  
+                Common._RequesAddInstances ( ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
 
-                     newBlockEntity = a_instanceEntities [i_instanceEntityIndex] ;
-                    i_instanceEntityIndex ++ ;
+
+
+                // Remove
                 
-                    int x = i_instanceID % 10 ;
-                    int y = (int) math.floor ( i_instanceID / 10 ) ;
-                    float3 f3_blockCenter = new float3 ( x, 0, y ) + new float3 ( 1, 1, 1 )  * 0.5f ;
-
-                    Blocks.Methods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
-
-
-
-     //               Debug.Log ( "Test instance spawn #" + i_instanceID + " x: " + x + " y: " + y ) ;
-
-                    Bounds bounds = new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ;
-                
-                    AddInstanceBufferElement addInstanceBuffer = new AddInstanceBufferElement () 
-                    {
-                        i_instanceID = newBlockEntity.Index,
-                        i_version = newBlockEntity.Version,
-                        instanceBounds = bounds
-                    };
-
-                    a_addInstanceBufferElement.Add ( addInstanceBuffer ) ;
-                }
-
-
-                
-
-                // Request to remove 53 instances.
-                // User is responsible to ensure, that requested instance ID to delete exists in the octree.            
-                EntityManager.AddBuffer <RemoveInstanceBufferElement> ( newOctreeEntity ) ; // Once system executed and instances were removed, tag will be deleted.
-
+                EntityManager.AddBuffer <RemoveInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were removed, component will be deleted.
                 BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement = GetBufferFromEntity <RemoveInstanceBufferElement> () ;
-                DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement = removeInstanceBufferElement [newOctreeEntity] ;  
-            
-                i_instanceEntityIndex = 0 ;
-
-                for ( int i_instanceID = 0; i_instanceID < 53; i_instanceID ++ )
-                {            
-
-                    // i_instanceEntityIndex -- ;
-                    Entity removeEntity = a_instanceEntities [i_instanceEntityIndex] ;                 
-                    i_instanceEntityIndex ++ ;
-
-
-                    int x = i_instanceID % 10 ;
-                    int y = Mathf.FloorToInt ( i_instanceID / 10 ) ;
-     //               Debug.Log ( "Test instance remove #" + i_instanceID + " x: " + x + " y: " + y ) ;
-                                         
-                    RemoveInstanceBufferElement removeInstanceBuffer = new RemoveInstanceBufferElement () 
-                    {
-                        i_instanceID = removeEntity.Index          
-                        // i_instanceID = i_instanceID        
-                    };
                 
-                    a_removeInstanceBufferElement.Add ( removeInstanceBuffer ) ;
-
-
-                    Blocks.Methods._RemoveBlockRequestWithEntity ( ecb, removeEntity ) ;
-
-                }
+                // Request to remove some instances
+                // Se inside method, for details
+                int i_instances2RemoveCount = 53 ;
+                Common._RequestRemoveInstances ( ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
                 
                 
-            a_instanceEntities.Dispose () ;
-
+                // Ensure example array is disposed.
+                a_instanceEntities.Dispose () ;
 
             } // for
 

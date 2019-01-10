@@ -1,8 +1,8 @@
 ﻿using Unity.Collections ;
 using Unity.Entities ;
-using Unity.Jobs ;
-using UnityEngine;
 using Unity.Burst ;
+using Unity.Jobs ;
+using UnityEngine ;
 
 
 namespace ECS.Octree
@@ -10,6 +10,7 @@ namespace ECS.Octree
     
     
     public class GetCollidingRayInstancesBarrier_Octrees2Ray : BarrierSystem {} ;
+
 
     /// <summary>
     /// Octree to ray system, checks one or more octress, against its paired target ray entity.
@@ -46,7 +47,7 @@ namespace ECS.Octree
         {
             
             
-            EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
+            // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
 
             EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;    
             
@@ -72,10 +73,12 @@ namespace ECS.Octree
             
 
 
-            // Test ray            
-            Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
-            
+            // Test ray 
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+            GetCollidingRayInstances_Common._DebugRays ( barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, collisionInstancesBufferElement, a_rayEntityPair4CollisionData, false, false ) ;
 
+            /*
             Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
             // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
             
@@ -138,8 +141,11 @@ namespace ECS.Octree
                 }
                 
             }
-            
+            */
 
+            
+            // Test ray            
+            Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
 
             int i_groupLength = group.CalculateLength () ;
 

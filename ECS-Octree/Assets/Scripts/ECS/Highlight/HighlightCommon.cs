@@ -1,6 +1,4 @@
-﻿using Unity.Entities ;
-
-namespace ECS.Highlight
+﻿namespace ECS.Highlight
 {
 
     internal class Common

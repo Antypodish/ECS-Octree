@@ -1,8 +1,8 @@
-﻿using Unity.Entities ;
+﻿using Unity.Mathematics ;
+using Unity.Entities ;
 using Unity.Jobs ;
-using Unity.Mathematics ;
-using UnityEngine;
-using Unity.Burst ;
+using UnityEngine ;
+
 
 namespace ECS.Octree
 {

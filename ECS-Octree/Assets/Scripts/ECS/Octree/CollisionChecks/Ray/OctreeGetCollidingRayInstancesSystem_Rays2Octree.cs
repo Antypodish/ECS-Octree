@@ -1,8 +1,8 @@
 ﻿using Unity.Collections ;
 using Unity.Entities ;
-using Unity.Jobs ;
-using UnityEngine;
 using Unity.Burst ;
+using Unity.Jobs ; 
+using UnityEngine ;
 
 
 namespace ECS.Octree
@@ -10,6 +10,7 @@ namespace ECS.Octree
     
     
     public class GetCollidingRayInstancesBarrier_Rays2Octree : BarrierSystem {} ;
+
 
     /// <summary>
     /// Ray to octree system, checks one or more rays, against its paired target octree entity.
@@ -69,18 +70,17 @@ namespace ECS.Octree
             BufferFromEntity <InstanceBufferElement> instanceBufferElement                            = GetBufferFromEntity <InstanceBufferElement> () ;
             
 
-            // Test ray
-            
- //           ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
- //           EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;     
-            Ray ray                               = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
-            
+            // Test ray 
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+            ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData = new ComponentDataFromEntity<RayEntityPair4CollisionData> () ; // As empty.
+            GetCollidingRayInstances_Common._DebugRays ( barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, collisionInstancesBufferElement, a_rayEntityPair4CollisionData, false, false ) ;
 
+            /*
             Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
             // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
-            
-            
-            
+                       
+                        
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
             for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < 1; i_collisionChecksIndex ++ )
@@ -123,7 +123,10 @@ namespace ECS.Octree
                 }
                 
             }
+            */
             
+            // Test ray 
+            Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
 
 
             int i_groupLength = group.CalculateLength () ;
