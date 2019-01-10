@@ -107,7 +107,7 @@ namespace ECS.Octree
 
                 DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement           = removeInstanceBufferElement [octreeRootNodeEntity] ;    
                             
-                // RootNodeData rootNodeData                                                           = a_rootNodeData [octreeRootNodeEntity] ;
+                RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
 
                 DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer                          = nodeSparesBufferElement [octreeRootNodeEntity] ;
                 DynamicBuffer <NodeBufferElement> a_nodesBuffer                                     = nodeBufferElement [octreeRootNodeEntity] ;
@@ -123,7 +123,7 @@ namespace ECS.Octree
                 for ( int i = 0; i < a_removeInstanceBufferElement.Length; i ++ )
                 {
                     
-                    RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
+                    // RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
 
                     RemoveInstanceBufferElement removeInstanceBuffer = a_removeInstanceBufferElement [i] ;
 
