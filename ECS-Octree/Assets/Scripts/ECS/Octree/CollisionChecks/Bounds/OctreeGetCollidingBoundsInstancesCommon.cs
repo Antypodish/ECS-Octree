@@ -9,6 +9,63 @@ namespace ECS.Octree
     {
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a_collisionChecksEntities"></param>
+        /// <param name="a_isCollidingData"></param>
+        /// <param name="collisionInstancesBufferElement"></param>
+        /// <param name="canDebugAllChecks">Debug Log all checks, or only one (first one)</param>
+        static public void _DebugBounds ( EntityCommandBuffer ecb, EntityArray a_collisionChecksEntities, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, bool canDebugAllChecks )
+        {
+
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+
+
+            // Debug all, or only one check
+            int i_debugCollisionChecksCount = canDebugAllChecks ? a_collisionChecksEntities.Length : 1 ;
+
+            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < i_debugCollisionChecksCount; i_collisionChecksIndex ++ )
+            {
+                  
+                Entity octreeRayEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;
+              
+                // Last known instances collisions count.
+                IsCollidingData isCollidingData = a_isCollidingData [octreeRayEntity] ;
+
+                if ( isCollidingData.i_collisionsCount > 0 )
+                {
+                    
+                    // Debug.Log ( "Octree: Last known instances collisions count #" + isCollidingData.i_collisionsCount ) ;
+
+                    // Stores reference to detected colliding instance.
+                    DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer = collisionInstancesBufferElement [octreeRayEntity] ;    
+
+                    
+                    string s_collidingIDs = "" ;
+
+                    CollisionInstancesBufferElement collisionInstancesBuffer ;
+
+                    for ( int i = 0; i < isCollidingData.i_collisionsCount; i ++ )
+                    {
+                        collisionInstancesBuffer = a_collisionInstancesBuffer [i] ;
+                        s_collidingIDs += collisionInstancesBuffer.i_ID + ", " ;
+                    }
+
+                    
+                    // Test highlight
+                    // Highlight.SwitchMethods._Switch ( ecb, closestInstanceEntity ) ;
+
+                    Debug.Log ( "Is colliding with #" + isCollidingData.i_collisionsCount + " instances of IDs: " + s_collidingIDs ) ;
+                    
+                }
+                
+            } // for
+                        
+        }
+
+
+        /// <summary>
 	    /// Returns an collection of instances, that intersect with the specified bounds, if any. Otherwise returns an empty array. See also: IsColliding.
 	    /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>

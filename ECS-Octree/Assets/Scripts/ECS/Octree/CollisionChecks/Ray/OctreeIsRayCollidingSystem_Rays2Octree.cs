@@ -74,23 +74,11 @@ namespace ECS.Octree
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData = new ComponentDataFromEntity<RayEntityPair4CollisionData> () ; // As empty.
             IsRayColliding_Common._DebugRays ( a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, a_rayEntityPair4CollisionData, false, false ) ;
 
-            /*
-            // Debug
-            // ! Ensure test this only with single, or at most few ray entiities.
-            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < 1; i_collisionChecksIndex ++ )
-            // for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < a_collisionChecksEntities.Length; i_collisionChecksIndex ++ )
-            {                  
-                Entity octreeEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;
-                IsCollidingData isCollidingData = a_isCollidingData [octreeEntity] ;
-
-                if ( isCollidingData.i_collisionsCount > 0 ) Debug.Log ( "Is colliding." ) ;                
-            }
-            */
             
             // Test ray
             Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
 
-            Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
+            // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
 
             int i_groupLength = group.CalculateLength () ;
 

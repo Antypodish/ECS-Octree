@@ -63,31 +63,19 @@ namespace ECS.Octree
             BufferFromEntity <InstanceBufferElement> instanceBufferElement                            = GetBufferFromEntity <InstanceBufferElement> () ;
             
 
+            // Test bounds 
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+            IsBoundsColliding_Common._DebugBounds ( a_collisionChecksEntities, a_isCollidingData, false ) ;
+
+            
+
             // Test bounds            
             Bounds checkBounds = new Bounds () 
             { 
                 center = new float3 ( 10, 2, 10 ), 
                 size = new float3 ( 1, 1, 1 ) * 5 // Total size of boundry 
             } ;
-// .. Bounds bounds                               = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
-            
-
-            // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
-            // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
-            
-            
-            
-            // Debug
-            // ! Ensure test this only with single, or at most few ray entiities.
-            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < 1; i_collisionChecksIndex ++ )
-            // for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < a_collisionChecksEntities.Length; i_collisionChecksIndex ++ )
-            {                  
-                Entity octreeEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;
-                IsCollidingData isCollidingData = a_isCollidingData [octreeEntity] ;
-
-                if ( isCollidingData.i_collisionsCount > 0 ) Debug.Log ( "Is colliding." ) ;                
-            }
-            
 
 
             int i_groupLength = group.CalculateLength () ;

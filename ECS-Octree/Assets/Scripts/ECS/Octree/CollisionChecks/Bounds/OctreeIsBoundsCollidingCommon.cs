@@ -9,6 +9,35 @@ namespace ECS.Octree
     internal class IsBoundsColliding_Common
     {
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a_collisionChecksEntities"></param>
+        /// <param name="a_isCollidingData"></param>
+        /// <param name="canDebugAllChecks">Debug Log all checks, or only one (first one)</param>
+        static public void _DebugBounds ( EntityArray a_collisionChecksEntities, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, bool canDebugAllChecks )
+        {
+
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+
+            
+            // Debug all, or only one check
+            int i_debugCollisionChecksCount = canDebugAllChecks ? a_collisionChecksEntities.Length : 1 ;
+            
+            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < i_debugCollisionChecksCount; i_collisionChecksIndex ++ )
+            // for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < a_collisionChecksEntities.Length; i_collisionChecksIndex ++ )
+            {                  
+                Entity octreeEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;
+                IsCollidingData isCollidingData = a_isCollidingData [octreeEntity] ;
+
+                if ( isCollidingData.i_collisionsCount > 0 ) Debug.Log ( "Is colliding." ) ;                
+            }
+                        
+        }
+
+
         /// <summary>
 	    /// Check if the specified bounds intersect with anything in the tree. See also: GetColliding.
 	    /// </summary>

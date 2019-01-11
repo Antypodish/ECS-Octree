@@ -10,13 +10,17 @@ namespace ECS.Octree
 {
 
 
+    public class GetCollidingBoundsInstancesBarrier_Octrees2Bounds : BarrierSystem {} ;
+
+
     /// <summary>
     /// Bounds to octree system, checks one or more bounds, against its paired target octree entity.
     /// </summary>
     [UpdateAfter ( typeof ( UnityEngine.Experimental.PlayerLoop.PostLateUpdate ) ) ]   
     class GetCollidingBoundsInstancesSystem_Octrees2Bounds : JobComponentSystem
     {
-
+        
+        [Inject] private GetCollidingBoundsInstancesBarrier_Octrees2Bounds barrier ;
         ComponentGroup group ;
 
         protected override void OnCreateManager ( )
@@ -66,67 +70,20 @@ namespace ECS.Octree
             ComponentDataFromEntity <BoundsData> a_boundsData                                         = GetComponentDataFromEntity <BoundsData> () ;
                         
 
-
+            
+            
+            // Test bounds 
+            // Debug
+            // ! Ensure test this only with single, or at most few ray entiities.
+            GetCollidingBoundsInstances_Common._DebugBounds ( barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_isCollidingData, collisionInstancesBufferElement, false ) ;
+                        
+            
             // Test bounds                        
             Bounds checkBounds = new Bounds () 
             { 
                 center = new float3 ( 10, 2, 10 ), 
                 size = new float3 ( 1, 1, 1 ) * 5 // Total size of boundry 
             } ;
-            
-            
-            
-            // Debug
-            // ! Ensure test this only with single, or at most few ray entiities.
-            for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < 1; i_collisionChecksIndex ++ )
-            // for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < a_collisionChecksEntities.Length; i_collisionChecksIndex ++ )
-            {
-                  
-                Entity octreeEntity                = a_collisionChecksEntities [i_collisionChecksIndex] ;
-
-                // RayData rayData                       = new RayData () { ray = ray } ;
-                // a_rayData [octreeRayEntity]           = rayData ;
-                
-
-                // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * rayMaxDistanceData.f, Color.red )  ;
-
-                // Last known instances collisions count.
-                IsCollidingData isCollidingData = a_isCollidingData [octreeEntity] ;
-
-                if ( isCollidingData.i_collisionsCount > 0 )
-                {
-                    
-                    
-                    // RayEntityPair4CollisionData rayEntityPair4CollisionData = a_rayEntityPair4CollisionData [octreeEntity] ;
-                    // Entity octreeRayEntity = rayEntityPair4CollisionData.ray2CheckEntity ;
-
-                    // RayMaxDistanceData rayMaxDistanceData = a_rayMaxDistanceData [octreeRayEntity] ;
-
-                    // Debug.Log ( "Octree: Last known instances collisions count #" + isCollidingData.i_collisionsCount ) ;
-
-                    // Stores reference to detected colliding instance.
-                    DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer = collisionInstancesBufferElement [octreeEntity] ;    
-
-                    
-                    string s_collidingIDs = "" ;
-
-                    CollisionInstancesBufferElement collisionInstancesBuffer ;
-
-                    for ( int i = 0; i < isCollidingData.i_collisionsCount; i ++ )
-                    {
-                        collisionInstancesBuffer = a_collisionInstancesBuffer [i] ;
-                        s_collidingIDs += collisionInstancesBuffer.i_ID + ", " ;
-                    }
-
-                    Debug.Log ( "Is colliding with #" + isCollidingData.i_collisionsCount + " instances of IDs: " + s_collidingIDs ) ;
-                    // Debug.Log ( "Is colliding with #" + isCollidingData.i_collisionsCount + " instances of IDs: " + s_collidingIDs + "; Nearest collided instance is at " + isCollidingData.f_nearestDistance + "m, with ID #" + a_collisionInstancesBuffer [isCollidingData.i_nearestInstanceCollisionIndex].i_ID ) ;
-                    
-                }
-                
-            }
-            
-            
-
 
             int i_groupLength = group.CalculateLength () ;
 
