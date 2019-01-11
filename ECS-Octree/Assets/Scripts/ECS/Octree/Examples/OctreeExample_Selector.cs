@@ -6,8 +6,8 @@
         // Edit this manually and rebuild project, to select relevant example.
         static public Selector selector = Selector.GetCollidingRayInstancesSystem_Octrees2Ray ;
 
-        static public int i_generateInstanceInOctreeCount = 10000 ; // Example of x octrees instances / entities to add.
-        static public int i_deleteInstanceInOctreeCount = 53 ; // Example of x octrees instances / entities to delete.
+        static public int i_generateInstanceInOctreeCount = 10 ; // Example of x octrees instances / entities to added.
+        static public int i_deleteInstanceInOctreeCount = 0 ; // Example of x octrees instances / entities to deleted.
     }
 
     /// <summary>

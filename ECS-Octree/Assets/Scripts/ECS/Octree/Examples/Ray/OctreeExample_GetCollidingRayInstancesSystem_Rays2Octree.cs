@@ -79,7 +79,7 @@ namespace ECS.Octree.Examples
                 
             // Request to remove some instances
             // Se inside method, for details
-            int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount = 53 ; // Example of x octrees instances / entities to delete. // 53
+            int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
             Common._RequestRemoveInstances ( ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
                 
                 

@@ -9,7 +9,7 @@ namespace ECS.Octree
     internal class CommonMethods
     {
         
-        public const int numOfSpareInstances2Add = 100 ;
+        //public const int numOfSpareInstances2Add = 100 ;
 
         /// <summary>
 	    /// Node Constructor.

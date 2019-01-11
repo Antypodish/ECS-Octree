@@ -110,7 +110,7 @@ namespace Test.OOP.Octree
         /// </summary>
         private int i_instancesSpareLastIndex ;
 
-        const int numOfSpareInstances2Add = 100 ;
+        const int numOfSpareInstances2Add = 10 ;
 
         /// <summary>
         /// Result of GetCollision, which outputs number instances, that boundery, or raycas has interact with.
@@ -131,7 +131,7 @@ namespace Test.OOP.Octree
             _Initialize ( 8, Vector3.zero, 1, 1 ) ;
 
         
-            for ( int i = 0; i < 10000; i ++ )
+            for ( int i = 0; i < 10; i ++ )
             {            
                 int x = i % 10 ;
                 int y = Mathf.FloorToInt ( i / 10 ) ;
@@ -141,7 +141,7 @@ namespace Test.OOP.Octree
             }
         
         
-            for ( int i = 0; i < 95; i ++ )
+            for ( int i = 0; i < 0; i ++ )
             {            
                 int x = i % 10 ;
                 int y = Mathf.FloorToInt ( i / 10 ) ;
@@ -151,7 +151,7 @@ namespace Test.OOP.Octree
             }
 
         
-            for ( int i = 0; i < 50; i ++ )
+            for ( int i = 0; i < 0; i ++ )
             {            
                 int x = i % 10 ;
                 int y = Mathf.FloorToInt ( i / 10 ) ;
