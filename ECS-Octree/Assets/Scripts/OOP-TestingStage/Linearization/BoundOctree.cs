@@ -130,41 +130,14 @@ namespace Test.OOP.Octree
             // For minimum size of 3 initial size could be for example 3, 9, 27, 81 etc
             _Initialize ( 8, Vector3.zero, 1, 1 ) ;
 
-            /*
-            _OctreeAddInstance ( 1, new Bounds () { center = Vector3.one * 0, size = Vector3.one * 1 } ) ;
-            _OctreeAddInstance ( 2, new Bounds () { center = Vector3.one * 0 + Vector3.forward, size = Vector3.one * 1 } ) ;
-            _OctreeAddInstance ( 3, new Bounds () { center = Vector3.one * 0 + Vector3.forward * 2, size = Vector3.one * 1 } ) ;
-            _OctreeAddInstance ( 4, new Bounds () { center = Vector3.one * 0 + Vector3.forward * 3, size = Vector3.one * 1 } ) ;
-            _OctreeAddInstance ( 5, new Bounds () { center = Vector3.one * 0 + Vector3.forward * 4, size = Vector3.one * 1 } ) ;
-            _OctreeAddInstance ( 6, new Bounds () { center = Vector3.one * 0 + Vector3.forward * 5, size = Vector3.one * 1 } ) ;
-            */
-
-            // _OctreeAddInstance ( 11, new Bounds () { center = Vector3.one * 15, size = Vector3.one * 5 } ) ;
-     //       _OctreeAddInstance ( 12, new Bounds () { center = Vector3.one * 25, size = Vector3.one * 5 } ) ;
-     //       _OctreeAddInstance ( 13, new Bounds () { center = Vector3.one * 5, size = Vector3.one * 2 } ) ;
-     //       _OctreeAddInstance ( 14, new Bounds () { center = Vector3.one * 8, size = Vector3.one * 3 } ) ;
-     //       _OctreeAddInstance ( 15, new Bounds () { center = Vector3.one * 1, size = Vector3.one * 1 } ) ;
-     //       _OctreeAddInstance ( 16, new Bounds () { center = Vector3.one * -1, size = Vector3.one * 2 } ) ;
-
-            // _OctreeAddInstance ( 13, new Bounds () { center = Vector3.one * 30, size = Vector3.one * 5 } ) ;
-            //_OctreeAddInstance ( 14, new Bounds () { center = Vector3.one * 30, size = Vector3.one * 4 } ) ;
-
         
-     //       _OctreeRemoveInstance ( 11 ) ;
-    //        _OctreeRemoveInstance ( 12 ) ;
-    //        _OctreeRemoveInstance ( 16 ) ;
-    //        _OctreeRemoveInstance ( 14 ) ;
-    //        _OctreeRemoveInstance ( 13 ) ;        
-    //        _OctreeRemoveInstance ( 12 ) ;
-          // _OctreeRemoveInstance ( 11 ) ;
-        
-        
-            for ( int i = 0; i < 100; i ++ )
+            for ( int i = 0; i < 10000; i ++ )
             {            
                 int x = i % 10 ;
                 int y = Mathf.FloorToInt ( i / 10 ) ;
-                Debug.Log ( "Test instance spawn #" + i + " x: " + x + " y: " + y ) ;
-                _OctreeAddInstance ( i, new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
+                int z = i % 4 ;
+                Debug.Log ( "Test instance spawn #" + i + " x: " + x + " y: " + y + " z: " + z ) ;
+                _OctreeAddInstance ( i, new Bounds () { center = new Vector3 ( x, y, z ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
             }
         
         
@@ -172,7 +145,8 @@ namespace Test.OOP.Octree
             {            
                 int x = i % 10 ;
                 int y = Mathf.FloorToInt ( i / 10 ) ;
-                Debug.Log ( "Test instance remove #" + i + " x: " + x + " y: " + y ) ;
+                int z = i % 4 ;
+                Debug.Log ( "Test instance remove #" + i + " x: " + x + " y: " + y + " z: " + z ) ;
                 _OctreeRemoveInstance ( i ) ;
             }
 
@@ -181,7 +155,8 @@ namespace Test.OOP.Octree
             {            
                 int x = i % 10 ;
                 int y = Mathf.FloorToInt ( i / 10 ) ;
-                _OctreeAddInstance ( i, new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
+                int z = i % 4 ;
+                _OctreeAddInstance ( i, new Bounds () { center = new Vector3 ( x, y, z ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
             }
         
 
@@ -294,8 +269,9 @@ namespace Test.OOP.Octree
 
             i_instancesSpareLastIndex    = 0 ;
 
+            int i_requiredNumberOfInstances = numOfSpareInstances2Add ;
             // Add some spares if needed.
-            _AddInstanceSpares ( ) ;   
+            _AddInstanceSpares ( i_requiredNumberOfInstances ) ;   
 
         }
 
@@ -681,7 +657,8 @@ namespace Test.OOP.Octree
 
 		    if ( !_Encapsulates ( l_nodeBounds [i_rootNodeIndex], instanceBounds ) ) return false ; // Early exit
 			    
-		    _NodeInstanceSubAdd ( i_rootNodeIndex, i_instanceID, instanceBounds ) ;
+            int i_requiredNumberOfInstances = l_nodeBounds.Count ;
+		    _NodeInstanceSubAdd ( i_rootNodeIndex, i_instanceID, instanceBounds, i_requiredNumberOfInstances ) ;
 
 		    return true;
 	    }
@@ -1204,7 +1181,7 @@ namespace Test.OOP.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="i_instanceIndex">External instance ID to add.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance to add.</param>
-	    private void _NodeInstanceSubAdd ( int i_nodeIndex, int i_instanceID, Bounds instanceBounds ) 
+	    private void _NodeInstanceSubAdd ( int i_nodeIndex, int i_instanceID, Bounds instanceBounds, int i_requiredNumberOfInstances ) 
         {
 
 		    // We know it fits at this level if we've got this far
@@ -1216,10 +1193,10 @@ namespace Test.OOP.Octree
             
                 _AssingInstance2Node ( i_nodeIndex, i_instanceID, instanceBounds ) ;
             
-                if ( i_instancesSpareLastIndex == 0 )
+                if ( i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > l_instancesBounds.Count )
                 {
                     // Add some spares if needed.
-                    _AddInstanceSpares ( ) ;                
+                    _AddInstanceSpares ( i_requiredNumberOfInstances ) ;                
                 }
                 else
                 {
@@ -1284,8 +1261,9 @@ namespace Test.OOP.Octree
 
 					        // Does it fit?
 					        if ( _Encapsulates ( childBounds, existingInstanceBounds ) ) 
-                            {                            
-						        _NodeInstanceSubAdd ( l_nodeChildrenNodesIndex [i_bestChildIndex], i_existingInsanceID, existingInstanceBounds ) ; // Go a level deeper				
+                            {                   
+                                i_requiredNumberOfInstances = l_nodeChildrenCount.Count ;
+						        _NodeInstanceSubAdd ( l_nodeChildrenNodesIndex [i_bestChildIndex], i_existingInsanceID, existingInstanceBounds, i_requiredNumberOfInstances ) ; // Go a level deeper				
                             
                                 // Remove from here
                                 _PutBackSpareInstance ( i_instanceIndexOffset, i_nodeIndex ) ;
@@ -1301,18 +1279,19 @@ namespace Test.OOP.Octree
                 i_bestChildIndex            = i_childrenIndexOffset + i_bestFitChildLocalIndex ;
 
 			    if ( _Encapsulates ( l_nodeChildrenBounds [i_bestChildIndex], instanceBounds ) ) 
-                {                         
-				    _NodeInstanceSubAdd ( l_nodeChildrenNodesIndex [i_bestChildIndex], i_instanceID, instanceBounds );
+                {                             
+                    i_requiredNumberOfInstances = l_nodeChildrenCount.Count ;
+				    _NodeInstanceSubAdd ( l_nodeChildrenNodesIndex [i_bestChildIndex], i_instanceID, instanceBounds, i_requiredNumberOfInstances );
 			    }
 			    else 
                 {
                 
                     _AssingInstance2Node ( i_nodeIndex, i_instanceID, instanceBounds ) ;
 
-                    if ( i_instancesSpareLastIndex == 0 )
+                    if ( i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > l_instancesBounds.Count )
                     {
                         // Add some spares if needed.
-                        _AddInstanceSpares ( ) ;                
+                        _AddInstanceSpares ( i_requiredNumberOfInstances ) ;                
                     }
                     else
                     {
@@ -1640,16 +1619,18 @@ namespace Test.OOP.Octree
         /// <summary>
         /// Add required new spare instances.
         /// </summary>
-        private void _AddInstanceSpares ( )
+        private void _AddInstanceSpares ( int i_requiredNumberOfInstances )
         {
 
             i_instancesSpareLastIndex -- ;
 
         
             int i_initialSparesCount = l_instancesID.Count ;
+            int i_spareInstances2AddCount = i_requiredNumberOfInstances - i_initialSparesCount ;
         
             // Add new spares, from the end of storage.
-            for ( int i = 0; i < numOfSpareInstances2Add; i ++ )
+            for ( int i = 0; i < i_spareInstances2AddCount; i ++ )
+            // for ( int i = 0; i < numOfSpareInstances2Add; i ++ )
             {        
                 // Need to expand spare store.
                 l_instancesSpare.Add ( -1 ) ;
@@ -1658,13 +1639,16 @@ namespace Test.OOP.Octree
             }
 
             // Populate indexes references, with new spares.
-            for ( int i = 0; i < numOfSpareInstances2Add; i ++ )
+            
+            for ( int i = 0; i < i_spareInstances2AddCount; i ++ )
+            // for ( int i = 0; i < numOfSpareInstances2Add; i ++ )
             {
                 i_instancesSpareLastIndex ++ ;
 
                 // Add new spares.
                 // Add spares in reversed order, from higher index, to lower index.
-                l_instancesSpare [i_instancesSpareLastIndex] = i_initialSparesCount + numOfSpareInstances2Add - i - 1 ;                     
+                l_instancesSpare [i_instancesSpareLastIndex] = i_initialSparesCount + i_spareInstances2AddCount - i - 1 ;                     
+                // l_instancesSpare [i_instancesSpareLastIndex] = i_initialSparesCount + numOfSpareInstances2Add - i - 1 ;                     
             
             }
                 
