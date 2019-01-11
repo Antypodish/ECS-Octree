@@ -218,6 +218,8 @@ namespace ECS.Octree
 
 		    if ( !CommonMethods._Encapsulates ( nodeBufferElement.bounds, instanceBounds ) ) return false ; // Early exit
 
+            int i_requiredNumberOfInstances = a_nodesBuffer.Length ;  // l_nodeBounds.Count ;
+
             _NodeInstanceSubAdd ( 
                 ref rootNodeData, 
                 rootNodeData.i_rootNodeIndex, 
@@ -229,7 +231,8 @@ namespace ECS.Octree
                 ref a_nodeChildrenBuffer, 
                 ref a_nodeInstancesIndexBuffer, 
                 ref a_instanceBuffer, 
-                ref a_instancesSpareIndexBuffer 
+                ref a_instancesSpareIndexBuffer, 
+                i_requiredNumberOfInstances 
             ) ;
 
 		    return true;
@@ -388,7 +391,7 @@ namespace ECS.Octree
         /// <param name="i_instanceID">External instance index, ot unique entity index.</param>
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance to add.</param>
-	    static private void _NodeInstanceSubAdd ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private void _NodeInstanceSubAdd ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances ) 
         {
 
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
@@ -402,11 +405,12 @@ namespace ECS.Octree
             {
             
                 _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
-                            
-                if ( rootNodeData.i_instancesSpareLastIndex == 0 )
+                   
+                // a_nodesBuffer
+                if ( rootNodeData.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
                 {
                     // Add some spares if needed.
-                    CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer ) ;              
+                    CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfInstances ) ;              
                 }
                 else
                 {
@@ -492,7 +496,8 @@ namespace ECS.Octree
                                     ref a_nodeChildrenBuffer, 
                                     ref a_nodeInstancesIndexBuffer, 
                                     ref a_instanceBuffer, 
-                                    ref a_instancesSpareIndexBuffer 
+                                    ref a_instancesSpareIndexBuffer, 
+                                    i_requiredNumberOfInstances
                                 ) ; // Go a level deeper
 						        		
                             
@@ -528,7 +533,8 @@ namespace ECS.Octree
                         ref a_nodeChildrenBuffer, 
                         ref a_nodeInstancesIndexBuffer, 
                         ref a_instanceBuffer, 
-                        ref a_instancesSpareIndexBuffer 
+                        ref a_instancesSpareIndexBuffer, 
+                        i_requiredNumberOfInstances 
                     ) ;
 			    }
 			    else 
@@ -536,10 +542,10 @@ namespace ECS.Octree
                 
                     _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
                     
-                    if ( rootNodeData.i_instancesSpareLastIndex == 0 )
+                    if ( rootNodeData.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
                     {
                         // Add some spares if needed.
-                        CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer ) ;                
+                        CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfInstances ) ;                
                     }
                     else
                     {

@@ -56,7 +56,7 @@ namespace ECS.Octree.Examples
             EntityManager.AddComponentData ( rayEntity, new RayData () ) ; 
             EntityManager.AddComponentData ( rayEntity, new RayMaxDistanceData ()
             {
-                f = 100f
+                f = 1000f
             } ) ; 
 
 
@@ -103,8 +103,8 @@ namespace ECS.Octree.Examples
 
                 // Add
 
-                int i_instances2AddCount = 100 ;
-                NativeArray <Entity> a_instanceEntities =Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
+                int i_instances2AddCount = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 10000
+                NativeArray <Entity> a_instanceEntities = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
                 // Request to add n instances.
                 // User is responsible to ensure, that instances IDs are unique in the octrtree.
@@ -114,7 +114,7 @@ namespace ECS.Octree.Examples
                 Common._RequesAddInstances ( ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
 
 
-
+                
                 // Remove
                 
                 EntityManager.AddBuffer <RemoveInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were removed, component will be deleted.
@@ -122,13 +122,13 @@ namespace ECS.Octree.Examples
                 
                 // Request to remove some instances
                 // Se inside method, for details
-                int i_instances2RemoveCount = 53 ;
+                int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount = 53 ; // Example of x octrees instances / entities to delete. // 53
                 Common._RequestRemoveInstances ( ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
                 
                 
                 // Ensure example array is disposed.
                 a_instanceEntities.Dispose () ;
-
+                
             } // for
 
 

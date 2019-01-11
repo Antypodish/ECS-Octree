@@ -17,7 +17,7 @@ namespace ECS.Octree.Examples
         static public NativeArray <Entity> _CreateInstencesArray ( EntityManager entityManager, int i_instances2AddCount )
         {
             
-            NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( 100, Allocator.Temp ) ;
+            NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
 
             for ( int i_instanceID = 0; i_instanceID < i_instances2AddCount; i_instanceID ++ )
             {  
@@ -45,9 +45,10 @@ namespace ECS.Octree.Examples
                 Entity newBlockEntity = a_instanceEntities [i_instanceEntityIndex] ;
                 i_instanceEntityIndex ++ ;
                 
-                int x = i_instanceID % 10 ;
-                int y = (int) math.floor ( i_instanceID / 10 ) ;
-                float3 f3_blockCenter = new float3 ( x, 0, y ) + new float3 ( 1, 1, 1 )  * 0.5f ;
+                int x = i_instanceID % 1000 ;
+                int y = i_instanceID % 100 ;
+                int z = (int) math.floor ( i_instanceID / 1000 ) ;
+                float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 )  * 0.5f ;
 
                 Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
 
@@ -55,7 +56,7 @@ namespace ECS.Octree.Examples
 
                 // Bounds of instance node, 
                 // hence entity block as well.
-                Bounds bounds = new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ;
+                Bounds bounds = new Bounds () { center = f3_blockCenter, size = new float3 ( 1, 1, 1 ) * 1 } ;
                 
                 AddInstanceBufferElement addInstanceBuffer = new AddInstanceBufferElement () 
                 {
@@ -88,9 +89,12 @@ namespace ECS.Octree.Examples
                 Entity removeEntity = a_instanceEntities [i_instanceEntityIndex] ;                 
                 i_instanceEntityIndex ++ ;
 
-                int x = i_instanceID % 10 ;
-                int y = Mathf.FloorToInt ( i_instanceID / 10 ) ;
-//              Debug.Log ( "Test instance remove #" + i_instanceID + " x: " + x + " y: " + y ) ;
+                /*
+                int x = i_instanceID % 50 ;
+                int y = i_instanceID % 5 ;
+                int z = Mathf.FloorToInt ( i_instanceID / 50 ) ;
+                Debug.Log ( "Test instance remove #" + i_instanceID + " x: " + x + " y: " + y + " z: " + z ) ;
+*/
                                          
                 RemoveInstanceBufferElement removeInstanceBuffer = new RemoveInstanceBufferElement () 
                 {

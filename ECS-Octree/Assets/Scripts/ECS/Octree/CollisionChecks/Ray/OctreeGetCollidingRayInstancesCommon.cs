@@ -122,13 +122,13 @@ namespace ECS.Octree
             float f_distance ;
             
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
-
+            
 		    if ( !nodeBuffer.bounds.IntersectRay ( checkRay, out f_distance ) || f_distance > f_maxDistance ) 
             {
 			    return isCollidingData.i_collisionsCount > 0 ? true : false ; 
 		    }
 
-            if ( nodeBuffer.i_instancesCount >= 0 ) 
+            if ( nodeBuffer.i_instancesCount > 0 ) 
             {            
                 int i_nodeInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
 
@@ -139,7 +139,7 @@ namespace ECS.Octree
                 {
             
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
-
+                    
                     // Get index of instance
                     int i_instanceIndex = nodeInstancesIndexBuffer.i ;
                 
@@ -149,6 +149,7 @@ namespace ECS.Octree
 
                         InstanceBufferElement instanceBuffer = a_instanceBuffer [i_instanceIndex] ;
 
+                        
 			            if ( instanceBuffer.bounds.IntersectRay ( checkRay, out f_distance) && f_distance <= f_maxDistance ) 
                         {
 
@@ -179,6 +180,7 @@ namespace ECS.Octree
                             isCollidingData.i_collisionsCount ++ ;
 
 			            }
+
                     }
             
 		        }

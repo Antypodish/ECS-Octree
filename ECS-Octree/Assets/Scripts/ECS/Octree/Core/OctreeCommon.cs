@@ -35,19 +35,19 @@ namespace ECS.Octree
                 {
 
                     // Add spares in reversed order, from higher index, to lower index.
-                    nodeSpareBuffer.i                                  = -1 ;
+                    nodeSpareBuffer.i                                      = -1 ;
                     a_nodeSparesBuffer.Add ( nodeSpareBuffer ) ;
                     rootNodeData.i_nodeSpareLastIndex ++ ;
-                    nodeSpareBuffer.i                                  = i_initialSparesCount - i ;
+                    nodeSpareBuffer.i                                      = i_initialSparesCount - i ;
                     a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex] = nodeSpareBuffer;
 
-                    nodeBuffer.f_baseLength                            = -1 ;
-                    nodeBuffer.f_adjLength                             = -1 ;
-                    nodeBuffer.f3_center                               = float3.zero ;
-                    nodeBuffer.bounds                                  = new Bounds () ;
+                    nodeBuffer.f_baseLength                                = -1 ;
+                    nodeBuffer.f_adjLength                                 = -1 ;
+                    nodeBuffer.f3_center                                   = float3.zero ;
+                    nodeBuffer.bounds                                      = new Bounds () ;
                     a_nodesBuffer.Add ( nodeBuffer ) ;
-                    nodeBuffer.i_childrenCount                         = 0 ;
-                    nodeBuffer.i_instancesCount                        = 0 ;
+                    nodeBuffer.i_childrenCount                             = 0 ;
+                    nodeBuffer.i_instancesCount                            = 0 ;
                            
 
                     for ( int j = 0; j < rootNodeData.i_instancesAllowedCount; j ++ )
@@ -136,13 +136,14 @@ namespace ECS.Octree
         /// <summary>
         /// Add required new spare instances.
         /// </summary>
-        static public void _AddInstanceSpares ( ref RootNodeData rootNodeData, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
+        static public void _AddInstanceSpares ( ref RootNodeData rootNodeData, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances )
         {
 
             rootNodeData.i_instancesSpareLastIndex -- ;
                     
-            int i_initialSparesCount                                   = a_instanceBuffer.Length ;
-        
+            int i_initialSparesCount                                   = a_instanceBuffer.Length ;        
+            int i_spareInstances2AddCount                              = i_requiredNumberOfInstances - i_initialSparesCount ;
+
             InstancesSpareIndexBufferElement instancesSpareIndexBuffer = new InstancesSpareIndexBufferElement () ;            
             instancesSpareIndexBuffer.i                                = -1 ;
 
@@ -151,8 +152,9 @@ namespace ECS.Octree
             instanceBuffer.i_ID                                        = -1 ;
             instanceBuffer.i_entityVersion                                   = -1 ; // Optional, used when Id is used as entity index
 
+
             // Add new spares, from the end of storage.
-            for ( int i = 0; i < numOfSpareInstances2Add; i ++ )
+            for ( int i = 0; i < i_spareInstances2AddCount; i ++ )
             {        
                 // Need to expand spare store.
                 a_instancesSpareIndexBuffer.Add ( instancesSpareIndexBuffer ) ;
@@ -160,13 +162,13 @@ namespace ECS.Octree
             }
 
             // Populate indexes references, with new spares.
-            for ( int i = 0; i < numOfSpareInstances2Add; i ++ )
+            for ( int i = 0; i < i_spareInstances2AddCount; i ++ )
             {
                 rootNodeData.i_instancesSpareLastIndex ++ ;
 
                 // Add new spares.
                 // Add spares in reversed order, from higher index, to lower index.                
-                instancesSpareIndexBuffer.i                                             = i_initialSparesCount + numOfSpareInstances2Add - i - 1 ;
+                instancesSpareIndexBuffer.i                                             = i_initialSparesCount + i_spareInstances2AddCount - i - 1 ;
                 a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex]    = instancesSpareIndexBuffer ;                   
             
             }

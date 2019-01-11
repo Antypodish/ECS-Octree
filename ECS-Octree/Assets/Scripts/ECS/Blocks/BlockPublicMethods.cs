@@ -59,7 +59,7 @@ namespace ECS.Blocks
         {
             //Debug.Log ( "Requested add new Block #" + blockEntity.Index + " from entity # " + entitySrc.Index + "; at postion " + f3_position ) ;
                           
-            UnityEngine.Debug.LogWarning ( entity ) ;
+//             UnityEngine.Debug.LogWarning ( entity ) ;
 
             ecb.AddComponent ( entity, new AddBlockData { 
  //               referenceNeighbourBlock = entitySrc, 

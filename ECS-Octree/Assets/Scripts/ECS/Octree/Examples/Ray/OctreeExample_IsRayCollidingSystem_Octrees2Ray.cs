@@ -60,7 +60,7 @@ namespace ECS.Octree.Examples
 
             // ***** Initialize Octree ***** //
 
-            int i_octreesCount = 100 ; // Example of x octrees.
+            int i_octreesCount = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 1000
             
             for ( int i_octreeEntityIndex = 0; i_octreeEntityIndex < i_octreesCount; i_octreeEntityIndex ++ ) 
             {
@@ -97,7 +97,7 @@ namespace ECS.Octree.Examples
                 // Add
 
                 int i_instances2AddCount = 100 ;
-                NativeArray <Entity> a_instanceEntities =Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
+                NativeArray <Entity> a_instanceEntities = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
                 // Request to add n instances.
                 // User is responsible to ensure, that instances IDs are unique in the octrtree.
@@ -115,7 +115,7 @@ namespace ECS.Octree.Examples
                 
                 // Request to remove some instances
                 // Se inside method, for details
-                int i_instances2RemoveCount = 53 ;
+                int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount = 53 ; // Example of x octrees instances / entities to delete. // 53
                 Common._RequestRemoveInstances ( ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
                 
                 

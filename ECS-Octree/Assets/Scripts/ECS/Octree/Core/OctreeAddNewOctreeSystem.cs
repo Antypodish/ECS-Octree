@@ -135,7 +135,8 @@ namespace ECS.Octree
                 DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer        = instancesSpareIndexBufferElement [octreeRootNodeEntity] ;    
 
                 // Add some spares if needed.
-                CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer ) ;   
+                int i_requiredNumberOfInstances = CommonMethods.numOfSpareInstances2Add ;
+                CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfInstances ) ;   
             
                     
 
