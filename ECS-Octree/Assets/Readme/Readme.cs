@@ -19,6 +19,10 @@
 
 // By Dobromil K Duda
 
+
+// TODO:
+// Burst dont work with EntityCommandBuffer, need replace, when ECS provide feature - See Octree remove instance, complete instance remove job
+
 // 2019 January 10
 // Debug optimisation, and duplicate code reduction
 // See OctreeExample_Selector.cs for details, to select examples.

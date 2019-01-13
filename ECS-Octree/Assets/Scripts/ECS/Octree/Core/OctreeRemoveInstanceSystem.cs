@@ -248,7 +248,8 @@ namespace ECS.Octree
                 for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
                 {
 
-                    
+                    int i_nodeInstanceIndex = i_nodeInstancesIndexOffset + i ;
+
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
                     int i_existingInstanceIndex = nodeInstancesIndexBuffer.i ;
 
@@ -262,7 +263,7 @@ namespace ECS.Octree
                             removed = true ;
                             
                             // Remove from here
-                            CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_existingInstanceIndex, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
+                            CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_existingInstanceIndex, i_nodeInstanceIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
                             
 /*
                             // Debugging
@@ -275,14 +276,15 @@ namespace ECS.Octree
         // go.transform.localScale = instanceBounds.size ;
     }
 
+       Debug.LogWarning ( "Node: Remove #" + i_nodeIndex ) ;
+    GameObject.Destroy ( GameObject.Find ( "Node " + i_nodeIndex.ToString () ) ) ;
+*/
                             nodeBuffer.i_instancesCount -- ;
                             instanceBuffer.i_ID = -1 ; // Reset
                             a_instanceBuffer [i_existingInstanceIndex] = instanceBuffer ; // Set back
                     
                             
-    Debug.LogWarning ( "Node: Remove #" + i_nodeIndex ) ;
-    GameObject.Destroy ( GameObject.Find ( "Node " + i_nodeIndex.ToString () ) ) ;
-*/
+ 
 				            break;
 			            }
                 
@@ -436,6 +438,7 @@ namespace ECS.Octree
 
 
                         int i_childModeInstancesIndexOffset = i_childNodeIndex * rootNodeData.i_instancesAllowedCount ;
+                        int i_instancesAllowedCount = rootNodeData.i_instancesAllowedCount - 1 ;
 
                         for (int i_unusedInstance = 0; i_unusedInstance < rootNodeData.i_instancesAllowedCount; i_unusedInstance++) 
                         {
@@ -449,11 +452,14 @@ namespace ECS.Octree
                             {
                               
                                 // Iterate through number of children instances.
-			                    for (int j = rootNodeData.i_instancesAllowedCount - 1; j >= 0; j--) 
+                                while ( i_instancesAllowedCount >= 0 ) 
+			                    //for (int j = rootNodeData.i_instancesAllowedCount - 1; j >= 0; j--) 
                                 {
 
+                                    int i_nodeIstancesIndexOffset = i_childModeInstancesIndexOffset + i_instancesAllowedCount ;
+
                                     // Store old instance index
-                                    nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_childModeInstancesIndexOffset + j] ;
+                                    nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeIstancesIndexOffset] ;
                                     int i_childInstanceIndex = nodeInstancesIndexBuffer.i ;
                                     
                                 
@@ -470,13 +476,21 @@ namespace ECS.Octree
                                         
                 
                                         nodeInstancesIndexBuffer.i                                       = -1 ; // Reset
-                                        a_nodeInstancesIndexBuffer [i_childModeInstancesIndexOffset + j] = nodeInstancesIndexBuffer ; // Set back
+                                        a_nodeInstancesIndexBuffer [i_nodeIstancesIndexOffset]           = nodeInstancesIndexBuffer ; // Set back
                                         
                                         nodeBuffer                                                       = a_nodesBuffer [i_childNodeIndex] ;
                                         nodeBuffer.i_instancesCount -- ;
                                         a_nodesBuffer [i_childNodeIndex]                                 = nodeBuffer ; // Set back
                                         
                                         i_childNodeInstanceCount -- ;
+                                                         
+                                        i_instancesAllowedCount -- ;
+
+                                        break ;
+                                    }
+                                    else
+                                    {
+                                        i_instancesAllowedCount -- ;
                                     }
 
 

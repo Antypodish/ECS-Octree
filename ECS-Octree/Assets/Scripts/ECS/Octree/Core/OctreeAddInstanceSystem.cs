@@ -328,9 +328,8 @@ namespace ECS.Octree
 					    yDirection                      = i > 3 ? -1 : 1;
 					    zDirection                      = (i < 2 || (i > 3 && i < 6)) ? -1 : 1;
 
-                        InstancesSpareIndexBufferElement instancesSpareIndexBuffer ;
-                        instancesSpareIndexBuffer               = a_instancesSpareIndexBuffer [rootNodeData.i_nodeSpareLastIndex] ;
-                        int i_newNodeIndex                      = instancesSpareIndexBuffer.i ; // Expected output 0 at initialization                        
+                        nodeSparesBuffer                        = a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex] ;
+                        int i_newNodeIndex                      = nodeSparesBuffer.i ; // Expected output 0 at initialization      
                         rootNodeData.i_nodeSpareLastIndex -- ;  
 
                         float3 f3_childVector                   = f3_newCenter + new float3 ( xDirection * f_half, yDirection * f_half, zDirection * f_half ) ;

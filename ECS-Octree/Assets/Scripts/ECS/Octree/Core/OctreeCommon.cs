@@ -84,7 +84,7 @@ namespace ECS.Octree
         static public void _SetValues ( RootNodeData rootNodeData, int i_nodeIndex, float f_baseLength, float3 f3_center, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer ) 
         {
 
-            NodeBufferElement nodeBuffer       = new NodeBufferElement () ;
+            NodeBufferElement nodeBuffer       = a_nodesBuffer [i_nodeIndex] ;
             
             nodeBuffer.f_baseLength            = f_baseLength ;
             nodeBuffer.f3_center               = f3_center ;
@@ -188,11 +188,11 @@ namespace ECS.Octree
         
             rootNodeData.i_instancesSpareLastIndex ++ ; // Put back to spare
 
+            // Is assumed, that size of spares store, is appropriate.
             InstancesSpareIndexBufferElement instancesSpareIndexBuffer = new InstancesSpareIndexBufferElement () ;
             instancesSpareIndexBuffer.i = i_instanceIndex ;
             a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex] = instancesSpareIndexBuffer ;
                     
-            // Is assumed, that size of spares store, is appropriate.
             NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = new NodeInstancesIndexBufferElement () ;
             nodeInstancesIndexBuffer.i = -1 ; // Reset instance index.
             a_nodeInstancesIndexBuffer [i_nodeIntstanceIndex] = nodeInstancesIndexBuffer ;
