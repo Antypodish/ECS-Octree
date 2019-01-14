@@ -632,8 +632,6 @@ namespace ECS.Octree
                             {
 						        i_bestFit = newBestFit ;
 					        }
-
-                            break ;
 				        }
 				        else 
                         {

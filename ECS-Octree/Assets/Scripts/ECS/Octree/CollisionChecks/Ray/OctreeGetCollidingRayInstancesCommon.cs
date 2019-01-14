@@ -137,7 +137,6 @@ namespace ECS.Octree
 		        // Check against any objects in this node
                 for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
                 {
-            
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
                     
                     // Get index of instance

@@ -9,7 +9,7 @@ public class TestOctree_origin : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        boundsOctree = new BoundsOctree <int> ( 8, Vector3.zero, 1, 1 ) ;
+        boundsOctree = new BoundsOctree <int> ( 4, Vector3.one * 0.5f, 1, 1f ) ;
         // boundsOctree = new BoundsOctree <int> ( 10, Vector3.zero, 4, 1 ) ;
 
         //boundsOctree.Add ( 10, new Bounds () { center = Vector3.one * 5, size = Vector3.one * 5 } ) ;
@@ -21,8 +21,19 @@ public class TestOctree_origin : MonoBehaviour
         //boundsOctree.Add ( 5, new Bounds () { center = new Vector3 ( 0, 0, 5 ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
         //boundsOctree.Add ( 6, new Bounds () { center = new Vector3 ( 1, 0, 6 ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
 
+        for ( int i = 0; i < 3; i ++ )
+        {            
+            int x = i == 0 ? 0 : 1 ;
+            // Debug.LogWarning ( "x: " + i + "; " + ((float) i % 10f ) ) ;
+            int y = 0 ;
+            int z = -i ;
+            Debug.Log ( "Test instance spawn #" + i + " x: " + x + " y: " + y ) ;
+            boundsOctree.Add ( i, new Bounds () { center = new Vector3 ( x, y, z ) + Vector3.one * 0.0f, size = Vector3.one * 1 + Vector3.right * 2 } ) ;
+            // _OctreeAddInstance ( i, new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
+        }
 
-        
+        boundsOctree.Remove ( 1 ) ;
+        /*
         for ( int i = 0; i < 100; i ++ )
         {            
             int x = i % 10 ;
@@ -32,7 +43,7 @@ public class TestOctree_origin : MonoBehaviour
             boundsOctree.Add ( i, new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
             // _OctreeAddInstance ( i, new Bounds () { center = new Vector3 ( x, 0, y ) + Vector3.one * 0.5f, size = Vector3.one * 1 } ) ;
         }
-        
+        */
         
 
 //        boundsOctree.Remove ( 11 ) ;
