@@ -139,6 +139,7 @@ namespace ECS.Octree
 
 		            // Add object or expand the octree until it can be added
 		            int i_count = 0; // Safety check against infinite/excessive growth
+                    bool isInstanceAdded = false ;
 
 		            while ( 
                         !_AddNodeInstance ( ref rootNodeData, 
@@ -150,7 +151,8 @@ namespace ECS.Octree
                             a_nodeChildrenBuffer, 
                             ref a_nodeInstancesIndexBuffer,
                             ref a_instanceBuffer, 
-                            ref a_instancesSpareIndexBuffer 
+                            ref a_instancesSpareIndexBuffer,
+                            out isInstanceAdded
                         ) 
                     ) 
                     {
@@ -211,16 +213,18 @@ namespace ECS.Octree
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance.</param>
 	    /// <returns>True if the object fits entirely within this node.</returns>
-	    static private bool _AddNodeInstance ( ref RootNodeData rootNodeData, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private bool _AddNodeInstance ( ref RootNodeData rootNodeData, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, out bool isInstanceAdded ) 
         {
+
+            isInstanceAdded = false ;
 
             NodeBufferElement nodeBufferElement = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
 
 		    if ( !CommonMethods._Encapsulates ( nodeBufferElement.bounds, instanceBounds ) ) return false ; // Early exit
 
-            int i_requiredNumberOfInstances = a_nodesBuffer.Length ;  // l_nodeBounds.Count ;
+            int i_requiredNumberOfInstances = a_nodeInstancesIndexBuffer.Length ;  // l_nodeBounds.Count ;
 
-            _NodeInstanceSubAdd ( 
+            isInstanceAdded = _NodeInstanceSubAdd ( 
                 ref rootNodeData, 
                 rootNodeData.i_rootNodeIndex, 
                 i_instanceID, 
@@ -390,12 +394,13 @@ namespace ECS.Octree
         /// <param name="i_instanceID">External instance index, ot unique entity index.</param>
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance to add.</param>
-	    static private void _NodeInstanceSubAdd ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances ) 
+	    static private bool _NodeInstanceSubAdd ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances ) 
         {
 
-            NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
+            bool isInstanceAdded = false ;
 
-            
+            NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
+                        
 		    // We know it fits at this level if we've got this far
 		    // Just add if few objects are here, or children would be below min size
             int i_instancesCount = nodeBuffer.i_instancesCount ;
@@ -472,44 +477,50 @@ namespace ECS.Octree
                         {
 
                             InstanceBufferElement existingInstanceBuffer = a_instanceBuffer [i_instanceIndexOffset] ;
-                        					    
-					        // Find which child the object is closest to based on, where the
-					        // object's center is located in relation to the octree's center.
-					        i_bestFitChildLocalIndex = CommonMethods._BestFitChild ( i_nodeIndex, existingInstanceBuffer.bounds, a_nodesBuffer ) ;
+                        		
+                            if ( existingInstanceBuffer.i_ID >= 0 )
+                            {
 
-                            i_bestChildIndex = i_childrenIndexOffset + i_bestFitChildLocalIndex ;
-                            nodeChildrenBuffer = a_nodeChildrenBuffer [i_bestChildIndex] ;
+					            // Find which child the object is closest to based on, where the
+					            // object's center is located in relation to the octree's center.
+					            i_bestFitChildLocalIndex = CommonMethods._BestFitChild ( i_nodeIndex, existingInstanceBuffer.bounds, a_nodesBuffer ) ;
+
+                                i_bestChildIndex = i_childrenIndexOffset + i_bestFitChildLocalIndex ;
+                                nodeChildrenBuffer = a_nodeChildrenBuffer [i_bestChildIndex] ;
                             
 
-					        // Does it fit?
-					        if ( CommonMethods._Encapsulates ( nodeChildrenBuffer.bounds, existingInstanceBuffer.bounds ) ) 
-                            {                            
-                                _NodeInstanceSubAdd ( 
-                                    ref rootNodeData, 
-                                    nodeChildrenBuffer.i_nodesIndex, 
-                                    existingInstanceBuffer.i_ID, 
-                                    existingInstanceBuffer.i_entityVersion,
-                                    existingInstanceBuffer.bounds, 
-                                    ref a_nodesBuffer, 
-                                    ref a_nodeSparesBuffer, 
-                                    ref a_nodeChildrenBuffer, 
-                                    ref a_nodeInstancesIndexBuffer, 
-                                    ref a_instanceBuffer, 
-                                    ref a_instancesSpareIndexBuffer, 
-                                    i_requiredNumberOfInstances
-                                ) ; // Go a level deeper
+					            // Does it fit?
+					            if ( CommonMethods._Encapsulates ( nodeChildrenBuffer.bounds, existingInstanceBuffer.bounds ) ) 
+                                {                            
+                                    isInstanceAdded =_NodeInstanceSubAdd ( 
+                                        ref rootNodeData, 
+                                        nodeChildrenBuffer.i_nodesIndex, 
+                                        existingInstanceBuffer.i_ID, 
+                                        existingInstanceBuffer.i_entityVersion,
+                                        existingInstanceBuffer.bounds, 
+                                        ref a_nodesBuffer, 
+                                        ref a_nodeSparesBuffer, 
+                                        ref a_nodeChildrenBuffer, 
+                                        ref a_nodeInstancesIndexBuffer, 
+                                        ref a_instanceBuffer, 
+                                        ref a_instancesSpareIndexBuffer, 
+                                        i_requiredNumberOfInstances
+                                    ) ; // Go a level deeper
 						        		
                             
-                                // Remove from here
-                                CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_instanceIndexOffset, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
+                                    // Remove from here
+                                    CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_instanceIndexOffset, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
 
-                                nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
-                                nodeBuffer.i_instancesCount -- ;
-                                a_nodesBuffer [i_nodeIndex] = nodeBuffer ;
-					        }
+                                    nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
+                                    nodeBuffer.i_instancesCount -- ;
+                                    a_nodesBuffer [i_nodeIndex] = nodeBuffer ;
+					            }
+                            }
+
                         }
                     
 				    }
+
 			    }
 
 
@@ -521,7 +532,8 @@ namespace ECS.Octree
 
 			    if ( CommonMethods._Encapsulates ( nodeChildrenBuffer.bounds, instanceBounds ) ) 
                 {                 
-                    _NodeInstanceSubAdd ( 
+
+                    isInstanceAdded = _NodeInstanceSubAdd ( 
                         ref rootNodeData, 
                         nodeChildrenBuffer.i_nodesIndex, 
                         i_instanceID, 
@@ -561,6 +573,8 @@ newGameObject.name = i_instanceID.ToString () ;
 
 			    }
 		    }
+
+            return isInstanceAdded ;
 
 	    }
 
