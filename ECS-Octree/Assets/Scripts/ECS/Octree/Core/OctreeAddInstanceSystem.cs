@@ -148,7 +148,7 @@ namespace ECS.Octree
                             addInstanceBuffer.instanceBounds, 
                             ref a_nodesBuffer, 
                             ref a_nodeSparesBuffer, 
-                            a_nodeChildrenBuffer, 
+                            ref a_nodeChildrenBuffer, 
                             ref a_nodeInstancesIndexBuffer,
                             ref a_instanceBuffer, 
                             ref a_instancesSpareIndexBuffer,
@@ -213,7 +213,7 @@ namespace ECS.Octree
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance.</param>
 	    /// <returns>True if the object fits entirely within this node.</returns>
-	    static private bool _AddNodeInstance ( ref RootNodeData rootNodeData, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, out bool isInstanceAdded ) 
+	    static private bool _AddNodeInstance ( ref RootNodeData rootNodeData, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, out bool isInstanceAdded ) 
         {
 
             isInstanceAdded = false ;
@@ -405,10 +405,10 @@ namespace ECS.Octree
 		    // Just add if few objects are here, or children would be below min size
             int i_instancesCount = nodeBuffer.i_instancesCount ;
 
-            if ( i_instancesCount < rootNodeData.i_instancesAllowedCount || ( nodeBuffer.f_baseLength / 2) < rootNodeData.f_minSize)         
+            if ( nodeBuffer.i_childrenCount == 0 && i_instancesCount < rootNodeData.i_instancesAllowedCount || ( nodeBuffer.f_baseLength / 2) < rootNodeData.f_minSize)             
             {
             
-                _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
+                isInstanceAdded = _AssingInstance2Node ( ref rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
                    
                 // a_nodesBuffer
                 if ( rootNodeData.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
@@ -551,7 +551,7 @@ namespace ECS.Octree
 			    else 
                 {
                 
-                    _AssingInstance2Node ( rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, a_instancesSpareIndexBuffer ) ;
+                    isInstanceAdded = _AssingInstance2Node ( ref rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
                     
                     if ( rootNodeData.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
                     {
@@ -660,7 +660,7 @@ newGameObject.name = i_instanceID.ToString () ;
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
         /// // Optional, used when Id is used as entity index
         /// <param name="instanceBounds">Boundary of external instance index.</param>
-        static private void _AssingInstance2Node ( RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
+        static private bool _AssingInstance2Node ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
         {
             int i_nodeInstanceIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
 
@@ -668,7 +668,10 @@ newGameObject.name = i_instanceID.ToString () ;
             InstancesSpareIndexBufferElement instancesSpareIndexBuffer = a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex] ;   
 
             NodeInstancesIndexBufferElement nodeInstancesIndexBuffer ;
+            
+            bool isInstanceAdded = false ;
 
+            // Find next spare instance allocation for this node.
             // Find next spare instance allocation for this node.
             for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
             {
@@ -683,9 +686,94 @@ newGameObject.name = i_instanceID.ToString () ;
                     // Assign instance index.
                     nodeInstancesIndexBuffer.i = instancesSpareIndexBuffer.i ;
                     a_nodeInstancesIndexBuffer [i_instanceIndexOffset] = nodeInstancesIndexBuffer ; // Set back.
+
+                    isInstanceAdded = true ;
+
                     break ;
                 }
-            }
+
+            } // for
+
+            if ( !isInstanceAdded )
+            {
+                    
+
+                // Node has 8 children and an more instances, than capacity.
+                // Try to move instance to child, with instance space.
+                // if ( i_instancesCount < rootNodeData.i_instancesAllowedCount && i_childrenCount > 0 )
+                    
+                // Iterate though node's children
+                for ( int i_childIndex = 0; i_childIndex < 8; i_childIndex ++ )
+                {
+                    int i_childIndexOffset = i_nodeIndex * 8 + i_childIndex ;
+
+                    NodeChildrenBufferElement nodeChildrenBuffer = a_nodeChildrenBuffer [i_childIndexOffset] ;
+                        
+                    // Check if instance bounds fit in child
+                    if ( CommonMethods._Encapsulates ( nodeChildrenBuffer.bounds, instanceBounds ) ) 
+                    {
+                        //NodeBufferElement childNode = a_nodesBuffer [nodeChildrenBuffer.i_nodesIndex] ;
+                            
+                        // Debug.LogWarning ( "ChNode: " + childNode.i_instancesCount + "; " + childNode.bounds ) ;
+
+
+                        int i_requiredNumberOfInstances = a_nodeInstancesIndexBuffer.Length ;  // l_nodeBounds.Count ;
+
+                        isInstanceAdded = _NodeInstanceSubAdd ( 
+                            ref rootNodeData, 
+                            nodeChildrenBuffer.i_nodesIndex, 
+                            i_instanceID, 
+                            i_entityVersion,
+                            instanceBounds, 
+                            ref a_nodesBuffer, 
+                            ref a_nodeSparesBuffer, 
+                            ref a_nodeChildrenBuffer, 
+                            ref a_nodeInstancesIndexBuffer, 
+                            ref a_instanceBuffer, 
+                            ref a_instancesSpareIndexBuffer, 
+                            i_requiredNumberOfInstances 
+                        ) ;
+
+                        if ( isInstanceAdded ) return true ; // Added instance
+
+                    }
+                }
+
+// Debug.LogError ( "Found no child node, to fit instance. Try grow octree." ) ;
+
+                NodeBufferElement nodeBufferElement = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
+                
+                // Try add node at the root
+                
+// Debug.LogError ( "Grow again." ) ;
+                _GrowOctree ( ref rootNodeData, 
+                    (float3) instanceBounds.center - nodeBufferElement.f3_center,
+                    ref a_nodesBuffer, 
+                    ref a_nodeSparesBuffer, 
+                    ref a_nodeChildrenBuffer, 
+                    ref a_nodeInstancesIndexBuffer, 
+                    ref a_instanceBuffer,
+                    ref a_instancesSpareIndexBuffer
+                ) ;
+
+                _AddNodeInstance ( ref rootNodeData, 
+                    i_instanceID,                             
+                    i_entityVersion, 
+                    instanceBounds, 
+                    ref a_nodesBuffer, 
+                    ref a_nodeSparesBuffer, 
+                    ref a_nodeChildrenBuffer, 
+                    ref a_nodeInstancesIndexBuffer,
+                    ref a_instanceBuffer, 
+                    ref a_instancesSpareIndexBuffer, 
+                    out isInstanceAdded
+                ) ;
+                
+// Debug.LogWarning ( "Is instant added? " + (isInstanceAdded? "y" : "n") ) ;
+                return isInstanceAdded ;
+
+            } // if
+
             
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
             nodeBuffer.i_instancesCount ++ ;
@@ -699,6 +787,8 @@ newGameObject.name = i_instanceID.ToString () ;
             } ;
             
             a_instanceBuffer [instancesSpareIndexBuffer.i] = instanceBuffer ;
+
+            return true ;
         }
         
 

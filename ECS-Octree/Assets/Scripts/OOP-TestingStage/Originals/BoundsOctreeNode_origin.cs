@@ -25,7 +25,7 @@ public class BoundsOctreeNode<T> {
 	Bounds[] childBounds;
 	// If there are already numObjectsAllowed in a node, we split it into children
 	// A generally good number seems to be something around 8-15
-	const int numObjectsAllowed = 2;
+	const int numObjectsAllowed = 1;
 
 	// An object in the octree
 	class OctreeObject {

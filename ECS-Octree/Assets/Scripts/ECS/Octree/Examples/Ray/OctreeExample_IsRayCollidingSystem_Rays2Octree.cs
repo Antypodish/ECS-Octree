@@ -44,7 +44,7 @@ namespace ECS.Octree.Examples
             EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
             Entity newOctreeEntity = EntityManager.CreateEntity ( ) ;
             
-            AddNewOctreeSystem._CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1.01f, 1 ) ;
+            AddNewOctreeSystem._CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1.01f ) ;
             
             // EntityManager.AddComponent ( newOctreeEntity, typeof ( IsRayCollidingTag ) ) ;
 

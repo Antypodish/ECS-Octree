@@ -201,12 +201,11 @@ namespace ECS.Octree
     {
         public float f_baseLength ;
         public float f_adjLength ;
-        public float f_minSize ;
         public float3 f3_center ;
             
         public Bounds bounds ;
                   
-        public int i_childrenCount ;
+        public byte i_childrenCount ;
         
         /// <summary>
         /// Count of instances per node.

@@ -171,14 +171,17 @@ namespace ECS.Octree
 
         /// <summary>
 	    /// Constructor for the bounds octree.
-        /// For minimum size of 1 initial size could be for example 1, 2, 4, 8, 16 ect
-        /// For minimum size of 3 initial size could be for example 3, 9, 27, 81 etc
+        /// For minimum size of 1 initial size could be for example 1, 2, 4, 8, 16 ect.
+        /// For minimum size of 3 initial size could be for example 3, 9, 27, 81 etc.
+        /// Also:
+        /// Size 2 per node, with up to 16 instances per node (1x1x1 size each);
+        /// Size 4 per node, with up to 64 instances per node (1x1x1 size each); Less memory usage, but more cpu demanding (for searching and removing elements).
 	    /// </summary>
 	    /// <param name="f_initialSize">Size of the sides of the initial node, in metres. The octree will never shrink smaller than this.</param>
 	    /// <param name="f3_initialPosition">Position of the centre of the initial node.</param>
 	    /// <param name="f_minNodeSize">Nodes will stop splitting if the new nodes would be smaller than this (metres).</param>
 	    /// <param name="f_looseness">Clamped between 1 and 2. Values > 1 let nodes overlap.</param>
-        static public void _CreateNewOctree ( EntityCommandBuffer ecb, Entity newOctreeEntity, float f_initialSize, float3 f3_initialPosition, float f_minNodeSize, float f_looseness, int i_instancesAllowedCount )
+        static public void _CreateNewOctree ( EntityCommandBuffer ecb, Entity newOctreeEntity, float f_initialSize, float3 f3_initialPosition, float f_minNodeSize, float f_looseness )
         {
                         
             Debug.Log ( "Create new octree #" + newOctreeEntity.Index ) ;
@@ -198,6 +201,10 @@ namespace ECS.Octree
 			    f_minNodeSize = f_initialSize;
 		    }
 
+            // Minimum size to power 3
+            // For example, size of 2, gives 8 instances per node
+            int i_instancesAllowedInNodeCount = (int) math.round ( f_minNodeSize * f_minNodeSize * f_minNodeSize ) ;
+
             RootNodeData rootNodeData = new RootNodeData ()
             {
                 i_rootNodeIndex             = 0,
@@ -211,7 +218,7 @@ namespace ECS.Octree
                 i_instancesSpareLastIndex   = 0,
                 i_nodeSpareLastIndex        = 0,
 
-                i_instancesAllowedCount     = i_instancesAllowedCount
+                i_instancesAllowedCount     = i_instancesAllowedInNodeCount
             } ;
 
 
