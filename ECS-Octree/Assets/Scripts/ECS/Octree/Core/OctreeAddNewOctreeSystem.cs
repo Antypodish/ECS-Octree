@@ -9,29 +9,26 @@ using UnityEngine ;
 namespace Antypodish.ECS.Octree
 {
 
-
-    public class AddNewOctreeBarrier : BarrierSystem {} ;
-
-    
     public class AddNewOctreeSystem : JobComponentSystem
     {
 
-        [Inject] private AddNewOctreeBarrier barrier ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
+
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
 
             Debug.Log ( "Start Add New Octree System" ) ;
             Debug.LogWarning ( "TODO: Replace instance with entity?" ) ;
             Debug.LogWarning ( "TODO: incomplete Get max bounds?" ) ;
 
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
             
-            group = GetComponentGroup ( 
+            group = GetComponentGroup 
+            ( 
                 typeof (AddNewOctreeData)    
             ) ;
-            
-            base.OnCreateManager ( );
 
         }
 
@@ -70,7 +67,7 @@ namespace Antypodish.ECS.Octree
             var finalizeInitialisationOctreeJob = new FinalizeInitialisationOctreeJob 
             {
                 
-                ecb                                 = barrier.CreateCommandBuffer ().ToConcurrent (),                
+                ecb                                 = eiecb.CreateCommandBuffer ().ToConcurrent (),                
                 a_newOctreeEntities                 = group.GetEntityArray ()
 
             }.Schedule ( i_groupLength, 8, initialiseOctreeJob ) ;

@@ -1,4 +1,5 @@
-﻿using Unity.Entities ;
+﻿using Unity.Collections ;
+using Unity.Entities ;
 using UnityEngine ;
 
 
@@ -11,11 +12,11 @@ namespace Antypodish.ECS.Octree
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="a_collisionChecksEntities"></param>
+        /// <param name="na_collisionChecksEntities"></param>
         /// <param name="a_isCollidingData"></param>
         /// <param name="collisionInstancesBufferElement"></param>
         /// <param name="canDebugAllChecks">Debug Log all checks, or only one (first one)</param>
-        static public void _DebugBounds ( EntityCommandBuffer ecb, EntityArray a_collisionChecksEntities, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, bool canDebugAllChecks )
+        static public void _DebugBounds ( ref EntityCommandBuffer ecb, [ReadOnly] ref NativeArray <Entity> na_collisionChecksEntities, [ReadOnly] ref ComponentDataFromEntity <IsCollidingData> a_isCollidingData, [ReadOnly] ref BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, bool canDebugAllChecks )
         {
 
             // Debug
@@ -23,12 +24,12 @@ namespace Antypodish.ECS.Octree
 
 
             // Debug all, or only one check
-            int i_debugCollisionChecksCount = canDebugAllChecks ? a_collisionChecksEntities.Length : 1 ;
+            int i_debugCollisionChecksCount = canDebugAllChecks ? na_collisionChecksEntities.Length : 1 ;
 
             for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < i_debugCollisionChecksCount; i_collisionChecksIndex ++ )
             {
                   
-                Entity octreeRayEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;
+                Entity octreeRayEntity = na_collisionChecksEntities [i_collisionChecksIndex] ;
               
                 // Last known instances collisions count.
                 IsCollidingData isCollidingData = a_isCollidingData [octreeRayEntity] ;
@@ -71,7 +72,7 @@ namespace Antypodish.ECS.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="checkBounds">Bounds to check. Passing by ref as it improves performance with structs.</param>
 	    /// <param name="l_resultInstanceIDs">List result.</param>
-        static public bool _GetNodeColliding ( RootNodeData octreeRootNodeData, int i_nodeIndex, Bounds checkBounds, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isCollidingData, DynamicBuffer <NodeBufferElement> a_nodesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 	    
+        static public bool _GetNodeColliding ( ref RootNodeData octreeRootNodeData, int i_nodeIndex, Bounds checkBounds, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 	    
         {
 
             // float f_distance ;
@@ -161,7 +162,7 @@ namespace Antypodish.ECS.Octree
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
                     {
-                        _GetNodeColliding ( octreeRootNodeData, i_nodeChildIndex, checkBounds, ref a_collisionInstancesBuffer, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer ) ;
+                        _GetNodeColliding ( ref octreeRootNodeData, i_nodeChildIndex, checkBounds, ref a_collisionInstancesBuffer, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) ;
                     }
 			    }
 		    }

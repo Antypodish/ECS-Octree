@@ -12,7 +12,7 @@ namespace Antypodish.ECS.Blocks
         
         EndInitializationEntityCommandBufferSystem eiecb ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             // Cache the EndInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;

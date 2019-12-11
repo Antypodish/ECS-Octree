@@ -8,10 +8,6 @@ using UnityEngine ;
 namespace Antypodish.ECS.Octree
 {
     
-    
-    public class GetCollidingRayInstancesBarrier_Rays2Octree : BarrierSystem {} ;
-
-
     /// <summary>
     /// Ray to octree system, checks one or more rays, against its paired target octree entity.
     /// </summary>
@@ -19,15 +15,16 @@ namespace Antypodish.ECS.Octree
     class GetCollidingRayInstancesSystem_Rays2Octree : JobComponentSystem
     {
         
-        [Inject] private GetCollidingRayInstancesBarrier_Rays2Octree barrier ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
+
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree Get Ray Colliding Instances System" ) ;
-
-            base.OnCreateManager ( );
+            
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
             group = GetComponentGroup ( 
                 typeof (IsActiveTag),
@@ -48,7 +45,7 @@ namespace Antypodish.ECS.Octree
             
             
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;     
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;     
             ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
             ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
             ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData                         = GetComponentDataFromEntity <RayMaxDistanceData> () ;
@@ -74,8 +71,11 @@ namespace Antypodish.ECS.Octree
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData = new ComponentDataFromEntity<RayEntityPair4CollisionData> () ; // As empty.
-            GetCollidingRayInstances_Common._DebugRays ( ref barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, collisionInstancesBufferElement, a_rayEntityPair4CollisionData, false, false ) ;
 
+            EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
+            GetCollidingRayInstances_Common._DebugRays ( ref ecb, ref na_collisionChecksEntities, ref a_rayData, ref a_rayMaxDistanceData, ref a_isCollidingData, ref collisionInstancesBufferElement, ref a_rayEntityPair4CollisionData, false, false ) ;
+
+            eiecb.AddJobHandleForProducer ( inputDeps ) ;
             
             // Test ray 
             Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
@@ -84,10 +84,10 @@ namespace Antypodish.ECS.Octree
 
             int i_groupLength = group.CalculateLength () ;
 
-            var setRayTestJob = new SetRayTestJob 
+            JobHandle setRayTestJobHandle = new SetRayTestJob 
             {
                 
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
 
                 ray                                 = ray,
                 a_rayData                           = a_rayData,
@@ -95,18 +95,17 @@ namespace Antypodish.ECS.Octree
 
             }.Schedule ( i_groupLength, 8, inputDeps ) ;
 
-            var job = new Job 
+            JobHandle jobHandle = new Job 
             {
                 
                 //ecb                                 = ecb,                
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
                 a_octreeEntityPair4CollisionData    = a_octreeEntityPair4CollisionData,
                 a_rayData                           = a_rayData,
                 a_rayMaxDistanceData                = a_rayMaxDistanceData,
                 a_isCollidingData                   = a_isCollidingData,
                 collisionInstancesBufferElement     = collisionInstancesBufferElement,
-
 
                 
                 // Octree entity pair, for collision checks
@@ -120,9 +119,11 @@ namespace Antypodish.ECS.Octree
                 nodeChildrenBufferElement           = nodeChildrenBufferElement,
                 instanceBufferElement               = instanceBufferElement
 
-            }.Schedule ( i_groupLength, 8, setRayTestJob ) ;
+            }.Schedule ( i_groupLength, 8, setRayTestJobHandle ) ;
 
-            return job ;
+            na_collisionChecksEntities.Dispose () ;
+
+            return jobHandle ;
         }
 
 

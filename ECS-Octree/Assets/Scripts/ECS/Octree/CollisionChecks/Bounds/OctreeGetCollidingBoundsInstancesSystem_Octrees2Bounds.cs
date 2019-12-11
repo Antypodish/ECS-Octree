@@ -8,11 +8,7 @@ using UnityEngine;
 
 namespace Antypodish.ECS.Octree
 {
-
-
-    public class GetCollidingBoundsInstancesBarrier_Octrees2Bounds : BarrierSystem {} ;
-
-
+       
     /// <summary>
     /// Bounds to octree system, checks one or more bounds, against its paired target octree entity.
     /// </summary>
@@ -20,15 +16,16 @@ namespace Antypodish.ECS.Octree
     class GetCollidingBoundsInstancesSystem_Octrees2Bounds : JobComponentSystem
     {
         
-        [Inject] private GetCollidingBoundsInstancesBarrier_Octrees2Bounds barrier ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
+
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree Get Colliding Bounds Instances System" ) ;
-
-            base.OnCreateManager ( );
+            
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
             group = GetComponentGroup ( 
                 typeof (IsActiveTag),
@@ -48,7 +45,7 @@ namespace Antypodish.ECS.Octree
             
             
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;    
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;    
             
             ComponentDataFromEntity <BoundsEntityPair4CollisionData> a_boundsEntityPair4CollisionData = GetComponentDataFromEntity <BoundsEntityPair4CollisionData> () ;
             
@@ -75,8 +72,10 @@ namespace Antypodish.ECS.Octree
             // Test bounds 
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
-            GetCollidingBoundsInstances_Common._DebugBounds ( barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_isCollidingData, collisionInstancesBufferElement, false ) ;
+            EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
+            GetCollidingBoundsInstances_Common._DebugBounds ( ref ecb, ref na_collisionChecksEntities, ref a_isCollidingData, ref collisionInstancesBufferElement, false ) ;
                         
+            eiecb.AddJobHandleForProducer ( inputDeps ) ;
             
             // Test bounds                        
             Bounds checkBounds = new Bounds () 
@@ -88,12 +87,12 @@ namespace Antypodish.ECS.Octree
             int i_groupLength = group.CalculateLength () ;
 
             
-            var setBoundsTestJob = new SetBoundsTestJob 
+            JobHandle setBoundsTestJobHandle = new SetBoundsTestJob 
             {
                 
                 checkBounds                         = checkBounds,
 
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                 a_boundsEntityPair4CollisionData    = a_boundsEntityPair4CollisionData,
                 
                 a_boundsData                        = a_boundsData,
@@ -101,14 +100,11 @@ namespace Antypodish.ECS.Octree
             }.Schedule ( i_groupLength, 8, inputDeps ) ;
             
 
-
-
-
-            var job = new Job 
+            JobHandle jobHandle = new Job 
             {
                 
                 //ecb                                 = ecb,                
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
                 a_boundsEntityPair4CollisionData    = a_boundsEntityPair4CollisionData,
 
@@ -130,9 +126,11 @@ namespace Antypodish.ECS.Octree
                 a_boundsData                        = a_boundsData,
 
 
-            }.Schedule ( i_groupLength, 8, setBoundsTestJob ) ;
+            }.Schedule ( i_groupLength, 8, setBoundsTestJobHandle ) ;
 
-            return job ;
+            na_collisionChecksEntities.Dispose () ;
+
+            return jobHandle ;
         }
 
 
@@ -141,10 +139,14 @@ namespace Antypodish.ECS.Octree
         struct SetBoundsTestJob : IJobParallelFor 
         {
             
-            [ReadOnly] public Bounds checkBounds ;
+            [ReadOnly] 
+            public Bounds checkBounds ;
 
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
-            [ReadOnly] public ComponentDataFromEntity <BoundsEntityPair4CollisionData> a_boundsEntityPair4CollisionData ;
+            [ReadOnly] 
+            public EntityArray a_collisionChecksEntities ;
+
+            [ReadOnly] 
+            public ComponentDataFromEntity <BoundsEntityPair4CollisionData> a_boundsEntityPair4CollisionData ;
 
             [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity <BoundsData> a_boundsData ;           
@@ -242,7 +244,7 @@ namespace Antypodish.ECS.Octree
                     if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
                     {
                     
-                        if ( GetCollidingBoundsInstances_Common._GetNodeColliding ( octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref a_collisionInstancesBuffer, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer ) )
+                        if ( GetCollidingBoundsInstances_Common._GetNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref a_collisionInstancesBuffer, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
                         {   
                             /*
                             // Debug

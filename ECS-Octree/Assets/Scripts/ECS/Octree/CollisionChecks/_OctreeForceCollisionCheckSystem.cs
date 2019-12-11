@@ -13,20 +13,15 @@ namespace Antypodish.ECS.Octree
     class ForceCollisionCheckSystem : JobComponentSystem
     {
 
-
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
 
             group = GetComponentGroup ( 
                 typeof ( ForceCollisionCheckTag )
             ) ;
 
-
-           // EntityManager.CreateEntity ( typeof ( ForceCollisionCheckTag ) ) ;
-
-            base.OnCreateManager ( );
         }
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )

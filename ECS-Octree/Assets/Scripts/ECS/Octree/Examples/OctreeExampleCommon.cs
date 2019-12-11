@@ -32,7 +32,7 @@ namespace Antypodish.ECS.Octree.Examples
 
         // Request to add some instances.
         // User is responsible to ensure, that instances IDs are unique in the octrtree.        
-        static public void _RequesAddInstances ( EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2AddCount )
+        static public void _RequesAddInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2AddCount )
         {
 
             DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [octreeEntity] ;  
@@ -77,7 +77,7 @@ namespace Antypodish.ECS.Octree.Examples
         /// Request to remove some instances.
         /// User is responsible to ensure, that requested instance ID to delete exists in the octree.  
         /// </summary>
-        static public void _RequestRemoveInstances ( EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2RemoveCount )
+        static public void _RequestRemoveInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2RemoveCount )
         {
 
             DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement = removeInstanceBufferElement [octreeEntity] ;  
@@ -106,7 +106,7 @@ namespace Antypodish.ECS.Octree.Examples
                 a_removeInstanceBufferElement.Add ( removeInstanceBuffer ) ;
                 
                 // Actual entity block removal
-                Blocks.PublicMethods._RemoveBlockRequestWithEntity ( ecb, removeEntity ) ;
+                Blocks.PublicMethods._RemoveBlockRequestWithEntity ( ref ecb, removeEntity ) ;
 
             }
 

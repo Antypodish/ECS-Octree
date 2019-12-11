@@ -1,4 +1,5 @@
-﻿using Unity.Entities ;
+﻿using Unity.Collections ;
+using Unity.Entities ;
 using UnityEngine;
 
 
@@ -12,14 +13,14 @@ namespace Antypodish.ECS.Octree
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="a_collisionChecksEntities"></param>
+        /// <param name="na_collisionChecksEntities"></param>
         /// <param name="a_rayData"></param>
         /// <param name="a_rayMaxDistanceData"></param>
         /// <param name="a_isCollidingData"></param>
         /// <param name="collisionInstancesBufferElement"></param>
         /// <param name="canDebugAllChecks">Debug Log all checks, or only one (first one)</param>
         /// <param name="canDebugAllrays">Draw all, or only single ray (first one).</param>
-        static public void _DebugRays ( ref EntityCommandBuffer ecb, EntityArray a_collisionChecksEntities, ComponentDataFromEntity <RayData> a_rayData, ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
+        static public void _DebugRays ( ref EntityCommandBuffer ecb, [ReadOnly] ref NativeArray <Entity> na_collisionChecksEntities, [ReadOnly] ref ComponentDataFromEntity <RayData> a_rayData, [ReadOnly] ref ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, [ReadOnly] ref ComponentDataFromEntity <IsCollidingData> a_isCollidingData, [ReadOnly] ref BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, [ReadOnly] ref ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
         {
 
             // Debug
@@ -29,17 +30,17 @@ namespace Antypodish.ECS.Octree
             // if ( !canDebugAllrays ) 
 
             // Debug all, or only one check
-            int i_debugCollisionChecksCount = canDebugAllChecks ? a_collisionChecksEntities.Length : 1 ;
+            int i_debugCollisionChecksCount = canDebugAllChecks ? na_collisionChecksEntities.Length : 1 ;
 
             for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < i_debugCollisionChecksCount; i_collisionChecksIndex ++ )
             {
                   
-                Entity octreeRayEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;
+                Entity octreeRayEntity = na_collisionChecksEntities [i_collisionChecksIndex] ;
                 Entity octreeRayEntity2 ;
 
                 if ( !a_rayData.Exists ( octreeRayEntity ) )
                 {
-                    RayEntityPair4CollisionData rayEntityPair4CollisionData =  a_rayEntityPair4CollisionData [octreeRayEntity] ;
+                    RayEntityPair4CollisionData rayEntityPair4CollisionData = a_rayEntityPair4CollisionData [octreeRayEntity] ;
                     octreeRayEntity2 = rayEntityPair4CollisionData.ray2CheckEntity ;
 
                 }
@@ -116,7 +117,7 @@ namespace Antypodish.ECS.Octree
 	    /// <param name="f_nearestDistance">Nerest collision distance.</param>
 	    /// <param name="maxDistance">Distance to check.</param>
 	    /// <returns>Instances index, that intersect with the specified ray.</returns>
-	    static public bool _GetNodeColliding ( RootNodeData rootNodeData, int i_nodeIndex, Ray checkRay, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isCollidingData, DynamicBuffer <NodeBufferElement> a_nodesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
+	    static public bool _GetNodeColliding ( [ReadOnly] ref RootNodeData rootNodeData, int i_nodeIndex, Ray checkRay, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
         {
 		
             float f_distance ;
@@ -203,7 +204,7 @@ namespace Antypodish.ECS.Octree
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
                     {
-                        _GetNodeColliding ( rootNodeData, i_nodeChildIndex, checkRay, ref a_collisionInstancesBuffer, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer, f_maxDistance ) ;
+                        _GetNodeColliding ( ref rootNodeData, i_nodeChildIndex, checkRay, ref a_collisionInstancesBuffer, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, f_maxDistance ) ;
                     }
 			    }
 		    }

@@ -97,6 +97,8 @@ namespace Antypodish.ECS
             ecb.AddComponent ( jobIndex, blockEntity, new Rotation { Value = quaternion.identity} ) ; // Default unset.
             ecb.AddComponent ( jobIndex, blockEntity, new NonUniformScale { Value = float3.zero } ) ; // Default unset.
             ecb.AddSharedComponent ( jobIndex, blockEntity, renderer ) ;
+
+            ecb.AddComponent ( newEntity, new AddBlockData { }
         }
 
         private static RenderMesh _GetRendererFromPrefab ( string s_goName )

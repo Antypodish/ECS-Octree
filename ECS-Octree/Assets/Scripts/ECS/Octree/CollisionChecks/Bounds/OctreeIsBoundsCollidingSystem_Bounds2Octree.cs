@@ -19,13 +19,11 @@ namespace Antypodish.ECS.Octree
             
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree Get Colliding Bounds Instances System" ) ;
-
-            base.OnCreateManager ( );
-
+            
             group = GetComponentGroup ( 
                 typeof (IsActiveTag),
                 typeof (IsBoundsCollidingTag),
@@ -43,7 +41,7 @@ namespace Antypodish.ECS.Octree
         {
             
             
-            EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;     
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;     
             ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
             ComponentDataFromEntity <BoundsData> a_boundsData                                         = GetComponentDataFromEntity <BoundsData> () ;
 
@@ -66,7 +64,7 @@ namespace Antypodish.ECS.Octree
             // Test bounds 
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
-            IsBoundsColliding_Common._DebugBounds ( a_collisionChecksEntities, a_isCollidingData, false ) ;
+            IsBoundsColliding_Common._DebugBounds ( ref na_collisionChecksEntities, ref a_isCollidingData, false ) ;
 
             
 
@@ -83,7 +81,7 @@ namespace Antypodish.ECS.Octree
             var setBoundsTestJob = new SetBoundsTestJob 
             {
                 
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
 
                 checkBounds                         = checkBounds,
                 a_boundsData                        = a_boundsData,
@@ -94,7 +92,7 @@ namespace Antypodish.ECS.Octree
             {
                 
                 //ecb                                 = ecb,                
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
                 a_octreeEntityPair4CollisionData    = a_octreeEntityPair4CollisionData,
                 a_boundsData                        = a_boundsData,
@@ -114,6 +112,8 @@ namespace Antypodish.ECS.Octree
                 instanceBufferElement               = instanceBufferElement
 
             }.Schedule ( i_groupLength, 8, setBoundsTestJob ) ;
+
+            na_collisionChecksEntities.Dispose () ;
 
             return job ;
         }
@@ -214,7 +214,7 @@ namespace Antypodish.ECS.Octree
                     if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
                     {
                         // To even allow instances collision checks, octree must have at least one instance.
-                        if ( IsBoundsColliding_Common._IsNodeColliding ( octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer ) )
+                        if ( IsBoundsColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
                         {
                             // Debug.Log ( "Is colliding." ) ;
                         }

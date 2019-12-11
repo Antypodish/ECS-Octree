@@ -7,25 +7,23 @@ using UnityEngine ;
 
 namespace Antypodish.ECS.Octree
 {
-
-
-    public class RemoveInstanceBarrier : BarrierSystem {} ;
-
         
     class RemoveInstanceSystem : JobComponentSystem
     {
+        
+        EndInitializationEntityCommandBufferSystem eiecb ;
 
-        [Inject] private RemoveInstanceBarrier barrier ;
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Remove Octree Instance System" ) ;
+            
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
-            base.OnCreateManager ( );
-
-            group = GetComponentGroup ( 
+            group = GetComponentGroup 
+            ( 
                 typeof (IsActiveTag), 
                 typeof (RemoveInstanceBufferElement), 
                 typeof (RootNodeData) 

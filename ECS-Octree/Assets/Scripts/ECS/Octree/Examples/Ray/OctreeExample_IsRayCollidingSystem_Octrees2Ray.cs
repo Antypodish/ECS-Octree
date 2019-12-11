@@ -1,27 +1,19 @@
-﻿using Unity.Collections ;
-using Unity.Mathematics ;
-using Unity.Entities ;
-using UnityEngine ;
-
+﻿using Unity.Collections;
+using Unity.Mathematics;
+using Unity.Entities;
+using UnityEngine;
+using Unity.Jobs;
 
 namespace Antypodish.ECS.Octree.Examples
 {
-
-
-    public class OctreeExample_IsRayCollidingBarrier_Octrees2Ray : BarrierSystem {} ;
- 
-
+    
     class OctreeExample_IsRayCollidingSystem_Octrees2Ray : JobComponentSystem
     {
-
-        [Inject] private OctreeExample_IsRayCollidingBarrier_Octrees2Ray barrier ;
+        
+        EndInitializationEntityCommandBufferSystem eiecb ;
              
-        ComponentGroup group ;
-
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
-            base.OnCreateManager ( );
-
 
             // Test octrees
             // Many octrees, to ray pair
@@ -37,7 +29,9 @@ namespace Antypodish.ECS.Octree.Examples
 
             // Create new octree
             // See arguments details (names) of _CreateNewOctree and coresponding octree readme file.
-            EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
+
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
+            EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
 
             
             
@@ -65,7 +59,7 @@ namespace Antypodish.ECS.Octree.Examples
             for ( int i_octreeEntityIndex = 0; i_octreeEntityIndex < i_octreesCount; i_octreeEntityIndex ++ ) 
             {
 
-                ecb = barrier.CreateCommandBuffer () ;
+                ecb = eiecb.CreateCommandBuffer () ;
                 Entity newOctreeEntity = EntityManager.CreateEntity ( ) ;
 
                 AddNewOctreeSystem._CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1.01f ) ;
@@ -104,7 +98,7 @@ namespace Antypodish.ECS.Octree.Examples
                 EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
                 BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
-                Common._RequesAddInstances ( ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
+                Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
 
 
 
@@ -116,15 +110,18 @@ namespace Antypodish.ECS.Octree.Examples
                 // Request to remove some instances
                 // Se inside method, for details
                 int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
-                Common._RequestRemoveInstances ( ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
+                Common._RequestRemoveInstances ( ref ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
                 
                 
                 // Ensure example array is disposed.
                 a_instanceEntities.Dispose () ;
 
             } // for
-
-
+            
+        }
+        protected override JobHandle OnUpdate ( JobHandle inputDeps )
+        {
+            return inputDeps ;
         }
 
     }

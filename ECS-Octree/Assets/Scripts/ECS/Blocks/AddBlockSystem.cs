@@ -18,7 +18,7 @@ namespace Antypodish.ECS.Blocks
 
         // static EntityManager entityManager ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {         
             
             // Cache the EndInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame

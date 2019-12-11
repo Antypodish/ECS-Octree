@@ -9,22 +9,19 @@ using UnityEngine ;
 namespace Antypodish.ECS.Octree
 {
     
-
-    public class AddInstanceBarrier : BarrierSystem {} ;
-
-
     class AddInstanceSystem : JobComponentSystem
     {
         
-        [Inject] private AddInstanceBarrier barrier ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
+
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Add New Octree Instance System" ) ;
-
-            base.OnCreateManager ( );
+            
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
             group = GetComponentGroup ( 
                 typeof (IsActiveTag), 
@@ -66,7 +63,7 @@ namespace Antypodish.ECS.Octree
             var completeAddInstanceJob = new CompleteAddInstanceJob 
             {
                 
-                ecb                                 = barrier.CreateCommandBuffer ().ToConcurrent (),                
+                ecb                                 = eiecb.CreateCommandBuffer ().ToConcurrent (),                
                 a_octreeEntities                    = group.GetEntityArray ()
 
             }.Schedule ( i_groupLength, 8, addInstanceJob ) ;

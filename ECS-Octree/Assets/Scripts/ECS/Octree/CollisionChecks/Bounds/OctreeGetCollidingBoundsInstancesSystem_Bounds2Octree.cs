@@ -8,11 +8,7 @@ using UnityEngine ;
 
 namespace Antypodish.ECS.Octree
 {
-    
-
-    public class GetCollidingBoundsInstancesBarrier_Bounds2Octree : BarrierSystem {} ;
-
-    
+               
     /// <summary>
     /// Bounds to octree system, checks one or more bounds, against its paired target octree entity.
     /// </summary>
@@ -21,14 +17,16 @@ namespace Antypodish.ECS.Octree
     class GetCollidingBoundsInstancesSystem_Bounds2Octree : JobComponentSystem
     {
             
-        [Inject] private GetCollidingBoundsInstancesBarrier_Bounds2Octree barrier ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
+
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree Get Colliding Bounds Instances System" ) ;
 
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
             group = GetComponentGroup ( 
                 typeof (IsActiveTag),
@@ -40,14 +38,13 @@ namespace Antypodish.ECS.Octree
                 // typeof (RootNodeData) // Unused in ray
             ) ;
             
-            base.OnCreateManager ( );
         }
 
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
             
-            EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;     
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;     
             ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
             ComponentDataFromEntity <BoundsData> a_boundsData                                         = GetComponentDataFromEntity <BoundsData> () ;
 
@@ -73,9 +70,10 @@ namespace Antypodish.ECS.Octree
             // Test bounds 
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
-            GetCollidingBoundsInstances_Common._DebugBounds ( barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_isCollidingData, collisionInstancesBufferElement, false ) ;
-                                  
+            EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
+            GetCollidingBoundsInstances_Common._DebugBounds ( ref ecb, ref na_collisionChecksEntities, ref a_isCollidingData, ref collisionInstancesBufferElement, false ) ;
             
+            eiecb.AddJobHandleForProducer ( inputDeps ) ;
 
             // Test bounds            
             Bounds checkBounds = new Bounds () 
@@ -87,10 +85,10 @@ namespace Antypodish.ECS.Octree
 
             int i_groupLength = group.CalculateLength () ;
 
-            var setBoundsTestJob = new SetBoundsTestJob 
+            JobHandle setBoundsTestJobHandle = new SetBoundsTestJob 
             {
                 
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
 
                 checkBounds                         = checkBounds,
                 a_boundsData                        = a_boundsData,
@@ -98,17 +96,16 @@ namespace Antypodish.ECS.Octree
 
             }.Schedule ( i_groupLength, 8, inputDeps ) ;
 
-            var job = new Job 
+            JobHandle jobHandle = new Job 
             {
                 
                 //ecb                                 = ecb,                
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
                 a_octreeEntityPair4CollisionData    = a_octreeEntityPair4CollisionData,
                 a_boundsData                        = a_boundsData,
                 a_isCollidingData                   = a_isCollidingData,
                 collisionInstancesBufferElement     = collisionInstancesBufferElement,
-
 
                 
                 // Octree entity pair, for collision checks
@@ -122,9 +119,13 @@ namespace Antypodish.ECS.Octree
                 nodeChildrenBufferElement           = nodeChildrenBufferElement,
                 instanceBufferElement               = instanceBufferElement
 
-            }.Schedule ( i_groupLength, 8, setBoundsTestJob ) ;
+            }.Schedule ( i_groupLength, 8, setBoundsTestJobHandle ) ;
+            
+            na_collisionChecksEntities.Dispose () ;
 
-            return job ;
+
+
+            return jobHandle ;
         }
 
 
@@ -133,9 +134,11 @@ namespace Antypodish.ECS.Octree
         struct SetBoundsTestJob : IJobParallelFor 
         {
             
-            [ReadOnly] public Bounds checkBounds ;
+            [ReadOnly] 
+            public Bounds checkBounds ;
 
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
+            [ReadOnly] 
+            public EntityArray a_collisionChecksEntities ;
 
             [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity <BoundsData> a_boundsData ;           
@@ -227,7 +230,7 @@ namespace Antypodish.ECS.Octree
                     if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
                     {
                     
-                        if ( GetCollidingBoundsInstances_Common._GetNodeColliding ( octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref a_collisionInstancesBuffer, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer ) )
+                        if ( GetCollidingBoundsInstances_Common._GetNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref a_collisionInstancesBuffer, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
                         {   
                             /*
                             // Debug

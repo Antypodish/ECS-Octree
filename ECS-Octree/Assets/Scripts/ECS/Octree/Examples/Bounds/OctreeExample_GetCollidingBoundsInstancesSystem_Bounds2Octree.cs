@@ -1,26 +1,19 @@
-﻿using Unity.Collections ;
-using Unity.Mathematics ;
-using Unity.Entities ;
-using UnityEngine ;
-
+﻿using Unity.Collections;
+using Unity.Mathematics;
+using Unity.Entities;
+using UnityEngine;
+using Unity.Jobs;
 
 namespace Antypodish.ECS.Octree.Examples
-{
-
-
-    public class OctreeExample_GetCollidingBoundsInstancesBarrier_Bounds2Octree : BarrierSystem { }
-  
+{ 
 
     class OctreeExample_GetCollidingBoundsInstancesSystem_Bounds2Octree : JobComponentSystem
     {
-
-        [Inject] private OctreeExample_GetCollidingBoundsInstancesBarrier_Bounds2Octree barrier ;
+        
+        EndInitializationEntityCommandBufferSystem eiecb ;
               
-        protected override void OnCreateManager ( )
-        {
-            base.OnCreateManager ( );
-
-            
+        protected override void OnCreate ( )
+        {   
 
             // Test bounds
             // Many bounds, to octree pair
@@ -38,7 +31,9 @@ namespace Antypodish.ECS.Octree.Examples
 
             // Create new octree
             // See arguments details (names) of _CreateNewOctree and coresponding octree readme file.
-            EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
+            
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
+            EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
             Entity newOctreeEntity = EntityManager.CreateEntity ( ) ;
 
             AddNewOctreeSystem._CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ;
@@ -66,7 +61,7 @@ namespace Antypodish.ECS.Octree.Examples
             EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
             BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
-            Common._RequesAddInstances ( ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
+            Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
 
 
 
@@ -78,7 +73,7 @@ namespace Antypodish.ECS.Octree.Examples
             // Request to remove some instances
             // Se inside method, for details
             int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
-            Common._RequestRemoveInstances ( ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
+            Common._RequestRemoveInstances ( ref ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
                 
                 
             // Ensure example array is disposed.
@@ -94,6 +89,8 @@ namespace Antypodish.ECS.Octree.Examples
             Debug.Log ( "Octree: create dummy boundary box, to test for collision." ) ;
             float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
             // Only test
+            ...
+            _AddBlockRequestViaCustomBufferWithEntity ( ref EntityCommandBuffer.Concurrent ecb, int jobIndex, Entity blockEntity, float3 f3_position, float3 f3_scale, MeshType meshType, [ReadOnly] ref Bootstrap.EntitiesPrefabs entitiesPrefabs, ref Bootstrap.RenderMeshTypes renderMeshTypes )
             Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, EntityManager.CreateEntity ( ), f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
             // Create test bounds
@@ -121,7 +118,12 @@ namespace Antypodish.ECS.Octree.Examples
             } // for
                 
         }
-        
+
+        protected override JobHandle OnUpdate ( JobHandle inputDeps )
+        {
+            return inputDeps ;
+        }
+
     }
 }
 

@@ -7,10 +7,7 @@ using UnityEngine ;
 
 namespace Antypodish.ECS.Octree
 {
-    
-    
-    public class IsRayCollidingBarrier_Rays2Octree : BarrierSystem {} ;
-
+        
     /// <summary>
     /// Ray to octree system, checks one or more rays, against its paired target octree entity.
     /// </summary>
@@ -18,15 +15,16 @@ namespace Antypodish.ECS.Octree
     class IsRayCollidingSystem_Rays2Octree : JobComponentSystem
     {
         
-        [Inject] private IsRayCollidingBarrier_Rays2Octree barrier ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
+
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree Get Ray Colliding Instances System" ) ;
-
-            base.OnCreateManager ( );
+            
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
             group = GetComponentGroup ( 
                 typeof (IsActiveTag),
@@ -47,7 +45,7 @@ namespace Antypodish.ECS.Octree
             
             
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;     
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;     
             ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
             ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
             ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData                         = GetComponentDataFromEntity <RayMaxDistanceData> () ;
@@ -72,7 +70,7 @@ namespace Antypodish.ECS.Octree
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData = new ComponentDataFromEntity<RayEntityPair4CollisionData> () ; // As empty.
-            IsRayColliding_Common._DebugRays ( a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, a_rayEntityPair4CollisionData, false, false ) ;
+            IsRayColliding_Common._DebugRays ( ref na_collisionChecksEntities, ref a_rayData, ref a_rayMaxDistanceData, ref a_isCollidingData, ref a_rayEntityPair4CollisionData, false, false ) ;
 
             
             // Test ray
@@ -85,7 +83,7 @@ namespace Antypodish.ECS.Octree
             var setRayTestJob = new SetRayTestJob 
             {
                 
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
 
                 ray                                 = ray,
                 a_rayData                           = a_rayData,
@@ -96,7 +94,7 @@ namespace Antypodish.ECS.Octree
             var job = new Job 
             {
                       
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
                 a_octreeEntityPair4CollisionData    = a_octreeEntityPair4CollisionData,
                 a_rayData                           = a_rayData,
@@ -117,6 +115,8 @@ namespace Antypodish.ECS.Octree
                 instanceBufferElement               = instanceBufferElement
 
             }.Schedule ( i_groupLength, 8, setRayTestJob ) ;
+
+            na_collisionChecksEntities.Dispose () ;
 
             return job ;
         }
@@ -221,7 +221,7 @@ namespace Antypodish.ECS.Octree
                     if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
                     {
                     
-                        if ( IsRayColliding_Common._IsNodeColliding ( octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer, rayMaxDistanceData.f ) )                          
+                        if ( IsRayColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistanceData.f ) )                          
                         {   
                             /*
                             // Debug

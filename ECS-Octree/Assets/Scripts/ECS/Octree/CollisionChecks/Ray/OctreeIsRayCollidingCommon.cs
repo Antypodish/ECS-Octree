@@ -1,4 +1,5 @@
-﻿using Unity.Entities ;
+﻿using Unity.Collections ;
+using Unity.Entities ;
 using UnityEngine ;
 
 
@@ -9,11 +10,11 @@ namespace Antypodish.ECS.Octree
     internal class IsRayColliding_Common
     {
 
-        static public void _DebugRays ( EntityArray a_collisionChecksEntities, ComponentDataFromEntity <RayData> a_rayData, ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
+        static public void _DebugRays ( [ReadOnly] ref NativeArray <Entity> na_collisionChecksEntities, [ReadOnly] ref ComponentDataFromEntity <RayData> a_rayData, [ReadOnly] ref ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, [ReadOnly] ref ComponentDataFromEntity <IsCollidingData> a_isCollidingData, [ReadOnly] ref ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
         {
 
             // Debug all, or only one check
-            int i_debugCollisionChecksCount = canDebugAllChecks ? a_collisionChecksEntities.Length : 1 ;
+            int i_debugCollisionChecksCount = canDebugAllChecks ? na_collisionChecksEntities.Length : 1 ;
 
 
             // Debug
@@ -21,7 +22,7 @@ namespace Antypodish.ECS.Octree
             for ( int i_collisionChecksIndex = 0; i_collisionChecksIndex < i_debugCollisionChecksCount; i_collisionChecksIndex ++ )
             {              
 
-                Entity octreeRayEntity = a_collisionChecksEntities [i_collisionChecksIndex] ;                
+                Entity octreeRayEntity = na_collisionChecksEntities [i_collisionChecksIndex] ;                
                 Entity octreeRayEntity2 ;
 
                 if ( !a_rayData.Exists ( octreeRayEntity ) )
@@ -67,7 +68,7 @@ namespace Antypodish.ECS.Octree
 	    /// <param name="checkRay">Ray to check.</param>
 	    /// <param name="f_maxDistance">Distance to check.</param>
 	    /// <returns>True if there was a collision.</returns>
-	    static public bool _IsNodeColliding ( RootNodeData rootNodeData, int i_nodeIndex, Ray checkRay, ref IsCollidingData isCollidingData, DynamicBuffer <NodeBufferElement> a_nodesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
+	    static public bool _IsNodeColliding ( [ReadOnly] ref RootNodeData rootNodeData, int i_nodeIndex, Ray checkRay, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
         {
 		    // Is the input ray at least partially in this node?
 		
@@ -126,7 +127,7 @@ namespace Antypodish.ECS.Octree
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
                     {
-                        if ( _IsNodeColliding ( rootNodeData, i_nodeChildIndex, checkRay, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer, f_maxDistance ) )
+                        if ( _IsNodeColliding ( ref rootNodeData, i_nodeChildIndex, checkRay, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, f_maxDistance ) )
                         {
                             isCollidingData.i_collisionsCount = 1 ; // Is colliding
 					        return true ;

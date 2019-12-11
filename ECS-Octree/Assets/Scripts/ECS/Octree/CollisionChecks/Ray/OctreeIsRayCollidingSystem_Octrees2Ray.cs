@@ -14,13 +14,11 @@ namespace Antypodish.ECS.Octree
 
         ComponentGroup group ;
 
-        protected override void OnCreateManager ( )
+        protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree IS Ray Colliding System" ) ;
-
-            base.OnCreateManager ( );
-
+            
             group = GetComponentGroup ( 
                 typeof (IsActiveTag), 
                 typeof (IsRayCollidingTag),
@@ -38,7 +36,7 @@ namespace Antypodish.ECS.Octree
         {
 
 
-            EntityArray a_collisionChecksEntities                                                     = group.GetEntityArray () ;    
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;    
             
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData       = GetComponentDataFromEntity <RayEntityPair4CollisionData> () ;
             
@@ -64,7 +62,7 @@ namespace Antypodish.ECS.Octree
             // Test ray  
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
-            IsRayColliding_Common._DebugRays ( a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, a_rayEntityPair4CollisionData, false, false ) ;
+            IsRayColliding_Common._DebugRays ( ref na_collisionChecksEntities, ref a_rayData, ref a_rayMaxDistanceData, ref a_isCollidingData, ref a_rayEntityPair4CollisionData, false, false ) ;
 
 
             int i_groupLength = group.CalculateLength () ;
@@ -78,7 +76,7 @@ namespace Antypodish.ECS.Octree
             var setRayTestJob = new SetRayTestJob 
             {
                 
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                 a_rayEntityPair4CollisionData       = a_rayEntityPair4CollisionData,
 
                 ray                                 = ray,
@@ -95,7 +93,7 @@ namespace Antypodish.ECS.Octree
             {
                 
                 //ecb                                 = ecb,                
-                a_collisionChecksEntities           = a_collisionChecksEntities,
+                a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
                 a_rayEntityPair4CollisionData       = a_rayEntityPair4CollisionData,
 
@@ -118,6 +116,8 @@ namespace Antypodish.ECS.Octree
 
 
             }.Schedule ( i_groupLength, 8, setRayTestJob ) ;
+
+            na_collisionChecksEntities.Dispose () ;
 
             return job ;
 
@@ -232,7 +232,7 @@ namespace Antypodish.ECS.Octree
                     {
                     
                         
-                        if ( IsRayColliding_Common._IsNodeColliding ( octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isCollidingData, a_nodesBuffer, a_nodeChildrenBuffer, a_nodeInstancesIndexBuffer, a_instanceBuffer, rayMaxDistanceData.f ) )                        
+                        if ( IsRayColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistanceData.f ) )                        
                         {   
                             /*
                             // Debug
