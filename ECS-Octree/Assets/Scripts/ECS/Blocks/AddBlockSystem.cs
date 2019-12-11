@@ -6,7 +6,7 @@ using Unity.Entities ;
 using Unity.Jobs ;
 
 
-namespace ECS.Blocks
+namespace Antypodish.ECS.Blocks
 {    
     
     public class AddBlockBarrier : BarrierSystem {} ;
@@ -83,7 +83,7 @@ namespace ECS.Blocks
                     Entity blockEntity = a_entities [i] ;
                     AddBlockData addBlockData = a_addBlockData [i] ;
 
-                    ecb.AddComponent ( blockEntity, new Position { Value = addBlockData.f3_position } ) ;
+                    ecb.AddComponent ( blockEntity, new Translation { Value = addBlockData.f3_position } ) ;
                     ecb.AddComponent ( blockEntity, new Rotation { Value = quaternion.identity} ) ;
                     ecb.AddComponent ( blockEntity, new Scale { Value = addBlockData.f3_scale } ) ;
 

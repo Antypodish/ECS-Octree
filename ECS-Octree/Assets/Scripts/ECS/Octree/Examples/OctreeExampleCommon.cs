@@ -4,7 +4,7 @@ using Unity.Mathematics ;
 using UnityEngine ;
 
 
-namespace ECS.Octree.Examples
+namespace Antypodish.ECS.Octree.Examples
 {
     // ***** Example Components To Add / Remove Instances ***** //
 

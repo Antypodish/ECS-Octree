@@ -2,14 +2,14 @@
 using Unity.Jobs;
 
 
-namespace ECS.Octree
+namespace Antypodish.ECS.Octree
 {
     
 
     public struct ForceCollisionCheckTag : IComponentData { }
 
     
-    [UpdateAfter ( typeof ( UnityEngine.Experimental.PlayerLoop.PostLateUpdate ) ) ]   
+    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]   
     class ForceCollisionCheckSystem : JobComponentSystem
     {
 

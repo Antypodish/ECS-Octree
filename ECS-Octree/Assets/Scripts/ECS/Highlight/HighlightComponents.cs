@@ -1,6 +1,6 @@
 ﻿using Unity.Entities ;
 
-namespace ECS.Highlight
+namespace Antypodish.ECS.Highlight
 {   
     
     public struct SetHighlightTag : IComponentData {}  

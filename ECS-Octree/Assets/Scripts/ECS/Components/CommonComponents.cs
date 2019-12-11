@@ -2,7 +2,7 @@
 using UnityEngine ;
 
 
-namespace ECS
+namespace Antypodish.ECS
 {
     
     public struct IsActiveTag : IComponentData {}

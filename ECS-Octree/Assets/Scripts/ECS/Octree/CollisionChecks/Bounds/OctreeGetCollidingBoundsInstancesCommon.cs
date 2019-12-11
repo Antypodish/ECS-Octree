@@ -2,7 +2,7 @@
 using UnityEngine ;
 
 
-namespace ECS.Octree
+namespace Antypodish.ECS.Octree
 {
 
     internal class GetCollidingBoundsInstances_Common

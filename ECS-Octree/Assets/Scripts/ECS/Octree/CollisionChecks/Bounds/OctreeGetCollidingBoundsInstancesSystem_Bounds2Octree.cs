@@ -6,7 +6,7 @@ using Unity.Jobs ;
 using UnityEngine ;
 
 
-namespace ECS.Octree
+namespace Antypodish.ECS.Octree
 {
     
 
@@ -17,7 +17,7 @@ namespace ECS.Octree
     /// Bounds to octree system, checks one or more bounds, against its paired target octree entity.
     /// </summary>
     // [UpdateAfter ( typeof ( OctreeForceCollisionCheckSystem ) ) ]   
-    [UpdateAfter ( typeof ( UnityEngine.Experimental.PlayerLoop.PostLateUpdate ) ) ]  
+    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]  
     class GetCollidingBoundsInstancesSystem_Bounds2Octree : JobComponentSystem
     {
             

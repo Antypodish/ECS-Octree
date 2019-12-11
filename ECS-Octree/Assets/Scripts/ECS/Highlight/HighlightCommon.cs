@@ -1,4 +1,4 @@
-﻿namespace ECS.Highlight
+﻿namespace Antypodish.ECS.Highlight
 {
 
     internal class Common

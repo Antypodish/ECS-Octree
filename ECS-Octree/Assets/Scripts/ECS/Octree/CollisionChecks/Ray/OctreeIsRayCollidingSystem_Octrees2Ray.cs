@@ -4,11 +4,11 @@ using Unity.Burst ;
 using Unity.Jobs ;
 using UnityEngine ;
 
-namespace ECS.Octree
+namespace Antypodish.ECS.Octree
 {
     
 
-    [UpdateAfter ( typeof ( UnityEngine.Experimental.PlayerLoop.PostLateUpdate ) ) ]    
+    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
     class IsRayCollidingSystem_Octrees2Ray : JobComponentSystem
     {
 

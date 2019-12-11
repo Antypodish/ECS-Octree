@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement ;
 using Unity.Rendering ;
 
 
-namespace ECS
+namespace Antypodish.ECS
 {
 
     public sealed class Bootstrap

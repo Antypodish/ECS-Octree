@@ -2,7 +2,7 @@
 using Unity.Entities ;
 
 
-namespace ECS.Blocks
+namespace Antypodish.ECS.Blocks
 {   
     
     public struct AddBlockData : IComponentData 

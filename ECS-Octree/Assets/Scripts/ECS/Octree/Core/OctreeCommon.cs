@@ -3,7 +3,7 @@ using Unity.Entities ;
 using UnityEngine;
 
 
-namespace ECS.Octree
+namespace Antypodish.ECS.Octree
 {
 
     internal class CommonMethods

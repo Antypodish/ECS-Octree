@@ -4,7 +4,7 @@ using Unity.Entities ;
 using UnityEngine ;
 
 
-namespace ECS.Octree.Examples
+namespace Antypodish.ECS.Octree.Examples
 {
 
 

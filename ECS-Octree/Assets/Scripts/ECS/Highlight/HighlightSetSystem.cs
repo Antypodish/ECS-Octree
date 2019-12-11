@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.Jobs;
 
 
-namespace ECS.Highlight
+namespace Antypodish.ECS.Highlight
 {
 
     public class SetBarrier : BarrierSystem {} ;

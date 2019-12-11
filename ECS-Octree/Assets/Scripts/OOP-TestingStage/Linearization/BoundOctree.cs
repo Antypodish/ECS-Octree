@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-namespace Test.OOP.Octree
+// The linearization may not match completely the conversion to ECS. Also, may potentially contains some bugs,
+// which are othewise resolved in ECS version.
+// Linearization was middle step, required to achieve optimal ECS conversion. 
+// However, most bugs were resolved in ECS stage.
+// Therefore, not all solved bugs may be reflected back in this linearized form.
+// My appology, if that causes inconvienience.
+namespace Antypodish.Test.OOP.OctreeLinearization4ECS
 {
 
     // A Dynamic, Loose Octree for storing any objects that can be described with AABB bounds

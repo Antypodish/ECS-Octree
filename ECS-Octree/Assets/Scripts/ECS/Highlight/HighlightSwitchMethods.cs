@@ -2,7 +2,7 @@
 
 // TODO : Validate entity, if exists
 
-namespace ECS.Highlight
+namespace Antypodish.ECS.Highlight
 {
 
     public class SwitchMethods

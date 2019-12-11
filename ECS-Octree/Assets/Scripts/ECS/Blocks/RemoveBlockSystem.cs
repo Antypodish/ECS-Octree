@@ -4,7 +4,7 @@ using Unity.Jobs ;
 using UnityEngine ;
 
 
-namespace ECS.Blocks
+namespace Antypodish.ECS.Blocks
 {    
 
     public class RemoveBlockBarrier : BarrierSystem {} ;

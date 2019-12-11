@@ -5,7 +5,7 @@ using Unity.Jobs ;
 using UnityEngine ;
 
 
-namespace ECS.Octree
+namespace Antypodish.ECS.Octree
 {
     
     
@@ -15,7 +15,7 @@ namespace ECS.Octree
     /// <summary>
     /// Octree to ray system, checks one or more octress, against its paired target ray entity.
     /// </summary>
-    [UpdateAfter ( typeof ( UnityEngine.Experimental.PlayerLoop.PostLateUpdate ) ) ]    
+    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
     class GetCollidingRayInstancesSystem_Octrees2Ray : JobComponentSystem
     {
         

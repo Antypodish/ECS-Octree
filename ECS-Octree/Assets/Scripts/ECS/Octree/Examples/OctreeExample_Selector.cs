@@ -1,4 +1,4 @@
-﻿namespace ECS.Octree.Examples
+﻿namespace Antypodish.ECS.Octree.Examples
 {
     
     internal class ExampleSelector
