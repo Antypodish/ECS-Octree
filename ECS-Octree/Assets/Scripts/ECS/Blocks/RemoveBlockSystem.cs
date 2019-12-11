@@ -1,46 +1,36 @@
 ﻿using Unity.Collections ;
 using Unity.Entities ;
+using Unity.Burst ;
 using Unity.Jobs ;
-using UnityEngine ;
 
 
 namespace Antypodish.ECS.Blocks
 {    
 
-    public class RemoveBlockBarrier : BarrierSystem {} ;
-
-
     public class RemoveBlockSystem : JobComponentSystem
     {
         
-        [Inject] private RemoveBlockBarrier barrier ;
-
-        ComponentGroup group ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
 
         protected override void OnCreateManager ( )
         {
-            
-            group = GetComponentGroup 
-            (
-                typeof ( RemoveBlockTag )
-            ) ;
-
-            // entityManager = World.Active.GetOrCreateManager <EntityManager>() ;
-            
+            // Cache the EndInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
         }
 
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {   
 
-            JobHandle job = new Job
+            JobHandle jobHandle = new Job
             {
-                ecb = barrier.CreateCommandBuffer (),
-                a_entities = group.GetEntityArray (),
+                ecb = eiecb.CreateCommandBuffer ().ToConcurrent ()
 
-            }.Schedule ( inputDeps ) ;
+            }.Schedule ( this, inputDeps ) ;
 
-            return job ;
+            eiecb.AddJobHandleForProducer ( jobHandle ) ;
+
+            return jobHandle ;
             
                         
         }
@@ -49,26 +39,15 @@ namespace Antypodish.ECS.Blocks
         /// <summary>
         /// Execute Jobs
         /// </summary>
-        // [BurstCompile]
-        struct Job : IJob
+        [BurstCompile]
+        struct Job : IJobForEachWithEntity <RemoveBlockTag>
         {
             
-            [ReadOnly] public EntityCommandBuffer ecb ;
-            [ReadOnly] public EntityArray a_entities;
+            public EntityCommandBuffer.Concurrent ecb ;
             
-
-            public void Execute ()
+            public void Execute ( Entity blockEntity, int jobIndex, [ReadOnly] ref RemoveBlockTag removeBlockTag )
             {
-                
-                for (int i = 0; i < a_entities.Length; ++i)
-                {
-                    Entity blockEntity = a_entities [i] ;
-
-                    ecb.DestroyEntity ( blockEntity ) ;
-                    // _RemoveBlock ( blockEntity );                
-                }
-            
-                               
+                ecb.DestroyEntity ( jobIndex, blockEntity ) ;
             }           
             
         } // job

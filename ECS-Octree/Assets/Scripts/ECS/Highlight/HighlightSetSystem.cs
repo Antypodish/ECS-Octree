@@ -1,112 +1,70 @@
-﻿using Unity.Rendering;
+﻿using Unity.Collections ;
+using Unity.Rendering;
 using Unity.Entities;
 using Unity.Jobs;
 
 
 namespace Antypodish.ECS.Highlight
 {
-
-    public class SetBarrier : BarrierSystem {} ;
+    
 
     [UpdateAfter (typeof (ResetSystem) )]
     public class SetSystem : JobComponentSystem
     {
         
-        [Inject] private SetBarrier barrier ;
-        EntityManager entityManager ;
-        ComponentGroup group ;
-
-
+        EndInitializationEntityCommandBufferSystem eiecb ;
+        
         protected override void OnCreateManager ( )
         {
-
-            group = GetComponentGroup 
-            (            
-                typeof ( MeshInstanceRenderer ),
-                typeof ( SetHighlightTag )
-            ) ;
             
-            entityManager = World.Active.GetOrCreateManager <EntityManager>() ;
-
+            // Cache the EndInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
+            
             SwitchMethods._Initialize ( ) ;
         }
 
         
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-            EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            EntityArray a_entities = group.GetEntityArray () ;
 
-            for (int i = 0; i < a_entities.Length; ++i )
-            {
-                Entity entity = a_entities [i] ;
+            JobHandle jobHandle = new Job
+            {                   
+                ecb                = eiecb.CreateCommandBuffer ().ToConcurrent (),
+                renderMeshTypes    = Bootstrap.renderMeshTypes
 
-                // Renderer
-                Common.previousMeshInstanceRenderer = entityManager.GetSharedComponentData <MeshInstanceRenderer> ( entity ) ;
+            }.Schedule ( this, inputDeps ) ;
 
-                // Assign new renderrer
-                Unity.Rendering.MeshInstanceRenderer renderer = Bootstrap.highlightRenderer ;
-                                         
-                ecb.SetSharedComponent <MeshInstanceRenderer> ( entity, renderer ) ; // replace renderer with material and mesh
-
-                ecb.RemoveComponent <SetHighlightTag> ( entity ) ; 
-
-
-            }
-
-
-            /*
-            JobHandle job = new Job
-            {
-                ecb = barrier.CreateCommandBuffer (),
-                entityManager = entityManager,
-                a_entities = group.GetEntityArray (),
-                
-            }.Schedule (inputDeps) ;
-
-            return job ;
-            */
-
-            return inputDeps ;
+            eiecb.AddJobHandleForProducer ( jobHandle ) ;
+                     
+            return jobHandle ;
 
         }
 
-        /*
         /// <summary>
         /// Execute Jobs
         /// </summary>
+        [RequireComponentTag ( typeof ( RenderMesh ), typeof ( SetHighlightTag ) ) ]
         // [BurstCompile]
-        struct Job : IJob
+        struct Job : IJobForEachWithEntity <MeshTypeData>
         {
             
-            [ReadOnly] public EntityCommandBuffer ecb ;
-            [ReadOnly] public EntityArray a_entities ;
-            [ReadOnly] public EntityManager entityManager ;
-            
+            public EntityCommandBuffer.Concurrent ecb ;
+                        
+            [ReadOnly] 
+            public Bootstrap.RenderMeshTypes renderMeshTypes ;
 
-            public void Execute ()
+            public void Execute ( Entity highlightEntity, int jobIndex, [ReadOnly] ref MeshTypeData meshType )
             {
+                // renderer
+                RenderMesh renderMesh = Bootstrap._SelectRenderMesh ( MeshType.Highlight, ref renderMeshTypes ) ;
 
-                for (int i = 0; i < a_entities.Length; ++i )
-                {
-                    Entity blockEntity = a_entities [i] ;
-                      
-                    // renderer
-                    BlockHighlightCommon.previousMeshInstanceRenderer = entityManager.GetSharedComponentData <MeshInstanceRenderer> ( blockEntity ) ;
+                ecb.SetSharedComponent <RenderMesh> ( jobIndex, highlightEntity, renderMesh ) ; // replace renderer with material and mesh
 
-                    // assigne new renderrer
-                    Unity.Rendering.MeshInstanceRenderer renderer = Bootstrap.highlightRenderer ;
-                                         
-                    ecb.SetSharedComponent <MeshInstanceRenderer> ( blockEntity, renderer ) ; // replace renderer with material and mesh
-
-                    ecb.RemoveComponent <BlockSetHighlightTag> ( blockEntity ) ; 
-
-                }
-                               
+                ecb.RemoveComponent <SetHighlightTag> ( jobIndex, highlightEntity ) ; 
+                                                   
             }           
             
         } // job
-        */
 
     }
 

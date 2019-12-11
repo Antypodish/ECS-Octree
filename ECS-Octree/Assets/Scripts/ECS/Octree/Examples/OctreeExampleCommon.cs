@@ -50,6 +50,8 @@ namespace Antypodish.ECS.Octree.Examples
                 int z = (int) math.floor ( i_instanceID / 1000 ) ;
                 float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 )  * 0.5f ;
 
+                ...
+                _AddBlockRequestViaCustomBufferWithEntity ( ref EntityCommandBuffer.Concurrent ecb, int jobIndex, Entity blockEntity, float3 f3_position, float3 f3_scale, MeshType meshType, [ReadOnly] ref Bootstrap.EntitiesPrefabs entitiesPrefabs, ref Bootstrap.RenderMeshTypes renderMeshTypes )
                 Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
 
 

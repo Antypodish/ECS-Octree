@@ -19,7 +19,7 @@ namespace Antypodish.ECS.Octree
         /// <param name="collisionInstancesBufferElement"></param>
         /// <param name="canDebugAllChecks">Debug Log all checks, or only one (first one)</param>
         /// <param name="canDebugAllrays">Draw all, or only single ray (first one).</param>
-        static public void _DebugRays ( EntityCommandBuffer ecb, EntityArray a_collisionChecksEntities, ComponentDataFromEntity <RayData> a_rayData, ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
+        static public void _DebugRays ( ref EntityCommandBuffer ecb, EntityArray a_collisionChecksEntities, ComponentDataFromEntity <RayData> a_rayData, ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData, ComponentDataFromEntity <IsCollidingData> a_isCollidingData, BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement, ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData, bool canDebugAllChecks, bool canDebugAllrays )
         {
 
             // Debug
@@ -96,7 +96,7 @@ namespace Antypodish.ECS.Octree
                     } ;
                     
                     // Test highlight
-                    Highlight.SwitchMethods._Switch ( ecb, closestInstanceEntity ) ;
+                    Highlight.SwitchMethods._Switch ( ref ecb, closestInstanceEntity ) ;
 
                     Debug.Log ( "Is colliding with #" + isCollidingData.i_collisionsCount + " instances of IDs: " + s_collidingIDs + "; Nearest collided instance is at " + isCollidingData.f_nearestDistance + "m, with ID #" + a_collisionInstancesBuffer [isCollidingData.i_nearestInstanceCollisionIndex].i_ID ) ;
                     

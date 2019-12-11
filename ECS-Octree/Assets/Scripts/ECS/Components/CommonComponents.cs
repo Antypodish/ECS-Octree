@@ -21,4 +21,12 @@ namespace Antypodish.ECS
     {
         public float f ;
     }
+    
+    /// <summary>
+    /// Storing index reference to mesh type.
+    /// </summary>
+    public struct MeshTypeData : IComponentData
+    {
+        public MeshType type ;
+    }
 }

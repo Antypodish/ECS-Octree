@@ -8,40 +8,27 @@ using Unity.Jobs ;
 
 namespace Antypodish.ECS.Blocks
 {    
-    
-    public class AddBlockBarrier : BarrierSystem {} ;
-
-
+        
     public class AddBlockSystem : JobComponentSystem
     {
 
-        [Inject] private AddBlockBarrier barrier ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
 
-        ComponentGroup group ;
+        // ComponentGroup group ;
 
         // static EntityManager entityManager ;
 
         protected override void OnCreateManager ( )
         {         
+            
+            // Cache the EndInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
+            /*
             group = GetComponentGroup 
             (            
                 typeof ( AddBlockData )
             ) ;
-
-
-            /*
-            Debug.Log ( "Add block system requires add Job Parallel For" ) ;
-
-            commandsBuffer = addBlockBarrier.CreateCommandBuffer () ;
-
-            entityManager = World.Active.GetOrCreateManager <EntityManager>() ;
-                        
-            // entityManager = World.Active.GetOrCreateManager <EntityManager>() ;
-            MeshInstanceRenderer renderer = Bootstrap.blockPrefab01 ;
-            commandsBuffer.CreateEntity () ;
-            // commandsBuffer.AddComponent ( new MeshCullingComponent { } ) ;     
-            commandsBuffer.AddSharedComponent ( renderer ) ;
             */
             
         }
@@ -50,15 +37,18 @@ namespace Antypodish.ECS.Blocks
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
 
-            JobHandle job = new Job
+            JobHandle jobHandle = new Job
             {
-                ecb = barrier.CreateCommandBuffer (),
-                a_entities = group.GetEntityArray (),
-                a_addBlockData = group.GetComponentDataArray <AddBlockData> (),
+                ecb             = eiecb.CreateCommandBuffer ().ToConcurrent (),
+                renderMeshTypes = Bootstrap.renderMeshTypes
+                // a_entities = group.GetEntityArray (),
+                // a_addBlockData = group.GetComponentDataArray <AddBlockData> (),
                 
-            }.Schedule (inputDeps) ;
+            }.Schedule ( this, inputDeps ) ;
 
-            return job ;
+            eiecb.AddJobHandleForProducer ( jobHandle ) ;
+
+            return jobHandle ;
 
         }
 
@@ -66,124 +56,42 @@ namespace Antypodish.ECS.Blocks
         /// <summary>
         /// Execute Jobs
         /// </summary>
+        [RequireComponentTag ( typeof ( AddBlockTag ) ) ]
         // [BurstCompile]
-        struct Job : IJob
+        struct Job : IJobForEachWithEntity <MeshTypeData>
         {
 
-            [ReadOnly] public EntityCommandBuffer ecb ;
-            [ReadOnly] public EntityArray a_entities ;
-            [ReadOnly] public ComponentDataArray <AddBlockData> a_addBlockData ;
+            [ReadOnly] 
+            public EntityCommandBuffer.Concurrent ecb ;
+            // [ReadOnly] public EntityArray a_entities ;
+            // [ReadOnly] public ComponentDataArray <AddBlockData> a_addBlockData ;
+            [ReadOnly] 
+            public Bootstrap.RenderMeshTypes renderMeshTypes ;
 
-            public void Execute ()
+            public void Execute ( Entity blockEntity, int jobIndex, [ReadOnly] ref MeshTypeData meshType )
             {
 
-                for (int i = 0; i < a_entities.Length; ++i)
-                {
+                // AddBlockData addBlockData = a_addBlockData [i] ;
 
-                    Entity blockEntity = a_entities [i] ;
-                    AddBlockData addBlockData = a_addBlockData [i] ;
-
-                    ecb.AddComponent ( blockEntity, new Translation { Value = addBlockData.f3_position } ) ;
-                    ecb.AddComponent ( blockEntity, new Rotation { Value = quaternion.identity} ) ;
-                    ecb.AddComponent ( blockEntity, new Scale { Value = addBlockData.f3_scale } ) ;
+                ecb.AddComponent ( jobIndex, blockEntity, new Translation { Value = addBlockData.f3_position } ) ;
+                ecb.AddComponent ( jobIndex, blockEntity, new Rotation { Value = quaternion.identity} ) ;
+                ecb.AddComponent ( jobIndex, blockEntity, new NonUniformScale { Value = addBlockData.f3_scale } ) ;
+                // ...
+                // ecb.AddComponent ( jobIndex, blockEntity, new Highlight.MeshType { type = Highlight.Common.MeshType.Default } ) ;
 
                     
-                    MeshInstanceRenderer renderer = Bootstrap.blockPrefab01 ;
-                    ecb.AddSharedComponent ( blockEntity, renderer ) ;
-
-                    ecb.RemoveComponent <AddBlockData> ( blockEntity ) ; // Block added. Remove tag
+                RenderMesh renderer = Bootstrap._SelectRenderMesh ( meshType.type, ref renderMeshTypes ) ;
+                ecb.AddSharedComponent ( jobIndex, blockEntity, renderer ) ;
+                
+                
+                ecb.RemoveComponent <AddBlockTag> ( jobIndex, blockEntity ) ; // Block added. Remove tag
+                // ecb.RemoveComponent <AddBlockData> ( jobIndex, blockEntity ) ; // Block added. Remove tag
 
                     // _AddBlock ( blockEntity );
-                
-                }
-                               
+                                               
             }           
             
         } // job
-
-
-
-        private void _AddBlock ( Entity blockEntity )
-        {
-
-
-            // AddBlocktag blockTagsData = blockData.a_blockTags [i] ;
                         
-            // float3 position = blockTagsData.f3_position ;
-            // float3 scale = blockTagsData.f3_scale ;
-            
-            // Entity entity = blockData.a_entities [i] ;
-            // float4x4 f4x4 = math.mul ( float4x4.identity, new float4x4(scale.x, 0, 0, 0, 0, scale.y, 0, 0, 0, 0, scale.z, 0, 0, 0, 0, 1) ) ; // set default position/rotation/scale matrix
-            //float4x4 f4x4 = new float4x4(scale.x, 0, 0, 0, 0, scale.y, 0, 0, 0, 0, scale.z, 0, position.x, position.y, position.z, 1) ; // set default position/rotation/scale matrix
-            // commandsBuffer.AddComponent ( entity, new TransformMatrix { Value = f4x4 } ) ;
-//            commandsBuffer.AddComponent ( blockEntity, new Position { Value = position } ) ;
-//            commandsBuffer.AddComponent ( blockEntity, new Rotation { Value = quaternion.identity} ) ;
-//            commandsBuffer.AddComponent ( blockEntity, new Scale { Value  = scale } ) ;
-                       
-            // renderer
-//            MeshInstanceRenderer renderer ;
-              
-            /*
-            //blockTagsData.f4_color
-            if ( blockTagsData.f4_color.x == 1 )
-            {
-                // apply random renderer (color/mesh), from the prefabs
-
-                int i_textureIndex ;
-                
-
-                if ( Mathf.RoundToInt ( blockTagsData.f4_color.z ) == 0 || Mathf.RoundToInt ( blockTagsData.f4_color.z ) == 1 )
-                {
-                    
-                    i_textureIndex = blockTagsData.f4_color.z == 1 ? Mathf.RoundToInt ( UnityEngine.Random.Range ( 1, 7) ) : Mathf.RoundToInt ( blockTagsData.f4_color.y ) ;
-
-                    switch ( i_textureIndex )
-                    {
-                        case 1:
-                            renderer = Bootstrap.octreeCenter01 ;
-                            break ;
-                        case 2:
-                            renderer = Bootstrap.octreeCenter02 ;
-                            break ;
-                        case 3:
-                            renderer = Bootstrap.octreeCenter03 ;
-                            break ;
-                        case 4:
-                            renderer = Bootstrap.octreeCenter04 ;
-                            break ;
-                        case 5:
-                            renderer = Bootstrap.octreeCenter05 ;
-                            break ;
-                        case 6:
-                            renderer = Bootstrap.octreeCenter06 ;
-                            break ;
-                        case 7:
-                            renderer = Bootstrap.octreeCenter07 ;
-                            break ;
-                        default:
-                            renderer = Bootstrap.octreeCenter01 ;
-                            break ;
-                    }
-
-                }
-                else
-                {
-                    renderer = Bootstrap.octreeNode ;
-                }
-                
-            }
-            else
-            {
-                renderer = Bootstrap.playerRenderer ;
-            }
-            */
-
-//            renderer = Bootstrap.blockPrefab01 ;
-//            commandsBuffer.AddSharedComponent ( blockEntity, renderer ) ;
-
-//            commandsBuffer.RemoveComponent <AddBlockData> ( blockEntity ) ; // Block added. Remove tag
-                  
-        }
-                
     }
 }

@@ -7,24 +7,16 @@ using Unity.Jobs ;
 namespace Antypodish.ECS.Highlight
 {
 
-    public class ResetBarrier : BarrierSystem {} ;
-
-
     public class ResetSystem : JobComponentSystem
     {
 
-        [Inject] private ResetBarrier barrier ;
-
-        ComponentGroup group ;
+        EndInitializationEntityCommandBufferSystem eiecb ;
         
         protected override void OnCreateManager ( )
         {
-
-            group = GetComponentGroup 
-            (    
-                typeof ( MeshInstanceRenderer ),
-                typeof ( ResetHighlightTag )
-            ) ;
+            
+            // Cache the EndInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
+            eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
             
             base.OnCreateManager ( );
         }
@@ -32,47 +24,43 @@ namespace Antypodish.ECS.Highlight
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
+            
+            JobHandle jobHandle = new Job
+            {                   
+                ecb                = eiecb.CreateCommandBuffer ().ToConcurrent (),
+                renderMeshTypes    = Bootstrap.renderMeshTypes
 
-            JobHandle job = new Job
-            {
-                ecb = barrier.CreateCommandBuffer (),
-                a_entities = group.GetEntityArray (),
+            }.Schedule ( this, inputDeps ) ;
 
-            }.Schedule ( inputDeps ) ;
+            eiecb.AddJobHandleForProducer ( jobHandle ) ;
 
-            return job ;
+            return jobHandle ;
 
         }
 
         /// <summary>
         /// Execute Jobs
         /// </summary>
+        [RequireComponentTag ( typeof ( RenderMesh ), typeof ( ResetHighlightTag )  ) ]
         // [BurstCompile]
-        struct Job : IJob
-        // struct CollisionJob : IJobParallelFor // example of job parallel for
+        struct Job : IJobForEachWithEntity <MeshTypeData>
         {
             
-            [ReadOnly] public EntityCommandBuffer ecb ;
-            [ReadOnly] public EntityArray a_entities;
+            public EntityCommandBuffer.Concurrent ecb ;
             
+            [ReadOnly] 
+            public Bootstrap.RenderMeshTypes renderMeshTypes ;
 
-            public void Execute ()
+            public void Execute ( Entity highlightEntity, int jobIndex, [ReadOnly] ref MeshTypeData meshType )
             {
+                
+                // renderer
+                RenderMesh renderMesh = Bootstrap._SelectRenderMesh ( meshType.type, ref renderMeshTypes ) ;
+                                      
+                ecb.SetSharedComponent <RenderMesh> ( jobIndex, highlightEntity, renderMesh ) ; // replace renderer with material and mesh
 
-                for (int i = 0; i < a_entities.Length; ++i )
-                {
-
-                    Entity highlight = a_entities [i] ;
-                     
-                    // renderer
-                    Unity.Rendering.MeshInstanceRenderer renderer = Common.previousMeshInstanceRenderer ; // Bootstrap.playerRenderer ;
-                     
-                    ecb.SetSharedComponent <MeshInstanceRenderer> ( highlight, renderer ) ; // replace renderer with material and mesh
-
-                    ecb.RemoveComponent <ResetHighlightTag> ( highlight ) ; 
-                    
-                }
-                               
+                ecb.RemoveComponent <ResetHighlightTag> ( jobIndex, highlightEntity ) ; 
+                                                   
             }           
             
         } // job

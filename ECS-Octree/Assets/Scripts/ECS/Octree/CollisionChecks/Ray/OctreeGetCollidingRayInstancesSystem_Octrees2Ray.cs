@@ -76,7 +76,7 @@ namespace Antypodish.ECS.Octree
             // Test ray 
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
-            GetCollidingRayInstances_Common._DebugRays ( barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, collisionInstancesBufferElement, a_rayEntityPair4CollisionData, false, false ) ;
+            GetCollidingRayInstances_Common._DebugRays ( ref barrier.CreateCommandBuffer (), a_collisionChecksEntities, a_rayData, a_rayMaxDistanceData, a_isCollidingData, collisionInstancesBufferElement, a_rayEntityPair4CollisionData, false, false ) ;
 
             
             // Test ray            

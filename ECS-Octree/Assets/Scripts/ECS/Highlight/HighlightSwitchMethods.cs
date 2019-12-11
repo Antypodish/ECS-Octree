@@ -25,7 +25,7 @@ namespace Antypodish.ECS.Highlight
         /// Disable old highlight and enable new one.
         /// </summary>
         /// <param name="newEntityToHiglght"></param>
-        static public void _Switch ( EntityCommandBuffer ecb, Entity newEntityToHiglght )
+        static public void _Switch ( ref EntityCommandBuffer ecb, Entity newEntityToHiglght )
         {
       
             // Switch if previous and current entities are different
@@ -42,6 +42,6 @@ namespace Antypodish.ECS.Highlight
             }
 
         }
-
+        
     }
 }
