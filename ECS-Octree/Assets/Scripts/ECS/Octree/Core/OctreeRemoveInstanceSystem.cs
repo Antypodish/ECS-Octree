@@ -13,7 +13,7 @@ namespace Antypodish.ECS.Octree
         
         EndInitializationEntityCommandBufferSystem eiecb ;
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
@@ -22,10 +22,10 @@ namespace Antypodish.ECS.Octree
             
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
-            group = GetComponentGroup 
+            group = GetEntityQuery 
             ( 
                 typeof (IsActiveTag), 
-                typeof (RemoveInstanceBufferElement), 
+                typeof (RemoveInstanceBufferElement), ...
                 typeof (RootNodeData) 
             ) ;
 
@@ -36,14 +36,14 @@ namespace Antypodish.ECS.Octree
             
             Debug.Log ( "Remove Octree Instance." ) ;
 
-            int i_groupLength = group.CalculateLength () ;
+            // int i_groupLength = group.CalculateLength () ;
 
-            var removeInstanceJob = new RemoveInstanceJob 
+            JobHandle removeInstanceJobHandle = new RemoveInstanceJob 
             {            
-                a_octreeEntities                    = group.GetEntityArray (),
+                // a_octreeEntities                    = group.GetEntityArray (),
 
                 // Contains a list of instances to add, with its properties.
-                removeInstanceBufferElement         = GetBufferFromEntity <RemoveInstanceBufferElement> (),
+                // removeInstanceBufferElement         = GetBufferFromEntity <RemoveInstanceBufferElement> (),
 
                 a_rootNodeData                      = GetComponentDataFromEntity <RootNodeData> (),
 
@@ -54,32 +54,35 @@ namespace Antypodish.ECS.Octree
                 instanceBufferElement               = GetBufferFromEntity <InstanceBufferElement> (),
                 instancesSpareIndexBufferElement    = GetBufferFromEntity <InstancesSpareIndexBufferElement> ()
 
-            }.Schedule ( i_groupLength, 8, inputDeps ) ;
+            }.Schedule ( group, inputDeps ) ;
 
 
             
-            var completeRemoveInstanceJob = new CompleteRemoveInstanceJob 
+            JobHandle completeRemoveInstanceJobHandle = new CompleteRemoveInstanceJob 
             {
                 
-                ecb                              = barrier.CreateCommandBuffer ().ToConcurrent (),                
-                a_octreeEntities                 = group.GetEntityArray ()
+                ecb                                 = eiecb.CreateCommandBuffer ().ToConcurrent (),         
+                // a_octreeEntities                 = group.GetEntityArray ()
 
-            }.Schedule ( i_groupLength, 8, removeInstanceJob ) ;
+            }.Schedule ( group, removeInstanceJobHandle ) ;
+            
+            eiecb.AddJobHandleForProducer ( completeRemoveInstanceJobHandle ) ;
 
-            return completeRemoveInstanceJob ;
+            return completeRemoveInstanceJobHandle ;
 
         }
 
         [BurstCompile]
-        [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
-        struct RemoveInstanceJob : IJobParallelFor 
+        // [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
+        struct RemoveInstanceJob : IJobForEachWithEntity_EB <RemoveInstanceBufferElement>
+        // struct RemoveInstanceJob : IJobParallelFor 
         {
 
-            [ReadOnly] public EntityArray a_octreeEntities ;
+            // [ReadOnly] public EntityArray a_octreeEntities ;
 
             // Contains a list of instances to add, with its properties.
-            [NativeDisableParallelForRestriction]            
-            public BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement ;
+            // [NativeDisableParallelForRestriction]            
+            //public BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement ;
             
             [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity <RootNodeData> a_rootNodeData ;
@@ -97,13 +100,14 @@ namespace Antypodish.ECS.Octree
             [NativeDisableParallelForRestriction]
             public BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement ;
 
-
-            public void Execute ( int i_arrayIndex )
+            
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBuffer )
+            // public void Execute ( int i_arrayIndex )
             {
                 
-                Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
+                // Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
 
-                DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement           = removeInstanceBufferElement [octreeRootNodeEntity] ;    
+                // DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement           = removeInstanceBufferElement [octreeRootNodeEntity] ;    
                             
                 RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
 
@@ -118,12 +122,12 @@ namespace Antypodish.ECS.Octree
 
 
                 // Iterate through number of instances to add, from the buffer
-                for ( int i = 0; i < a_removeInstanceBufferElement.Length; i ++ )
+                for ( int i = 0; i < a_removeInstanceBuffer.Length; i ++ )
                 {
                     
                     // RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
 
-                    RemoveInstanceBufferElement removeInstanceBuffer = a_removeInstanceBufferElement [i] ;
+                    RemoveInstanceBufferElement removeInstanceBuffer = a_removeInstanceBuffer [i] ;
 
                     bool removed = _NodeRemoveInstance ( 
                         ref rootNodeData, 
@@ -162,21 +166,23 @@ namespace Antypodish.ECS.Octree
         }
 
 
-        [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
-        struct CompleteRemoveInstanceJob : IJobParallelFor 
+        // [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
+        struct CompleteRemoveInstanceJob : IJobForEachWithEntity_EB <RemoveInstanceBufferElement>
+        // struct CompleteRemoveInstanceJob : IJobParallelFor 
         {
 
-            [ReadOnly] public EntityCommandBuffer.Concurrent ecb ;
-            [ReadOnly] public EntityArray a_octreeEntities ;
+            public EntityCommandBuffer.Concurrent ecb ;
+            // [ReadOnly] public EntityArray a_octreeEntities ;
                         
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBuffer )
+            // public void Execute ( int i_arrayIndex )
             {
                 
-                Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
+                // Entity octreeRootNodeEntity = a_octreeEntities [jobIndex] ;
 
                 // Remove component, as instances has been already removed.
-                ecb.RemoveComponent <RemoveInstanceBufferElement> ( i_arrayIndex, octreeRootNodeEntity ) ;
-
+                ecb.RemoveComponent <RemoveInstanceBufferElement> ( jobIndex, octreeRootNodeEntity ) ;
+                ...
             }
 
         }

@@ -12,9 +12,6 @@ namespace Antypodish.ECS.Octree.Examples
         
         EndInitializationEntityCommandBufferSystem eiecb ;
         
-        EntityArchetype octreeArchetype ;        
-        ComponentGroup group ;
-
         protected override void OnCreate ( )
         {
 

@@ -14,7 +14,7 @@ namespace Antypodish.ECS.Octree
         
         EndInitializationEntityCommandBufferSystem eiecb ;
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
@@ -23,10 +23,11 @@ namespace Antypodish.ECS.Octree
             
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
-            group = GetComponentGroup ( 
-                typeof (IsActiveTag), 
-                typeof (AddInstanceBufferElement), 
-                typeof (RootNodeData) 
+            group = GetEntityQuery 
+            ( 
+                typeof ( IsActiveTag ), 
+                typeof ( AddInstanceBufferElement ), ....
+                typeof ( RootNodeData ) 
             ) ;
 
         }
@@ -38,14 +39,14 @@ namespace Antypodish.ECS.Octree
             Debug.Log ( "Add New Octree Instance" ) ;
 
 
-            int i_groupLength = group.CalculateLength () ;
+            // int i_groupLength = group.CalculateLength () ;
 
-            var addInstanceJob = new AddInstanceJob 
+            JobHandle addInstanceJobHandle = new AddInstanceJob 
             {            
-                a_octreeEntities                 = group.GetEntityArray (),
+                // a_octreeEntities                 = group.GetEntityArray (),
 
                 // Contains a list of instances to add, with its properties.
-                addInstanceBufferElement            = GetBufferFromEntity <AddInstanceBufferElement> (),
+                // addInstanceBufferElement            = GetBufferFromEntity <AddInstanceBufferElement> (),
 
                 a_rootNodeData                      = GetComponentDataFromEntity <RootNodeData> (),
 
@@ -56,32 +57,35 @@ namespace Antypodish.ECS.Octree
                 instanceBufferElement               = GetBufferFromEntity <InstanceBufferElement> (),
                 instancesSpareIndexBufferElement    = GetBufferFromEntity <InstancesSpareIndexBufferElement> ()
 
-            }.Schedule ( i_groupLength, 8, inputDeps ) ;
+            }.Schedule ( group, inputDeps ) ;
 
 
             
-            var completeAddInstanceJob = new CompleteAddInstanceJob 
+            JobHandle completeAddInstanceJobHandle = new CompleteAddInstanceJob 
             {
                 
                 ecb                                 = eiecb.CreateCommandBuffer ().ToConcurrent (),                
-                a_octreeEntities                    = group.GetEntityArray ()
+                // a_octreeEntities                    = group.GetEntityArray ()
 
-            }.Schedule ( i_groupLength, 8, addInstanceJob ) ;
+            }.Schedule ( group, addInstanceJobHandle ) ;
+            
+            eiecb.AddJobHandleForProducer ( completeAddInstanceJobHandle ) ;
 
-            return completeAddInstanceJob ;
+            return completeAddInstanceJobHandle ;
         }
         
 
         [BurstCompile]
         [RequireComponentTag ( typeof (AddInstanceBufferElement) ) ]
-        struct AddInstanceJob : IJobParallelFor 
+        struct AddInstanceJob : IJobForEachWithEntity_EB <AddInstanceBufferElement>
+        // struct AddInstanceJob : IJobParallelFor 
         {
 
-            [ReadOnly] public EntityArray a_octreeEntities ;
+            // [ReadOnly] public EntityArray a_octreeEntities ;
 
             // Contains a list of instances to add, with its properties.
-            [NativeDisableParallelForRestriction]            
-            public BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement ;
+            // [NativeDisableParallelForRestriction]            
+            // public BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement ;
 
             [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity <RootNodeData> a_rootNodeData ;
@@ -100,22 +104,23 @@ namespace Antypodish.ECS.Octree
             public BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement ;
 
 
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] DynamicBuffer <AddInstanceBufferElement> a_addInstanceBuffer )
+            // public void Execute ( int i_arrayIndex )
             {
                 
-                Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
+                // Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
 
-                DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement                 = addInstanceBufferElement [octreeRootNodeEntity] ;    
+                // DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement          = addInstanceBufferElement [octreeRootNodeEntity] ;    
                             
-                // RootNodeData rootNodeData                                                           = a_rootNodeData [octreeRootNodeEntity] ;
+                // RootNodeData rootNodeData                                                 = a_rootNodeData [octreeRootNodeEntity] ;
 
-                DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer                          = nodeSparesBufferElement [octreeRootNodeEntity] ;
-                DynamicBuffer <NodeBufferElement> a_nodesBuffer                                     = nodeBufferElement [octreeRootNodeEntity] ;
-                DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer          = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
-                DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer                      = nodeChildrenBufferElement [octreeRootNodeEntity] ;    
+                DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer                   = nodeSparesBufferElement [octreeRootNodeEntity] ;
+                DynamicBuffer <NodeBufferElement> a_nodesBuffer                              = nodeBufferElement [octreeRootNodeEntity] ;
+                DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer   = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
+                DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer               = nodeChildrenBufferElement [octreeRootNodeEntity] ;    
                 
-                DynamicBuffer <InstanceBufferElement> a_instanceBuffer                              = instanceBufferElement [octreeRootNodeEntity] ;   
-                DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer        = instancesSpareIndexBufferElement [octreeRootNodeEntity] ;    
+                DynamicBuffer <InstanceBufferElement> a_instanceBuffer                       = instanceBufferElement [octreeRootNodeEntity] ;   
+                DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer = instancesSpareIndexBufferElement [octreeRootNodeEntity] ;    
 
 
         /// <summary>
@@ -127,12 +132,12 @@ namespace Antypodish.ECS.Octree
         //{
 
                 // Iterate through number of instances to add, from the buffer
-                for ( int i = 0; i < a_addInstanceBufferElement.Length; i ++ )
+                for ( int i = 0; i < a_addInstanceBuffer.Length; i ++ )
                 {
 
                     RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
 
-                    AddInstanceBufferElement addInstanceBuffer = a_addInstanceBufferElement [i] ;
+                    AddInstanceBufferElement addInstanceBuffer = a_addInstanceBuffer [i] ;
 
 		            // Add object or expand the octree until it can be added
 		            int i_count = 0; // Safety check against infinite/excessive growth
@@ -183,20 +188,21 @@ namespace Antypodish.ECS.Octree
         }
 
 
-        [RequireComponentTag ( typeof (AddInstanceBufferElement) ) ]
-        struct CompleteAddInstanceJob : IJobParallelFor 
+        // [RequireComponentTag ( typeof (AddInstanceBufferElement) ) ]
+        struct CompleteAddInstanceJob : IJobForEachWithEntity_EB <AddInstanceBufferElement>
+        // struct CompleteAddInstanceJob : IJobParallelFor 
         {
 
-            [ReadOnly] public EntityCommandBuffer.Concurrent ecb ;
-            [ReadOnly] public EntityArray a_octreeEntities ;
+            public EntityCommandBuffer.Concurrent ecb ;
+            // [ReadOnly] public EntityArray a_octreeEntities ;
 
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] DynamicBuffer <AddInstanceBufferElement> a_addInstanceBuffer )
             {
                 
-                Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
-
+                // Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
+                ...
                 // Remove component, as instances has been already added.
-                ecb.RemoveComponent <AddInstanceBufferElement> ( i_arrayIndex, octreeRootNodeEntity ) ;
+                ecb.RemoveComponent <AddInstanceBufferElement> ( jobIndex, octreeRootNodeEntity ) ;
 
             }
 

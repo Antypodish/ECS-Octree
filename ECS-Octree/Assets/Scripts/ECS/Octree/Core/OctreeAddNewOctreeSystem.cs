@@ -14,7 +14,7 @@ namespace Antypodish.ECS.Octree
 
         EndInitializationEntityCommandBufferSystem eiecb ;
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
@@ -25,9 +25,9 @@ namespace Antypodish.ECS.Octree
 
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
             
-            group = GetComponentGroup 
+            group = GetEntityQuery 
             ( 
-                typeof (AddNewOctreeData)    
+                typeof ( AddNewOctreeData )    
             ) ;
 
         }
@@ -35,24 +35,28 @@ namespace Antypodish.ECS.Octree
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-            EntityArray a_newOctreeEntities = group.GetEntityArray () ;
-            
-            for ( int i = 0; i < a_newOctreeEntities.Length; i ++)
+            NativeArray <Entity> na_newOctreeEntities = group.ToEntityArray ( Allocator.Temp ) ;
+                        
+            Debug.Log ( "Add New Octree System" ) ;
+
+            for ( int i = 0; i < na_newOctreeEntities.Length; i ++)
             {
-                Entity e = a_newOctreeEntities [i] ;
+                Entity e = na_newOctreeEntities [i] ;
 
                 Debug.Log ( "#" + i + "; e #" + e.Index )  ;
             }
 
+            na_newOctreeEntities.Dispose () ;
+
 
             int i_groupLength = group.CalculateLength () ;
 
-            var initialiseOctreeJob = new InitialiseOctreeJob 
+            var initialiseOctreeJobHandle = new InitialiseOctreeJob 
             {
                           
-                a_newOctreeEntities                 = group.GetEntityArray (),
+                // a_newOctreeEntities                 = group.GetEntityArray (),
 
-                a_addNewOctreeData                  = GetComponentDataFromEntity <AddNewOctreeData> (),
+                // a_addNewOctreeData                  = GetComponentDataFromEntity <AddNewOctreeData> (),
                 a_rootNodeData                      = GetComponentDataFromEntity <RootNodeData> (),
 
                 nodeSparesBufferElement             = GetBufferFromEntity <NodeSparesBufferElement> (),
@@ -62,30 +66,33 @@ namespace Antypodish.ECS.Octree
                 instanceBufferElement               = GetBufferFromEntity <InstanceBufferElement> (),
                 instancesSpareIndexBufferElement    = GetBufferFromEntity <InstancesSpareIndexBufferElement> ()
 
-            }.Schedule ( i_groupLength, 8, inputDeps ) ;
+            }.Schedule ( group, inputDeps ) ;
 
-            var finalizeInitialisationOctreeJob = new FinalizeInitialisationOctreeJob 
+
+            var finalizeInitialisationOctreeJobHandle = new FinalizeInitialisationOctreeJob 
             {
                 
                 ecb                                 = eiecb.CreateCommandBuffer ().ToConcurrent (),                
-                a_newOctreeEntities                 = group.GetEntityArray ()
+                // a_newOctreeEntities                 = group.GetEntityArray ()
 
-            }.Schedule ( i_groupLength, 8, initialiseOctreeJob ) ;
+            }.Schedule ( group, initialiseOctreeJobHandle ) ;
 
+            eiecb.AddJobHandleForProducer ( finalizeInitialisationOctreeJobHandle ) ;
 
-            return finalizeInitialisationOctreeJob ;
+            return finalizeInitialisationOctreeJobHandle ;
 
         }
 
         [BurstCompile]
-        [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
-        struct InitialiseOctreeJob : IJobParallelFor 
+        // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
+        struct InitialiseOctreeJob : IJobForEachWithEntity_EC <AddNewOctreeData>
+        // struct InitialiseOctreeJob : IJobParallelFor 
         {
             
             /// [ReadOnly] public EntityCommandBuffer.Concurrent ecb ;
-            [ReadOnly] public EntityArray a_newOctreeEntities ;
+            // [ReadOnly] public EntityArray a_newOctreeEntities ;
 
-            [ReadOnly] public ComponentDataFromEntity <AddNewOctreeData> a_addNewOctreeData ;
+            // [ReadOnly] public ComponentDataFromEntity <AddNewOctreeData> a_addNewOctreeData ;
 
             [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity <RootNodeData> a_rootNodeData ;
@@ -103,14 +110,15 @@ namespace Antypodish.ECS.Octree
             [NativeDisableParallelForRestriction]
             public BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement ;
 
-
-            public void Execute ( int i_arrayIndex )
+            
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] ref AddNewOctreeData addNewOctree )
+            // public void Execute ( int i_arrayIndex )
             {
 
-                Entity octreeRootNodeEntity = a_newOctreeEntities [i_arrayIndex] ;
+                // Entity octreeRootNodeEntity = a_newOctreeEntities [i_arrayIndex] ;
 
 
-                AddNewOctreeData addNewOctreeData                                                   = a_addNewOctreeData [octreeRootNodeEntity] ;
+                // AddNewOctreeData addNewOctreeData                                                   = a_addNewOctreeData [octreeRootNodeEntity] ;
 
                 RootNodeData rootNodeData                                                           = a_rootNodeData [octreeRootNodeEntity] ;
                 rootNodeData.i_nodeSpareLastIndex -- ;               
@@ -121,7 +129,7 @@ namespace Antypodish.ECS.Octree
                 DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer          = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
                 DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer                      = nodeChildrenBufferElement [octreeRootNodeEntity] ;    
 
-                CommonMethods._CreateNewNode ( ref rootNodeData, rootNodeData.i_rootNodeIndex, addNewOctreeData.f_initialSize, addNewOctreeData.f3_initialPosition, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+                CommonMethods._CreateNewNode ( ref rootNodeData, rootNodeData.i_rootNodeIndex, addNewOctree.f_initialSize, addNewOctree.f3_initialPosition, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
             
                 rootNodeData.i_nodeSpareLastIndex -- ;                 
             
@@ -145,22 +153,23 @@ namespace Antypodish.ECS.Octree
         }
 
 
-        [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
-        struct FinalizeInitialisationOctreeJob : IJobParallelFor
+        // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
+        struct FinalizeInitialisationOctreeJob : IJobForEachWithEntity_EC <AddNewOctreeData>
+        // struct FinalizeInitialisationOctreeJob : IJobParallelFor
         {
 
-            [ReadOnly] public EntityCommandBuffer.Concurrent ecb ;
-            [ReadOnly] public EntityArray a_newOctreeEntities ;
+            public EntityCommandBuffer.Concurrent ecb ;
+            // [ReadOnly] public EntityArray a_newOctreeEntities ;
 
 
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] ref AddNewOctreeData addNewOctree )
             {
                 
-                Entity octreeRootNodeEntity = a_newOctreeEntities [i_arrayIndex] ;
+                // Entity octreeRootNodeEntity = a_newOctreeEntities [i_arrayIndex] ;
 
-                ecb.AddComponent ( i_arrayIndex, octreeRootNodeEntity, new IsActiveTag () ) ; // Octree initialized
-                ecb.RemoveComponent <AddNewOctreeData> ( i_arrayIndex, octreeRootNodeEntity ) ; // Octree initialized
-
+                ecb.AddComponent ( jobIndex, octreeRootNodeEntity, new IsActiveTag () ) ; // Octree initialized
+                ecb.RemoveComponent <AddNewOctreeData> ( jobIndex, octreeRootNodeEntity ) ; // Octree initialized
+                ...
             }
 
         }

@@ -11,8 +11,6 @@ namespace Antypodish.ECS.Octree.Examples
     {
         
         EndInitializationEntityCommandBufferSystem eiecb ;
-              
-        ComponentGroup group ;
 
         protected override void OnCreate ( )
         {
