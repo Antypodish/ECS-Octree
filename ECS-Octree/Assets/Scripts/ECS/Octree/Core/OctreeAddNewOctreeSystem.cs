@@ -191,7 +191,7 @@ namespace Antypodish.ECS.Octree
         {
                         
             Debug.Log ( "Create new octree #" + newOctreeEntity.Index ) ;
-            
+            ...
             ecb.AddComponent ( newOctreeEntity, new AddNewOctreeData ()
             {
                 f3_initialPosition = f3_initialPosition,
@@ -230,7 +230,7 @@ namespace Antypodish.ECS.Octree
 
             // ***** Core Components ***** //
 
-            
+            ...
             ecb.AddComponent ( newOctreeEntity, rootNodeData ) ; // Core of octree structure.
 
             // Add buffer arrays

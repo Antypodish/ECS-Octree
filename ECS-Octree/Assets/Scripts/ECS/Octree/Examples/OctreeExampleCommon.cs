@@ -32,7 +32,7 @@ namespace Antypodish.ECS.Octree.Examples
 
         // Request to add some instances.
         // User is responsible to ensure, that instances IDs are unique in the octrtree.        
-        static public void _RequesAddInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2AddCount )
+        static public void _RequesAddInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2AddCount, ref Bootstrap.EntitiesPrefabs entitiesPrefabs, ref Bootstrap.RenderMeshTypes renderMeshTypes )
         {
 
             DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [octreeEntity] ;  
@@ -50,9 +50,9 @@ namespace Antypodish.ECS.Octree.Examples
                 int z = (int) math.floor ( i_instanceID / 1000 ) ;
                 float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 )  * 0.5f ;
 
-                ...
-                _AddBlockRequestViaCustomBufferWithEntity ( ref EntityCommandBuffer.Concurrent ecb, int jobIndex, Entity blockEntity, float3 f3_position, float3 f3_scale, MeshType meshType, [ReadOnly] ref Bootstrap.EntitiesPrefabs entitiesPrefabs, ref Bootstrap.RenderMeshTypes renderMeshTypes )
-                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
+                
+                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.95f, MeshType.Prefab01, ref entitiesPrefabs, ref renderMeshTypes ) ;
+                // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
 
 
 

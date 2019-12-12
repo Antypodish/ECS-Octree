@@ -56,7 +56,8 @@ namespace Antypodish.ECS.Octree.Examples
             Debug.Log ( "Octree: create dummy boundary box, to test for collision." ) ;
             float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
             // Only test
-            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
+            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
+            //Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
 
             // ***** Initialize Octree ***** //
@@ -104,7 +105,7 @@ namespace Antypodish.ECS.Octree.Examples
                 EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
                 BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
-                Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount ) ;
+                Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
 
 
 
