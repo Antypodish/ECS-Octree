@@ -9,6 +9,7 @@ using UnityEngine ;
 namespace Antypodish.ECS.Octree
 {
     
+    [UpdateAfter ( typeof ( Octree.AddNewOctreeSystem ) ) ]
     class AddInstanceSystem : JobComponentSystem
     {
         
@@ -26,7 +27,8 @@ namespace Antypodish.ECS.Octree
             group = GetEntityQuery 
             ( 
                 typeof ( IsActiveTag ), 
-                typeof ( AddInstanceBufferElement ), ....
+                typeof ( AddInstanceBufferElement ),
+                typeof ( AddInstanceTag ),
                 typeof ( RootNodeData ) 
             ) ;
 
@@ -76,7 +78,7 @@ namespace Antypodish.ECS.Octree
         
 
         [BurstCompile]
-        [RequireComponentTag ( typeof (AddInstanceBufferElement) ) ]
+        [RequireComponentTag ( typeof ( AddInstanceTag ) ) ]
         struct AddInstanceJob : IJobForEachWithEntity_EB <AddInstanceBufferElement>
         // struct AddInstanceJob : IJobParallelFor 
         {
@@ -104,7 +106,7 @@ namespace Antypodish.ECS.Octree
             public BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement ;
 
 
-            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] DynamicBuffer <AddInstanceBufferElement> a_addInstanceBuffer )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, DynamicBuffer <AddInstanceBufferElement> a_addInstanceBuffer )
             // public void Execute ( int i_arrayIndex )
             {
                 
@@ -181,14 +183,17 @@ namespace Antypodish.ECS.Octree
 		            rootNodeData.i_totalInstancesCountInTree ++ ;
 
                     a_rootNodeData [octreeRootNodeEntity] = rootNodeData ;
-                }
+
+                } // for
+                
+                a_addInstanceBuffer.ResizeUninitialized ( 0 ) ; // Clear buffer after instances are added.
 
 	        }
 
-        }
+        } // Job
 
 
-        // [RequireComponentTag ( typeof (AddInstanceBufferElement) ) ]
+        [RequireComponentTag ( typeof ( AddInstanceTag ) ) ]
         struct CompleteAddInstanceJob : IJobForEachWithEntity_EB <AddInstanceBufferElement>
         // struct CompleteAddInstanceJob : IJobParallelFor 
         {
@@ -200,13 +205,13 @@ namespace Antypodish.ECS.Octree
             {
                 
                 // Entity octreeRootNodeEntity = a_octreeEntities [i_arrayIndex] ;
-                ...
+                
                 // Remove component, as instances has been already added.
-                ecb.RemoveComponent <AddInstanceBufferElement> ( jobIndex, octreeRootNodeEntity ) ;
+                ecb.RemoveComponent <AddInstanceTag> ( jobIndex, octreeRootNodeEntity ) ;
 
             }
 
-        }
+        } // Job
 
         /// <summary>
 	    /// Add an object.
@@ -216,20 +221,20 @@ namespace Antypodish.ECS.Octree
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance.</param>
 	    /// <returns>True if the object fits entirely within this node.</returns>
-	    static private bool _AddNodeInstance ( ref RootNodeData rootNodeData, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, out bool isInstanceAdded ) 
+	    static private bool _AddNodeInstance ( ref RootNodeData rootNode, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, out bool isInstanceAdded ) 
         {
 
             isInstanceAdded = false ;
 
-            NodeBufferElement nodeBufferElement = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
+            NodeBufferElement nodeBufferElement = a_nodesBuffer [rootNode.i_rootNodeIndex] ;
 
 		    if ( !CommonMethods._Encapsulates ( nodeBufferElement.bounds, instanceBounds ) ) return false ; // Early exit
 
             int i_requiredNumberOfInstances = a_nodeInstancesIndexBuffer.Length ;  // l_nodeBounds.Count ;
 
             isInstanceAdded = _NodeInstanceSubAdd ( 
-                ref rootNodeData, 
-                rootNodeData.i_rootNodeIndex, 
+                ref rootNode, 
+                rootNode.i_rootNodeIndex, 
                 i_instanceID, 
                 i_entityVersion,
                 instanceBounds, 
@@ -250,7 +255,7 @@ namespace Antypodish.ECS.Octree
 	    /// Grow the octree to fit in all objects.
 	    /// </summary>
 	    /// <param name="f3_direction">Direction to grow.</param>
-	    static private void _GrowOctree ( ref RootNodeData rootNodeData, float3 f3_direction, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private void _GrowOctree ( ref RootNodeData rootNode, float3 f3_direction, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
         {
 
 		    int xDirection = f3_direction.x >= 0 ? 1 : -1 ;
@@ -259,7 +264,7 @@ namespace Antypodish.ECS.Octree
 
             
 
-            int i_oldRootNodeIndex              = rootNodeData.i_rootNodeIndex ;            
+            int i_oldRootNodeIndex              = rootNode.i_rootNodeIndex ;            
             NodeBufferElement nodeBufferElement = a_nodesBuffer [i_oldRootNodeIndex] ;
             float f_baseLength                  = nodeBufferElement.f_baseLength ;
 		    float f_half                        = f_baseLength / 2 ;
@@ -273,8 +278,8 @@ namespace Antypodish.ECS.Octree
 		    {                
 
                 CommonMethods._CreateNewNode ( 
-                    ref rootNodeData, 
-                    rootNodeData.i_rootNodeIndex, 
+                    ref rootNode, 
+                    rootNode.i_rootNodeIndex, 
                     f_newBaseLength, 
                     f3_newCenter, 
                     ref a_nodesBuffer, 
@@ -287,14 +292,14 @@ namespace Antypodish.ECS.Octree
             else
             {
             
-                NodeSparesBufferElement nodeSparesBuffer = a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex] ;
-                rootNodeData.i_rootNodeIndex = nodeSparesBuffer.i ;
+                NodeSparesBufferElement nodeSparesBuffer = a_nodeSparesBuffer [rootNode.i_nodeSpareLastIndex] ;
+                rootNode.i_rootNodeIndex = nodeSparesBuffer.i ;
             
-                rootNodeData.i_nodeSpareLastIndex -- ;   
+                rootNode.i_nodeSpareLastIndex -- ;   
             
                 CommonMethods._CreateNewNode ( 
-                    ref rootNodeData, 
-                    rootNodeData.i_rootNodeIndex, 
+                    ref rootNode, 
+                    rootNode.i_rootNodeIndex, 
                     f_newBaseLength, 
                     f3_newCenter, 
                     ref a_nodesBuffer, 
@@ -308,11 +313,11 @@ namespace Antypodish.ECS.Octree
 			    int i_rootPos = _GetRootPosIndex ( xDirection, yDirection, zDirection ) ;
 			
                                 
-                NodeBufferElement nodeBuffer = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
+                NodeBufferElement nodeBuffer = a_nodesBuffer [rootNode.i_rootNodeIndex] ;
                 nodeBuffer.i_childrenCount = 8 ;
-                a_nodesBuffer [rootNodeData.i_rootNodeIndex] = nodeBuffer ; // Set back.
+                a_nodesBuffer [rootNode.i_rootNodeIndex] = nodeBuffer ; // Set back.
 
-                int i_newRootNodeChildrenIndexOffset = rootNodeData.i_rootNodeIndex * 8 ;
+                int i_newRootNodeChildrenIndexOffset = rootNode.i_rootNodeIndex * 8 ;
 
 			    for (int i = 0; i < 8; i++)
 			    {
@@ -335,14 +340,14 @@ namespace Antypodish.ECS.Octree
 					    yDirection                      = i > 3 ? -1 : 1;
 					    zDirection                      = (i < 2 || (i > 3 && i < 6)) ? -1 : 1;
 
-                        nodeSparesBuffer                        = a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex] ;
+                        nodeSparesBuffer                        = a_nodeSparesBuffer [rootNode.i_nodeSpareLastIndex] ;
                         int i_newNodeIndex                      = nodeSparesBuffer.i ; // Expected output 0 at initialization      
-                        rootNodeData.i_nodeSpareLastIndex -- ;  
+                        rootNode.i_nodeSpareLastIndex -- ;  
 
                         float3 f3_childVector                   = f3_newCenter + new float3 ( xDirection * f_half, yDirection * f_half, zDirection * f_half ) ;
                     
                         CommonMethods._CreateNewNode ( 
-                            ref rootNodeData, 
+                            ref rootNode, 
                             i_newNodeIndex, 
                             f_newBaseLength, 
                             f3_childVector, 
@@ -397,7 +402,7 @@ namespace Antypodish.ECS.Octree
         /// <param name="i_instanceID">External instance index, ot unique entity index.</param>
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
 	    /// <param name="instanceBounds">External 3D bounding box around the instance to add.</param>
-	    static private bool _NodeInstanceSubAdd ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances ) 
+	    static private bool _NodeInstanceSubAdd ( ref RootNodeData rootNode, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances ) 
         {
 
             bool isInstanceAdded = false ;
@@ -408,20 +413,20 @@ namespace Antypodish.ECS.Octree
 		    // Just add if few objects are here, or children would be below min size
             int i_instancesCount = nodeBuffer.i_instancesCount ;
 
-            if ( nodeBuffer.i_childrenCount == 0 && i_instancesCount < rootNodeData.i_instancesAllowedCount || ( nodeBuffer.f_baseLength / 2) < rootNodeData.f_minSize)             
+            if ( nodeBuffer.i_childrenCount == 0 && i_instancesCount < rootNode.i_instancesAllowedCount || ( nodeBuffer.f_baseLength / 2) < rootNode.f_minSize)             
             {
             
-                isInstanceAdded = _AssingInstance2Node ( ref rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
+                isInstanceAdded = _AssingInstance2Node ( ref rootNode, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
                    
                 // a_nodesBuffer
-                if ( rootNodeData.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
+                if ( rootNode.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
                 {
                     // Add some spares if needed.
-                    CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfInstances ) ;              
+                    CommonMethods._AddInstanceSpares ( ref rootNode, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfInstances ) ;              
                 }
                 else
                 {
-                    rootNodeData.i_instancesSpareLastIndex -- ;
+                    rootNode.i_instancesSpareLastIndex -- ;
                 }
 
 
@@ -464,7 +469,7 @@ namespace Antypodish.ECS.Octree
 			    if ( i_childrenCount == 0) 
                 {
                     // Split Octree node, into 8 new smaller nodes as children nodex.
-				    _Split ( ref rootNodeData, i_nodeIndex, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer );
+				    _Split ( ref rootNode, i_nodeIndex, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer );
                 
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeIndex] ;
 
@@ -496,7 +501,7 @@ namespace Antypodish.ECS.Octree
 					            if ( CommonMethods._Encapsulates ( nodeChildrenBuffer.bounds, existingInstanceBuffer.bounds ) ) 
                                 {                            
                                     isInstanceAdded =_NodeInstanceSubAdd ( 
-                                        ref rootNodeData, 
+                                        ref rootNode, 
                                         nodeChildrenBuffer.i_nodesIndex, 
                                         existingInstanceBuffer.i_ID, 
                                         existingInstanceBuffer.i_entityVersion,
@@ -512,7 +517,7 @@ namespace Antypodish.ECS.Octree
 						        		
                             
                                     // Remove from here
-                                    CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_instanceIndexOffset, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
+                                    CommonMethods._PutBackSpareInstance ( ref rootNode, i_instanceIndexOffset, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
 
                                     nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
                                     nodeBuffer.i_instancesCount -- ;
@@ -537,7 +542,7 @@ namespace Antypodish.ECS.Octree
                 {                 
 
                     isInstanceAdded = _NodeInstanceSubAdd ( 
-                        ref rootNodeData, 
+                        ref rootNode, 
                         nodeChildrenBuffer.i_nodesIndex, 
                         i_instanceID, 
                         i_entityVersion,
@@ -554,16 +559,16 @@ namespace Antypodish.ECS.Octree
 			    else 
                 {
                 
-                    isInstanceAdded = _AssingInstance2Node ( ref rootNodeData, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
+                    isInstanceAdded = _AssingInstance2Node ( ref rootNode, i_nodeIndex, i_instanceID, i_entityVersion, instanceBounds, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_instanceBuffer, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
                     
-                    if ( rootNodeData.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
+                    if ( rootNode.i_instancesSpareLastIndex == 0 || i_requiredNumberOfInstances > a_instanceBuffer.Length )
                     {
                         // Add some spares if needed.
-                        CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfInstances ) ;                
+                        CommonMethods._AddInstanceSpares ( ref rootNode, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfInstances ) ;                
                     }
                     else
                     {
-                        rootNodeData.i_instancesSpareLastIndex -- ;
+                        rootNode.i_instancesSpareLastIndex -- ;
                     }
 /*            
 // Debugging
@@ -586,7 +591,7 @@ newGameObject.name = i_instanceID.ToString () ;
 	    /// Splits the octree into eight children.
 	    /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>
-	    static private void _Split ( ref RootNodeData rootNodeData, int i_nodeIndex, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer ) 
+	    static private void _Split ( ref RootNodeData rootNode, int i_nodeIndex, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer ) 
         {
 
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
@@ -610,11 +615,11 @@ newGameObject.name = i_instanceID.ToString () ;
             // Is assumed, there is enough spare nodes
             for ( int i = 0; i < 8; i ++ )
             {
-                NodeSparesBufferElement nodeSparesBuffer                = a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex] ;
+                NodeSparesBufferElement nodeSparesBuffer                = a_nodeSparesBuffer [rootNode.i_nodeSpareLastIndex] ;
                 nodeChildrenBuffer                                      = a_nodeChildrenBuffer [i_childrenIndexOffset + i] ;
                 nodeChildrenBuffer.i_nodesIndex                         = nodeSparesBuffer.i ;
                 a_nodeChildrenBuffer [i_childrenIndexOffset + i]        = nodeChildrenBuffer ; // Set back
-                rootNodeData.i_nodeSpareLastIndex -- ;
+                rootNode.i_nodeSpareLastIndex -- ;
             }
 
             float3 f3_childCenterQuater ;
@@ -622,35 +627,35 @@ newGameObject.name = i_instanceID.ToString () ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset] ;        
             f3_childCenterQuater = f3_center + new float3 (-f_quarter, f_quarter, -f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset + 1] ;
             f3_childCenterQuater = f3_center + new float3 (f_quarter, f_quarter, -f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset + 2] ;
             f3_childCenterQuater = f3_center + new float3 (-f_quarter, f_quarter, f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset + 3] ;
             f3_childCenterQuater = f3_center + new float3 (f_quarter, f_quarter, f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset + 4] ;
             f3_childCenterQuater = f3_center + new float3 (-f_quarter, -f_quarter, -f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset + 5] ;
             f3_childCenterQuater = f3_center + new float3 (f_quarter, -f_quarter, -f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset + 6] ;
             f3_childCenterQuater = f3_center + new float3 (-f_quarter, -f_quarter, f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
 
             nodeChildrenBuffer   = a_nodeChildrenBuffer [i_childrenIndexOffset + 7] ;
             f3_childCenterQuater = f3_center + new float3 (f_quarter, -f_quarter, f_quarter) ;
-            CommonMethods._CreateNewNode ( ref rootNodeData, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+            CommonMethods._CreateNewNode ( ref rootNode, nodeChildrenBuffer.i_nodesIndex, f_newBaseLength, f3_childCenterQuater, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
             
 	    }
         
@@ -663,12 +668,12 @@ newGameObject.name = i_instanceID.ToString () ;
         /// <param name="i_entityVersion">Optional, used when Id is used as entity index.</param>
         /// // Optional, used when Id is used as entity index
         /// <param name="instanceBounds">Boundary of external instance index.</param>
-        static private bool _AssingInstance2Node ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
+        static private bool _AssingInstance2Node ( ref RootNodeData rootNode, int i_nodeIndex, int i_instanceID, int i_entityVersion, Bounds instanceBounds, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
         {
-            int i_nodeInstanceIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
+            int i_nodeInstanceIndexOffset = i_nodeIndex * rootNode.i_instancesAllowedCount ;
 
             // Reuse spare store
-            InstancesSpareIndexBufferElement instancesSpareIndexBuffer = a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex] ;   
+            InstancesSpareIndexBufferElement instancesSpareIndexBuffer = a_instancesSpareIndexBuffer [rootNode.i_instancesSpareLastIndex] ;   
 
             NodeInstancesIndexBufferElement nodeInstancesIndexBuffer ;
             
@@ -676,7 +681,7 @@ newGameObject.name = i_instanceID.ToString () ;
 
             // Find next spare instance allocation for this node.
             // Find next spare instance allocation for this node.
-            for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
+            for (int i = 0; i < rootNode.i_instancesAllowedCount; i++) 
             {
 
                 int i_instanceIndexOffset = i_nodeInstanceIndexOffset + i ;
@@ -723,7 +728,7 @@ newGameObject.name = i_instanceID.ToString () ;
                         int i_requiredNumberOfInstances = a_nodeInstancesIndexBuffer.Length ;  // l_nodeBounds.Count ;
 
                         isInstanceAdded = _NodeInstanceSubAdd ( 
-                            ref rootNodeData, 
+                            ref rootNode, 
                             nodeChildrenBuffer.i_nodesIndex, 
                             i_instanceID, 
                             i_entityVersion,
@@ -744,12 +749,12 @@ newGameObject.name = i_instanceID.ToString () ;
 
 // Debug.LogError ( "Found no child node, to fit instance. Try grow octree." ) ;
 
-                NodeBufferElement nodeBufferElement = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
+                NodeBufferElement nodeBufferElement = a_nodesBuffer [rootNode.i_rootNodeIndex] ;
                 
                 // Try add node at the root
                 
 // Debug.LogError ( "Grow again." ) ;
-                _GrowOctree ( ref rootNodeData, 
+                _GrowOctree ( ref rootNode, 
                     (float3) instanceBounds.center - nodeBufferElement.f3_center,
                     ref a_nodesBuffer, 
                     ref a_nodeSparesBuffer, 
@@ -759,7 +764,7 @@ newGameObject.name = i_instanceID.ToString () ;
                     ref a_instancesSpareIndexBuffer
                 ) ;
 
-                _AddNodeInstance ( ref rootNodeData, 
+                _AddNodeInstance ( ref rootNode, 
                     i_instanceID,                             
                     i_entityVersion, 
                     instanceBounds, 
@@ -795,6 +800,7 @@ newGameObject.name = i_instanceID.ToString () ;
         }
         
 
+        /*
         /// <summary>
 	    /// Checks if there are few enough objects in this node and its children that the children should all be merged into this.
 	    /// </summary>
@@ -845,7 +851,8 @@ newGameObject.name = i_instanceID.ToString () ;
 		    return i_totalInstancesCount <= rootNodeData.i_instancesAllowedCount ;
 
 	    }
-        
+        */
+
     }
 
 }

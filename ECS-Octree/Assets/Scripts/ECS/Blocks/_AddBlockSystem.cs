@@ -1,4 +1,5 @@
-﻿using Unity.Collections ;
+﻿/*
+using Unity.Collections ;
 using Unity.Mathematics ;
 using Unity.Transforms ;
 using Unity.Rendering ;
@@ -24,12 +25,12 @@ namespace Antypodish.ECS.Blocks
             // Cache the EndInitializationEntityCommandBufferSystem in a field, so we don't have to create it every frame
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
-            /*
-            group = GetComponentGroup 
-            (            
-                typeof ( AddBlockData )
-            ) ;
-            */
+            
+            //group = GetComponentGroup 
+            //(            
+            //    typeof ( AddBlockData )
+            //) ;
+            
             
         }
 
@@ -58,7 +59,7 @@ namespace Antypodish.ECS.Blocks
         /// </summary>
         [RequireComponentTag ( typeof ( AddBlockTag ) ) ]
         // [BurstCompile]
-        struct Job : IJobForEachWithEntity <MeshTypeData>
+        struct Job : IJobForEachWithEntity <MeshTypeData, AddBlockData>
         {
 
             [ReadOnly] 
@@ -68,14 +69,14 @@ namespace Antypodish.ECS.Blocks
             [ReadOnly] 
             public Bootstrap.RenderMeshTypes renderMeshTypes ;
 
-            public void Execute ( Entity blockEntity, int jobIndex, [ReadOnly] ref MeshTypeData meshType )
+            public void Execute ( Entity blockEntity, int jobIndex, [ReadOnly] ref MeshTypeData meshType, [ReadOnly] ref AddBlockData addBlock )
             {
 
                 // AddBlockData addBlockData = a_addBlockData [i] ;
 
-                ecb.AddComponent ( jobIndex, blockEntity, new Translation { Value = addBlockData.f3_position } ) ;
+                ecb.AddComponent ( jobIndex, blockEntity, new Translation { Value = addBlock.f3_position } ) ;
                 ecb.AddComponent ( jobIndex, blockEntity, new Rotation { Value = quaternion.identity} ) ;
-                ecb.AddComponent ( jobIndex, blockEntity, new NonUniformScale { Value = addBlockData.f3_scale } ) ;
+                ecb.AddComponent ( jobIndex, blockEntity, new NonUniformScale { Value = addBlock.f3_scale } ) ;
                 // ...
                 // ecb.AddComponent ( jobIndex, blockEntity, new Highlight.MeshType { type = Highlight.Common.MeshType.Default } ) ;
 
@@ -95,3 +96,4 @@ namespace Antypodish.ECS.Blocks
                         
     }
 }
+*/

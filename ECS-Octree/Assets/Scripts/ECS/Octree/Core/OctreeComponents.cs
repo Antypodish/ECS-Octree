@@ -23,6 +23,8 @@ namespace Antypodish.ECS.Octree
 
     // ******** Instance Buffer ************ //
     
+        
+    public struct AddInstanceTag : IComponentData {}
 
     /// <summary>
     /// Contains a list of instances to add, with its properties.
@@ -38,6 +40,7 @@ namespace Antypodish.ECS.Octree
         public Bounds instanceBounds ;
     }
 
+    public struct RemoveInstanceTag : IComponentData {}
     /// <summary>
     /// Contains a list of instances to remove, addressed by instance ID.
     /// </summary>

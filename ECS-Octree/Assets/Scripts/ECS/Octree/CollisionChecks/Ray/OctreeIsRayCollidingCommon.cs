@@ -68,7 +68,7 @@ namespace Antypodish.ECS.Octree
 	    /// <param name="checkRay">Ray to check.</param>
 	    /// <param name="f_maxDistance">Distance to check.</param>
 	    /// <returns>True if there was a collision.</returns>
-	    static public bool _IsNodeColliding ( [ReadOnly] ref RootNodeData rootNodeData, int i_nodeIndex, Ray checkRay, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
+	    static public bool _IsNodeColliding ( [ReadOnly] ref RootNodeData rootNode, int i_nodeIndex, Ray checkRay, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
         {
 		    // Is the input ray at least partially in this node?
 		
@@ -84,10 +84,10 @@ namespace Antypodish.ECS.Octree
             if ( nodeBuffer.i_instancesCount >= 0 ) 
             {            
 
-                int i_nodeInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
+                int i_nodeInstancesIndexOffset = i_nodeIndex * rootNode.i_instancesAllowedCount ;
 
 		        // Check against any objects in this node
-                for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
+                for (int i = 0; i < rootNode.i_instancesAllowedCount; i++) 
                 {
             
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
@@ -127,7 +127,7 @@ namespace Antypodish.ECS.Octree
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
                     {
-                        if ( _IsNodeColliding ( ref rootNodeData, i_nodeChildIndex, checkRay, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, f_maxDistance ) )
+                        if ( _IsNodeColliding ( ref rootNode, i_nodeChildIndex, checkRay, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, f_maxDistance ) )
                         {
                             isCollidingData.i_collisionsCount = 1 ; // Is colliding
 					        return true ;

@@ -16,14 +16,20 @@ namespace Antypodish.ECS.Octree.Examples
 
         static public NativeArray <Entity> _CreateInstencesArray ( EntityManager entityManager, int i_instances2AddCount )
         {
-            
+
             NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
 
+            entityManager.CreateEntity ( BlocksArchetypes.blockArchetype, a_instanceEntities ) ;
+             
+            /*
+            NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
+            
+            Entity newBlockEntity = 
             for ( int i_instanceID = 0; i_instanceID < i_instances2AddCount; i_instanceID ++ )
             {  
-                Entity newBlockEntity = entityManager.CreateEntity () ;
                 a_instanceEntities [i_instanceID] = newBlockEntity ;    
             }
+            */
 
             return a_instanceEntities ;
         }
@@ -36,6 +42,7 @@ namespace Antypodish.ECS.Octree.Examples
         {
 
             DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [octreeEntity] ;  
+            a_addInstanceBufferElement.ResizeUninitialized ( i_instances2AddCount ) ; // Set required capacity.
 
             int i_instanceEntityIndex = 0 ;
 
@@ -60,14 +67,14 @@ namespace Antypodish.ECS.Octree.Examples
                 // hence entity block as well.
                 Bounds bounds = new Bounds () { center = f3_blockCenter, size = new float3 ( 1, 1, 1 ) * 1 } ;
                 
-                AddInstanceBufferElement addInstanceBuffer = new AddInstanceBufferElement () 
+                a_addInstanceBufferElement [i_instanceID] = new AddInstanceBufferElement () 
                 {
                     i_instanceID = newBlockEntity.Index,
                     i_version = newBlockEntity.Version,
                     instanceBounds = bounds
                 };
 
-                a_addInstanceBufferElement.Add ( addInstanceBuffer ) ;
+                // a_addInstanceBufferElement.Add ( addInstanceBuffer ) ;
             }
 
         }
@@ -81,7 +88,8 @@ namespace Antypodish.ECS.Octree.Examples
         {
 
             DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement = removeInstanceBufferElement [octreeEntity] ;  
-            
+            a_removeInstanceBufferElement.ResizeUninitialized ( i_instances2RemoveCount ) ; // Set required capacity.
+
             int i_instanceEntityIndex = 0 ;
 
             // Request to remove 53 instances.
@@ -98,12 +106,9 @@ namespace Antypodish.ECS.Octree.Examples
                 Debug.Log ( "Test instance remove #" + i_instanceID + " x: " + x + " y: " + y + " z: " + z ) ;
 */
                                          
-                RemoveInstanceBufferElement removeInstanceBuffer = new RemoveInstanceBufferElement () 
-                {
-                    i_instanceID = removeEntity.Index,                    
-                };
-                
-                a_removeInstanceBufferElement.Add ( removeInstanceBuffer ) ;
+                a_removeInstanceBufferElement [i_instanceID] = new RemoveInstanceBufferElement () { i_instanceID = removeEntity.Index } ;
+
+                // a_removeInstanceBufferElement.Add ( removeInstanceBuffer ) ;
                 
                 // Actual entity block removal
                 Blocks.PublicMethods._RemoveBlockRequestWithEntity ( ref ecb, removeEntity ) ;

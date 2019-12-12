@@ -211,7 +211,7 @@ namespace Antypodish.ECS.Octree
                 if ( a_isActiveTag.Exists (octreeRootNodeEntity) )
                 {
 
-                    RootNodeData octreeRootNode                                                 = a_octreeRootNodeData [octreeRootNodeEntity] ;
+                    RootNodeData octreeRootNode                                                     = a_octreeRootNodeData [octreeRootNodeEntity] ;
                 
                     DynamicBuffer <NodeBufferElement> a_nodesBuffer                                 = nodeBufferElement [octreeRootNodeEntity] ;
                     DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer      = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   

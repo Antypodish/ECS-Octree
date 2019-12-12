@@ -117,7 +117,7 @@ namespace Antypodish.ECS.Octree
 	    /// <param name="f_nearestDistance">Nerest collision distance.</param>
 	    /// <param name="maxDistance">Distance to check.</param>
 	    /// <returns>Instances index, that intersect with the specified ray.</returns>
-	    static public bool _GetNodeColliding ( [ReadOnly] ref RootNodeData rootNodeData, int i_nodeIndex, Ray checkRay, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
+	    static public bool _GetNodeColliding ( [ReadOnly] ref RootNodeData rootNode, int i_nodeIndex, Ray checkRay, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, float f_maxDistance = float.PositiveInfinity ) 
         {
 		
             float f_distance ;
@@ -131,12 +131,12 @@ namespace Antypodish.ECS.Octree
 
             if ( nodeBuffer.i_instancesCount > 0 ) 
             {            
-                int i_nodeInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
+                int i_nodeInstancesIndexOffset = i_nodeIndex * rootNode.i_instancesAllowedCount ;
 
                 CollisionInstancesBufferElement collisionInstancesBuffer = new CollisionInstancesBufferElement () ;
 
 		        // Check against any objects in this node
-                for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
+                for (int i = 0; i < rootNode.i_instancesAllowedCount; i++) 
                 {
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
                     
@@ -204,7 +204,7 @@ namespace Antypodish.ECS.Octree
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
                     {
-                        _GetNodeColliding ( ref rootNodeData, i_nodeChildIndex, checkRay, ref a_collisionInstancesBuffer, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, f_maxDistance ) ;
+                        _GetNodeColliding ( ref rootNode, i_nodeChildIndex, checkRay, ref a_collisionInstancesBuffer, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, f_maxDistance ) ;
                     }
 			    }
 		    }

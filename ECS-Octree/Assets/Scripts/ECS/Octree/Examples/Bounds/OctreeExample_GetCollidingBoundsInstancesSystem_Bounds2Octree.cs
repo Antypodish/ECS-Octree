@@ -32,14 +32,12 @@ namespace Antypodish.ECS.Octree.Examples
             // Create new octree
             // See arguments details (names) of _CreateNewOctree and coresponding octree readme file.
             
+            Entity newOctreeEntity = EntityManager.CreateEntity ( AddNewOctreeSystem.octreeArchetype ) ;
+
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
             EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
-            Entity newOctreeEntity = EntityManager.CreateEntity ( ) ;
 
-            AddNewOctreeSystem._CreateNewOctree ( ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ;
-
-
-
+            AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ;
 
             // Assign target bounds entity, to octree entity
             Entity octreeEntity = newOctreeEntity ;    
@@ -53,31 +51,34 @@ namespace Antypodish.ECS.Octree.Examples
 
             // Add
 
-            int i_instances2AddCount = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 1000
-            NativeArray <Entity> a_instanceEntities = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
+            int i_instances2AddCount                 = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 1000
+            NativeArray <Entity> na_instanceEntities = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
             // Request to add n instances.
             // User is responsible to ensure, that instances IDs are unique in the octrtree.
-            EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
+            
+            ecb.AddComponent <AddInstanceTag> ( octreeEntity ) ; // Once system executed and instances were added, tag component will be deleted.   
+            // EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
             BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
-            Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref a_instanceEntities, i_instances2AddCount, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
+            Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
 
 
 
             // Remove
                 
-            EntityManager.AddBuffer <RemoveInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were removed, component will be deleted.
+            ecb.AddComponent <RemoveInstanceTag> ( octreeEntity ) ; // Once system executed and instances were removed, tag component will be deleted.
+            // EntityManager.AddBuffer <RemoveInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were removed, component will be deleted.
             BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement = GetBufferFromEntity <RemoveInstanceBufferElement> () ;
                 
             // Request to remove some instances
             // Se inside method, for details
             int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
-            Common._RequestRemoveInstances ( ref ecb, octreeEntity, removeInstanceBufferElement, ref a_instanceEntities, i_instances2RemoveCount ) ;
+            Common._RequestRemoveInstances ( ref ecb, octreeEntity, removeInstanceBufferElement, ref na_instanceEntities, i_instances2RemoveCount ) ;
                 
                 
             // Ensure example array is disposed.
-            a_instanceEntities.Dispose () ;
+            na_instanceEntities.Dispose () ;
 
 
 
@@ -89,7 +90,7 @@ namespace Antypodish.ECS.Octree.Examples
             Debug.Log ( "Octree: create dummy boundary box, to test for collision." ) ;
             float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
             // Only test
-            Entity boundsEntity = EntityManager.CreateEntity ( ) ;            
+            Entity boundsEntity = EntityManager.CreateEntity ( BlocksArchetypes.blockArchetype ) ;            
             Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
             // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, EntityManager.CreateEntity ( ), f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
@@ -99,21 +100,22 @@ namespace Antypodish.ECS.Octree.Examples
             for ( int i = 0; i < 10; i ++ ) 
             {
 
-                ecb.CreateEntity ( ) ; // Check bounds collision with octree and return colliding instances.                
-                ecb.AddComponent ( new IsActiveTag () ) ; 
-                ecb.AddComponent ( new GetCollidingBoundsInstancesTag () ) ;                  
+                Entity testEntity = ecb.CreateEntity ( BlocksArchetypes.blockArchetype ) ; // Check bounds collision with octree and return colliding instances.      
+                
+                ecb.AddComponent ( testEntity, new IsActiveTag () ) ; 
+                ecb.AddComponent ( testEntity, new GetCollidingBoundsInstancesTag () ) ;                  
                 // This may be overritten by, other system. Check corresponding collision check system.
-                ecb.AddComponent ( new BoundsData ()
+                ecb.AddComponent ( testEntity, new BoundsData ()
                 {
                     bounds = new Bounds () { center = float3.zero, size = new float3 ( 5, 5, 5 ) }
                 } ) ; 
                 // Check bounds collision with octree and return colliding instances.
-                ecb.AddComponent ( new OctreeEntityPair4CollisionData () 
+                ecb.AddComponent ( testEntity, new OctreeEntityPair4CollisionData () 
                 {
                     octree2CheckEntity = newOctreeEntity
                 } ) ;
-                ecb.AddComponent ( new IsCollidingData () ) ; // Check bounds collision with octree and return colliding instances.
-                ecb.AddBuffer <CollisionInstancesBufferElement> () ;
+                ecb.AddComponent ( testEntity, new IsCollidingData () ) ; // Check bounds collision with octree and return colliding instances.
+                ecb.AddBuffer <CollisionInstancesBufferElement> ( testEntity ) ;
 
             } // for
                 

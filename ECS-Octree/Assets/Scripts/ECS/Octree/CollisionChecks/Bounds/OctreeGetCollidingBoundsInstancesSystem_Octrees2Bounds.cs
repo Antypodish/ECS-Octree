@@ -213,7 +213,7 @@ namespace Antypodish.ECS.Octree
                 isColliding.i_collisionsCount                                          = 0 ; // Reset colliding instances counter.
 
                 
-                RootNodeData octreeRootNodeData                                            = a_octreeRootNodeData [octreeRootNodeEntity] ;
+                RootNodeData rootNode                                                      = a_octreeRootNodeData [octreeRootNodeEntity] ;
                 
                 DynamicBuffer <NodeBufferElement> a_nodesBuffer                            = nodeBufferElement [octreeRootNodeEntity] ;
                 DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
@@ -237,10 +237,10 @@ namespace Antypodish.ECS.Octree
                 
                 
                     // To even allow instances collision checks, octree must have at least one instance.
-                    if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
+                    if ( rootNode.i_totalInstancesCountInTree > 0 )
                     {
                     
-                        if ( GetCollidingBoundsInstances_Common._GetNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref a_collisionInstancesBuffer, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
+                        if ( GetCollidingBoundsInstances_Common._GetNodeColliding ( ref rootNode, rootNode.i_rootNodeIndex, checkBounds.bounds, ref a_collisionInstancesBuffer, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
                         {   
                             /*
                             // Debug

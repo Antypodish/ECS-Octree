@@ -8,6 +8,8 @@ using UnityEngine ;
 namespace Antypodish.ECS.Octree
 {
         
+    [UpdateAfter ( typeof ( Octree.AddNewOctreeSystem ) ) ]
+    [UpdateAfter ( typeof ( Octree.AddInstanceTag ) ) ]
     class RemoveInstanceSystem : JobComponentSystem
     {
         
@@ -24,9 +26,10 @@ namespace Antypodish.ECS.Octree
 
             group = GetEntityQuery 
             ( 
-                typeof (IsActiveTag), 
-                typeof (RemoveInstanceBufferElement), ...
-                typeof (RootNodeData) 
+                typeof ( IsActiveTag ), 
+                typeof ( RemoveInstanceBufferElement ),
+                typeof ( RemoveInstanceTag ),
+                typeof ( RootNodeData ) 
             ) ;
 
         }
@@ -73,7 +76,7 @@ namespace Antypodish.ECS.Octree
         }
 
         [BurstCompile]
-        // [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
+        [RequireComponentTag ( typeof ( RemoveInstanceTag ) ) ]
         struct RemoveInstanceJob : IJobForEachWithEntity_EB <RemoveInstanceBufferElement>
         // struct RemoveInstanceJob : IJobParallelFor 
         {
@@ -101,7 +104,7 @@ namespace Antypodish.ECS.Octree
             public BufferFromEntity <InstancesSpareIndexBufferElement> instancesSpareIndexBufferElement ;
 
             
-            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, [ReadOnly] DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBuffer )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBuffer )
             // public void Execute ( int i_arrayIndex )
             {
                 
@@ -109,7 +112,7 @@ namespace Antypodish.ECS.Octree
 
                 // DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement           = removeInstanceBufferElement [octreeRootNodeEntity] ;    
                             
-                RootNodeData rootNodeData = a_rootNodeData [octreeRootNodeEntity] ;
+                RootNodeData rootNode = a_rootNodeData [octreeRootNodeEntity] ;
 
                 DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer                          = nodeSparesBufferElement [octreeRootNodeEntity] ;
                 DynamicBuffer <NodeBufferElement> a_nodesBuffer                                     = nodeBufferElement [octreeRootNodeEntity] ;
@@ -130,8 +133,8 @@ namespace Antypodish.ECS.Octree
                     RemoveInstanceBufferElement removeInstanceBuffer = a_removeInstanceBuffer [i] ;
 
                     bool removed = _NodeRemoveInstance ( 
-                        ref rootNodeData, 
-                        rootNodeData.i_rootNodeIndex, 
+                        ref rootNode, 
+                        rootNode.i_rootNodeIndex, 
                         removeInstanceBuffer.i_instanceID, 
                         ref a_nodesBuffer, 
                         ref a_nodeSparesBuffer, 
@@ -144,13 +147,13 @@ namespace Antypodish.ECS.Octree
 		            // See if we can shrink the octree down now that we've removed the item
 		            if ( removed ) 
                     {            
-			            rootNodeData.i_totalInstancesCountInTree -- ;
+			            rootNode.i_totalInstancesCountInTree -- ;
                 
                         // Shrink if possible.
-                        rootNodeData.i_rootNodeIndex = _ShrinkIfPossible ( 
-                            rootNodeData, 
-                            rootNodeData.i_rootNodeIndex, 
-                            rootNodeData.f_initialSize, 
+                        rootNode.i_rootNodeIndex = _ShrinkIfPossible ( 
+                            rootNode, 
+                            rootNode.i_rootNodeIndex, 
+                            rootNode.f_initialSize, 
                             a_nodesBuffer, 
                             ref a_nodeChildrenBuffer,
                             a_nodeInstancesIndexBuffer,
@@ -158,15 +161,18 @@ namespace Antypodish.ECS.Octree
                         ) ;
 		            }
                     
-                    a_rootNodeData [octreeRootNodeEntity] = rootNodeData ;
+                    a_rootNodeData [octreeRootNodeEntity] = rootNode ;
 
                 } // for
+
+                a_removeInstanceBuffer.ResizeUninitialized ( 0 ) ; // Clear buffer, after removing is complete.
+
             }
 
-        }
+        } // Job
 
 
-        // [RequireComponentTag ( typeof (RemoveInstanceBufferElement) ) ]
+        [RequireComponentTag ( typeof ( RemoveInstanceTag ) ) ]
         struct CompleteRemoveInstanceJob : IJobForEachWithEntity_EB <RemoveInstanceBufferElement>
         // struct CompleteRemoveInstanceJob : IJobParallelFor 
         {
@@ -181,13 +187,13 @@ namespace Antypodish.ECS.Octree
                 // Entity octreeRootNodeEntity = a_octreeEntities [jobIndex] ;
 
                 // Remove component, as instances has been already removed.
-                ecb.RemoveComponent <RemoveInstanceBufferElement> ( jobIndex, octreeRootNodeEntity ) ;
-                ...
+                ecb.RemoveComponent <RemoveInstanceTag> ( jobIndex, octreeRootNodeEntity ) ;                
             }
 
-        }
+        } // Job
 
 
+        /*
         /// <summary>
 	    /// Remove an instance. Makes the assumption that the instance only exists once in the tree.
 	    /// </summary>
@@ -227,7 +233,7 @@ namespace Antypodish.ECS.Octree
 
 		    return removed ;
 	    }
-
+        */
                
 
         /// <summary>
@@ -236,20 +242,20 @@ namespace Antypodish.ECS.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="i_instanceID">External instance index ID to remove. Is assumed, only one unique instance ID exists in the tree.</param>
 	    /// <returns>True if the object was removed successfully.</returns>
-	    static private bool _NodeRemoveInstance ( ref RootNodeData rootNodeData, int i_nodeIndex, int i_instanceID, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private bool _NodeRemoveInstance ( ref RootNodeData rootNode, int i_nodeIndex, int i_instanceID, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
         {
 
 		    bool removed = false;
 
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
                 
-            int i_nodeInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
+            int i_nodeInstancesIndexOffset = i_nodeIndex * rootNode.i_instancesAllowedCount ;
 
             if ( nodeBuffer.i_instancesCount > 0 )
             {
 
                 // Try remove instance from this node
-                for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
+                for (int i = 0; i < rootNode.i_instancesAllowedCount; i++) 
                 {
 
                     int i_nodeInstanceIndex = i_nodeInstancesIndexOffset + i ;
@@ -267,7 +273,7 @@ namespace Antypodish.ECS.Octree
                             removed = true ;
                             
                             // Remove from here
-                            CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_existingInstanceIndex, i_nodeInstanceIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
+                            CommonMethods._PutBackSpareInstance ( ref rootNode, i_existingInstanceIndex, i_nodeInstanceIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
                             
 /*
                             // Debugging
@@ -318,7 +324,7 @@ namespace Antypodish.ECS.Octree
                     if ( i_childNodeIndex >= 0 )
                     {
                         removed = _NodeRemoveInstance ( 
-                            ref rootNodeData, 
+                            ref rootNode, 
                             i_childNodeIndex, 
                             i_instanceID, 
                             ref a_nodesBuffer, 
@@ -337,10 +343,10 @@ namespace Antypodish.ECS.Octree
 		    if ( removed && i_nodeChildrenCount > 0 )
             {
 			    // Check if we should merge nodes now that we've removed an item
-			    if ( _ShouldMerge ( ref rootNodeData, i_nodeIndex, a_nodesBuffer, ref a_nodeChildrenBuffer ) ) 
+			    if ( _ShouldMerge ( ref rootNode, i_nodeIndex, a_nodesBuffer, ref a_nodeChildrenBuffer ) ) 
                 {
 				    _MergeNodes ( 
-                        ref rootNodeData, 
+                        ref rootNode, 
                         i_nodeIndex, 
                         ref a_nodesBuffer, 
                         ref a_nodeSparesBuffer,
@@ -360,7 +366,7 @@ namespace Antypodish.ECS.Octree
 	    /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <returns>True there are less or the same abount of objects in this and its children than numObjectsAllowed.</returns>
-	    static private bool _ShouldMerge ( ref RootNodeData rootNodeData, int i_nodeIndex, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer ) 
+	    static private bool _ShouldMerge ( ref RootNodeData rootNode, int i_nodeIndex, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer ) 
         {
                         
             NodeBufferElement nodeBuffer    = a_nodesBuffer [i_nodeIndex] ;
@@ -403,7 +409,7 @@ namespace Antypodish.ECS.Octree
             
 		    }
 
-		    return i_totalInstancesCount <= rootNodeData.i_instancesAllowedCount ;
+		    return i_totalInstancesCount <= rootNode.i_instancesAllowedCount ;
 
 	    }
 
@@ -414,7 +420,7 @@ namespace Antypodish.ECS.Octree
 	    /// since THAT won't happen unless there are already too many objects to merge.
 	    /// </summary>
         /// <param name="i_nodeIndex">Internal octree node index.</param>
-	    static private void _MergeNodes ( ref RootNodeData rootNodeData, int i_nodeIndex, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
+	    static private void _MergeNodes ( ref RootNodeData rootNode, int i_nodeIndex, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer ) 
         {
 
             NodeBufferElement nodeBuffer ;
@@ -422,7 +428,7 @@ namespace Antypodish.ECS.Octree
             NodeInstancesIndexBufferElement nodeInstancesIndexBuffer ;
 
             int i_nodeChildrenIndexOffset = i_nodeIndex * 8 ;
-            int i_nodeUnusedInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
+            int i_nodeUnusedInstancesIndexOffset = i_nodeIndex * rootNode.i_instancesAllowedCount ;
         
 		    // Note: We know children != null or we wouldn't be merging
 	        for (int i = 0; i < 8; i++) 
@@ -441,10 +447,10 @@ namespace Antypodish.ECS.Octree
                     {
 
 
-                        int i_childModeInstancesIndexOffset = i_childNodeIndex * rootNodeData.i_instancesAllowedCount ;
-                        int i_instancesAllowedCount = rootNodeData.i_instancesAllowedCount - 1 ;
+                        int i_childModeInstancesIndexOffset = i_childNodeIndex * rootNode.i_instancesAllowedCount ;
+                        int i_instancesAllowedCount = rootNode.i_instancesAllowedCount - 1 ;
 
-                        for (int i_unusedInstance = 0; i_unusedInstance < rootNodeData.i_instancesAllowedCount; i_unusedInstance++) 
+                        for (int i_unusedInstance = 0; i_unusedInstance < rootNode.i_instancesAllowedCount; i_unusedInstance++) 
                         {
 
                             int i_unusedInstanceIndexOffset = i_nodeUnusedInstancesIndexOffset + i_unusedInstance ;
@@ -541,22 +547,22 @@ namespace Antypodish.ECS.Octree
                         a_nodesBuffer [i_childNodeIndex] = nodeBuffer ; // Set back
                         
                         // Put back node instances to spare instance.
-                        for (int j = 0; j < rootNodeData.i_instancesAllowedCount; j++) 
+                        for (int j = 0; j < rootNode.i_instancesAllowedCount; j++) 
                         {
                             
                             nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_childNodeIndex] ; // Set back
                             int i_instanceIndex = nodeInstancesIndexBuffer.i ;
                             
                             // Remove from here
-                            CommonMethods._PutBackSpareInstance ( ref rootNodeData, i_instanceIndex + j, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
+                            CommonMethods._PutBackSpareInstance ( ref rootNode, i_instanceIndex + j, i_nodeIndex, ref a_nodeInstancesIndexBuffer, ref a_instancesSpareIndexBuffer ) ;
                             
                         }
 
                     }
 
                     // Pu back child nodes to spares
-                    rootNodeData.i_nodeSpareLastIndex ++ ;
-                    a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex]  = new NodeSparesBufferElement () { i = i_childNodeIndex } ;
+                    rootNode.i_nodeSpareLastIndex ++ ;
+                    a_nodeSparesBuffer [rootNode.i_nodeSpareLastIndex]  = new NodeSparesBufferElement () { i = i_childNodeIndex } ;
              
                     // Reset child
                     nodeChildrenBuffer.i_nodesIndex                         = -1 ; // Bounds are ignored
@@ -583,7 +589,7 @@ namespace Antypodish.ECS.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="minLength">Minimum dimensions of a node in this octree.</param>
 	    /// <returns>The new root index, or the existing one if we didn't shrink.</returns>
-	    static private int _ShrinkIfPossible ( RootNodeData rootNodeData, int i_nodeIndex, float minLength, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 
+	    static private int _ShrinkIfPossible ( RootNodeData rootNode, int i_nodeIndex, float minLength, DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 
         {
 
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
@@ -603,14 +609,14 @@ namespace Antypodish.ECS.Octree
 		    }
 
             int i_nodeChildrenIndexOffset = i_nodeIndex * 8 ;
-            int i_nodeInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
+            int i_nodeInstancesIndexOffset = i_nodeIndex * rootNode.i_instancesAllowedCount ;
 
 		
             // -1 to 7, where -1 is no result found
 		    int i_bestFit = -1;
 
             // Check objects in root
-		    for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
+		    for (int i = 0; i < rootNode.i_instancesAllowedCount; i++) 
             {
 
                 if ( nodeBuffer.i_instancesCount == 0 )  break ;
@@ -689,7 +695,7 @@ namespace Antypodish.ECS.Octree
 
 			    // We don't have any children, so just shrink this node to the new size
 			    // We already know that everything will still fit in it
-			    CommonMethods._SetValues ( rootNodeData, i_nodeIndex, nodeBuffer.f_baseLength / 2, childBounds.center, ref a_nodesBuffer, ref a_nodeChildrenBuffer ) ;
+			    CommonMethods._SetValues ( rootNode, i_nodeIndex, nodeBuffer.f_baseLength / 2, childBounds.center, ref a_nodesBuffer, ref a_nodeChildrenBuffer ) ;
 
 			    return i_nodeIndex ;
 		    }

@@ -48,13 +48,13 @@ namespace Antypodish.ECS.Octree
             
             ComponentDataFromEntity <RootNodeData> a_rootNodeData  = GetComponentDataFromEntity <RootNodeData> ( true ) ;
             // ComponentDataArray <RootNodeData> a_rootNodeData       = group.GetComponentDataArray <RootNodeData> ( ) ;
-            RootNodeData rootNodeData                              = a_rootNodeData [rootNodeEntity] ;
+            RootNodeData rootNode                                  = a_rootNodeData [rootNodeEntity] ;
             
             BufferFromEntity <NodeBufferElement> nodeBufferElement = GetBufferFromEntity <NodeBufferElement> ( true ) ;
             DynamicBuffer <NodeBufferElement> a_nodesBuffer        = nodeBufferElement [rootNodeEntity] ;
 
 
-            Bounds maxBouds                                        = _GetOctreeMaxBounds ( ref rootNodeData, ref a_nodesBuffer ) ;
+            Bounds maxBouds                                        = _GetOctreeMaxBounds ( ref rootNode, ref a_nodesBuffer ) ;
 
 
             return inputDeps ;
@@ -65,9 +65,9 @@ namespace Antypodish.ECS.Octree
         /// Get total octree bounds (boundary box).
         /// </summary>
         /// <returns></returns>
-	    public Bounds _GetOctreeMaxBounds ( [ReadOnly] ref RootNodeData rootNodeData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer )
+	    public Bounds _GetOctreeMaxBounds ( [ReadOnly] ref RootNodeData rootNode, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer )
 	    {
-            NodeBufferElement nodeBuffer = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
+            NodeBufferElement nodeBuffer = a_nodesBuffer [rootNode.i_rootNodeIndex] ;
 		    // return _GetNodeBounds ( i_rootNodeIndex ) ;
             return nodeBuffer.bounds ;
 	    }

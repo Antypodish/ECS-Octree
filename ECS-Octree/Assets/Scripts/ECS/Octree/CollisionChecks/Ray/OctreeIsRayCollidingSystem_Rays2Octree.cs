@@ -186,7 +186,7 @@ namespace Antypodish.ECS.Octree
                 if ( a_isActiveTag.Exists (octreeRootNodeEntity) )
                 {
 
-                    RootNodeData octreeRootNodeData                                                 = a_octreeRootNodeData [octreeRootNodeEntity] ;
+                    RootNodeData rootNode                                                           = a_octreeRootNodeData [octreeRootNodeEntity] ;
                 
                     DynamicBuffer <NodeBufferElement> a_nodesBuffer                                 = nodeBufferElement [octreeRootNodeEntity] ;
                     DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer      = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
@@ -197,10 +197,10 @@ namespace Antypodish.ECS.Octree
 
                 
                     // To even allow instances collision checks, octree must have at least one instance.
-                    if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
+                    if ( rootNode.i_totalInstancesCountInTree > 0 )
                     {
                     
-                        if ( IsRayColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistance.f ) )                          
+                        if ( IsRayColliding_Common._IsNodeColliding ( ref rootNode, rootNode.i_rootNodeIndex, rayData.ray, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistance.f ) )                          
                         {   
                             /*
                             // Debug

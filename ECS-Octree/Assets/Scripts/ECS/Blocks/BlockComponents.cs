@@ -16,8 +16,8 @@ namespace Antypodish.ECS.Blocks
     }
     */
         
-    public struct AddBlockTag : IComponentData {}  
+    // public struct AddBlockTag : IComponentData {}  
     
-    public struct RemoveBlockTag : IComponentData {}    
+    // public struct RemoveBlockTag : IComponentData {}    
     
 }

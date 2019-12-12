@@ -45,7 +45,7 @@ namespace Antypodish.ECS.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="checkBounds">Bounds to check.</param>
 	    /// <returns>True if there was a collision.</returns>
-	    static public bool _IsNodeColliding ( [ReadOnly] ref RootNodeData rootNodeData, int i_nodeIndex, Bounds checkBounds, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 
+	    static public bool _IsNodeColliding ( [ReadOnly] ref RootNodeData rootNode, int i_nodeIndex, Bounds checkBounds, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 
         {
 
             NodeBufferElement nodeBuffer = a_nodesBuffer [i_nodeIndex] ;
@@ -60,10 +60,10 @@ namespace Antypodish.ECS.Octree
             if ( nodeBuffer.i_instancesCount >= 0 ) 
             {     
                 
-                int i_nodeInstancesIndexOffset = i_nodeIndex * rootNodeData.i_instancesAllowedCount ;
+                int i_nodeInstancesIndexOffset = i_nodeIndex * rootNode.i_instancesAllowedCount ;
 
 		        // Check against any objects in this node
-                for (int i = 0; i < rootNodeData.i_instancesAllowedCount; i++) 
+                for (int i = 0; i < rootNode.i_instancesAllowedCount; i++) 
                 {
                     
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
@@ -106,7 +106,7 @@ namespace Antypodish.ECS.Octree
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
                     {
-				        if ( _IsNodeColliding ( ref rootNodeData, i_nodeChildIndex, checkBounds, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) ) 
+				        if ( _IsNodeColliding ( ref rootNode, i_nodeChildIndex, checkBounds, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) ) 
                         {
                             isCollidingData.i_collisionsCount = 1 ;
 					        return true ;

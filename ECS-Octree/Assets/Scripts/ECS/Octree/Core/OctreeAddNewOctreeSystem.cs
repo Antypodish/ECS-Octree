@@ -15,6 +15,8 @@ namespace Antypodish.ECS.Octree
         EndInitializationEntityCommandBufferSystem eiecb ;
 
         EntityQuery group ;
+        
+        static public EntityArchetype octreeArchetype ;
 
         protected override void OnCreate ( )
         {
@@ -28,6 +30,24 @@ namespace Antypodish.ECS.Octree
             group = GetEntityQuery 
             ( 
                 typeof ( AddNewOctreeData )    
+            ) ;
+
+            octreeArchetype = EntityManager.CreateArchetype 
+            (
+                ComponentType.Exclude <IsActiveTag> (), 
+                
+                typeof ( AddNewOctreeData ),
+                typeof ( RootNodeData ),
+                
+                // Add buffers.
+                typeof ( NodeBufferElement ),
+                typeof ( NodeChildrenBufferElement ),
+                typeof ( NodeInstancesIndexBufferElement ),
+                typeof ( NodeSparesBufferElement ),
+                typeof ( InstanceBufferElement ),
+                typeof ( InstancesSpareIndexBufferElement ),
+                typeof ( AddInstanceBufferElement ),
+                typeof ( RemoveInstanceBufferElement )                
             ) ;
 
         }
@@ -84,7 +104,7 @@ namespace Antypodish.ECS.Octree
         }
 
         [BurstCompile]
-        // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
+        // [RequireComponentTag ( typeof (ExcludeComponent <IsActiveTag>) ) ]
         struct InitialiseOctreeJob : IJobForEachWithEntity_EC <AddNewOctreeData>
         // struct InitialiseOctreeJob : IJobParallelFor 
         {
@@ -120,8 +140,8 @@ namespace Antypodish.ECS.Octree
 
                 // AddNewOctreeData addNewOctreeData                                                   = a_addNewOctreeData [octreeRootNodeEntity] ;
 
-                RootNodeData rootNodeData                                                           = a_rootNodeData [octreeRootNodeEntity] ;
-                rootNodeData.i_nodeSpareLastIndex -- ;               
+                RootNodeData rootNode                                                               = a_rootNodeData [octreeRootNodeEntity] ;
+                rootNode.i_nodeSpareLastIndex -- ;               
 
             
                 DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer                          = nodeSparesBufferElement [octreeRootNodeEntity] ;
@@ -129,11 +149,11 @@ namespace Antypodish.ECS.Octree
                 DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer          = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
                 DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer                      = nodeChildrenBufferElement [octreeRootNodeEntity] ;    
 
-                CommonMethods._CreateNewNode ( ref rootNodeData, rootNodeData.i_rootNodeIndex, addNewOctree.f_initialSize, addNewOctree.f3_initialPosition, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
+                CommonMethods._CreateNewNode ( ref rootNode, rootNode.i_rootNodeIndex, addNewOctree.f_initialSize, addNewOctree.f3_initialPosition, ref a_nodesBuffer, ref a_nodeSparesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer ) ;
             
-                rootNodeData.i_nodeSpareLastIndex -- ;                 
+                rootNode.i_nodeSpareLastIndex -- ;                 
             
-                rootNodeData.i_instancesSpareLastIndex                                              = 0 ;
+                rootNode.i_instancesSpareLastIndex                                                  = 0 ;
 
             
                 DynamicBuffer <InstanceBufferElement> a_instanceBuffer                              = instanceBufferElement [octreeRootNodeEntity] ;   
@@ -143,11 +163,11 @@ namespace Antypodish.ECS.Octree
                 //int i_requiredNumberOfInstances = CommonMethods.numOfSpareInstances2Add ;
                 //int i_requiredNumberOfInstances = Octree.Examples.ExampleSelector.i_generateInstanceInOctreeCount ;
                 int i_requiredNumberOfSpareInstances = 100 ;
-                CommonMethods._AddInstanceSpares ( ref rootNodeData, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfSpareInstances ) ;   
+                CommonMethods._AddInstanceSpares ( ref rootNode, ref a_instanceBuffer, ref a_instancesSpareIndexBuffer, i_requiredNumberOfSpareInstances ) ;   
             
                     
 
-                a_rootNodeData [octreeRootNodeEntity] = rootNodeData ; // Set back
+                a_rootNodeData [octreeRootNodeEntity] = rootNode ; // Set back
                     
             }
         }
@@ -187,15 +207,15 @@ namespace Antypodish.ECS.Octree
 	    /// <param name="f3_initialPosition">Position of the centre of the initial node.</param>
 	    /// <param name="f_minNodeSize">Nodes will stop splitting if the new nodes would be smaller than this (metres).</param>
 	    /// <param name="f_looseness">Clamped between 1 and 2. Values > 1 let nodes overlap.</param>
-        static public void _CreateNewOctree ( EntityCommandBuffer ecb, Entity newOctreeEntity, float f_initialSize, float3 f3_initialPosition, float f_minNodeSize, float f_looseness )
+        static public void _CreateNewOctree ( ref EntityCommandBuffer ecb, Entity newOctreeEntity, float f_initialSize, float3 f3_initialPosition, float f_minNodeSize, float f_looseness )
         {
                         
             Debug.Log ( "Create new octree #" + newOctreeEntity.Index ) ;
-            ...
-            ecb.AddComponent ( newOctreeEntity, new AddNewOctreeData ()
+            
+            ecb.SetComponent ( newOctreeEntity, new AddNewOctreeData ()
             {
                 f3_initialPosition = f3_initialPosition,
-                f_initialSize = f_initialSize
+                f_initialSize      = f_initialSize
 
             } ) ; // This tag is removed, after octree is created.
 
@@ -211,7 +231,13 @@ namespace Antypodish.ECS.Octree
             // For example, size of 2, gives 8 instances per node
             int i_instancesAllowedInNodeCount = (int) math.round ( f_minNodeSize * f_minNodeSize * f_minNodeSize ) ;
 
-            RootNodeData rootNodeData = new RootNodeData ()
+            // RootNodeData rootNodeData = 
+
+
+            // ***** Core Components ***** //
+
+            // Core of octree structure.
+            ecb.SetComponent ( newOctreeEntity, new RootNodeData ()
             {
                 i_rootNodeIndex             = 0,
 
@@ -225,14 +251,9 @@ namespace Antypodish.ECS.Octree
                 i_nodeSpareLastIndex        = 0,
 
                 i_instancesAllowedCount     = i_instancesAllowedInNodeCount
-            } ;
+            } ) ;
 
-
-            // ***** Core Components ***** //
-
-            ...
-            ecb.AddComponent ( newOctreeEntity, rootNodeData ) ; // Core of octree structure.
-
+            /*
             // Add buffer arrays
             ecb.AddBuffer <NodeBufferElement> ( newOctreeEntity ) ;
             ecb.AddBuffer <NodeChildrenBufferElement> ( newOctreeEntity ) ;
@@ -242,7 +263,15 @@ namespace Antypodish.ECS.Octree
             ecb.AddBuffer <InstanceBufferElement> ( newOctreeEntity ) ;
             ecb.AddBuffer <InstancesSpareIndexBufferElement> ( newOctreeEntity ) ; 
 
-
+            // Allow to add instances to octree.
+            // Requires AddInstanceTag.
+            ecb.AddBuffer <AddInstanceBufferElement> ( newOctreeEntity ) ; 
+            // Allow to remove instances from octree.
+            // Requires RemoveInstanceTag.
+            ecb.AddBuffer <RemoveInstanceBufferElement> ( newOctreeEntity ) ; 
+            */
+            
+            
             
             // ***** Instance Optional Components ***** //
 

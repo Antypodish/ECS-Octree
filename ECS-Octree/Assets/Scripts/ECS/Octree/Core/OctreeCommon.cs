@@ -14,11 +14,11 @@ namespace Antypodish.ECS.Octree
         /// <summary>
 	    /// Node Constructor.
 	    /// </summary>
-        static public void _CreateNewNode ( ref RootNodeData rootNodeData, int i_nodeIndex, float f_baseLength, float3 f3_center, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer )        
+        static public void _CreateNewNode ( ref RootNodeData rootNode, int i_nodeIndex, float f_baseLength, float3 f3_center, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeSparesBufferElement> a_nodeSparesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer )        
         {
 
             // Expand storage if needed
-            if ( rootNodeData.i_nodeSpareLastIndex <= 9 )
+            if ( rootNode.i_nodeSpareLastIndex <= 9 )
             {
 
                 int i_baseAddNodeCount                                 = 100 ; 
@@ -37,9 +37,9 @@ namespace Antypodish.ECS.Octree
                     // Add spares in reversed order, from higher index, to lower index.
                     nodeSpareBuffer.i                                      = -1 ;
                     a_nodeSparesBuffer.Add ( nodeSpareBuffer ) ;
-                    rootNodeData.i_nodeSpareLastIndex ++ ;
+                    rootNode.i_nodeSpareLastIndex ++ ;
                     nodeSpareBuffer.i                                      = i_initialSparesCount - i ;
-                    a_nodeSparesBuffer [rootNodeData.i_nodeSpareLastIndex] = nodeSpareBuffer;
+                    a_nodeSparesBuffer [rootNode.i_nodeSpareLastIndex] = nodeSpareBuffer;
 
                     nodeBuffer.f_baseLength                                = -1 ;
                     nodeBuffer.f_adjLength                                 = -1 ;
@@ -50,7 +50,7 @@ namespace Antypodish.ECS.Octree
                     nodeBuffer.i_instancesCount                            = 0 ;
                            
 
-                    for ( int j = 0; j < rootNodeData.i_instancesAllowedCount; j ++ )
+                    for ( int j = 0; j < rootNode.i_instancesAllowedCount; j ++ )
                     {
                         a_nodeInstancesIndexBuffer.Add ( new NodeInstancesIndexBufferElement () { i = -1 } ) ;                    
                     }
@@ -69,7 +69,7 @@ namespace Antypodish.ECS.Octree
             }
 
 
-		    _SetValues ( rootNodeData, i_nodeIndex, f_baseLength, f3_center, ref a_nodesBuffer, ref a_nodeChildrenBuffer ) ;
+		    _SetValues ( rootNode, i_nodeIndex, f_baseLength, f3_center, ref a_nodesBuffer, ref a_nodeChildrenBuffer ) ;
         
         }
 
@@ -81,14 +81,14 @@ namespace Antypodish.ECS.Octree
 	    /// <param name="f_minSize">Minimum size of nodes in this octree.</param>
 	    /// <param name="f_looseness">Multiplier for baseLengthVal to get the actual size.</param>
 	    /// <param name="f3_center">Centre position of this node.</param>
-        static public void _SetValues ( RootNodeData rootNodeData, int i_nodeIndex, float f_baseLength, float3 f3_center, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer ) 
+        static public void _SetValues ( RootNodeData rootNode, int i_nodeIndex, float f_baseLength, float3 f3_center, ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer ) 
         {
 
             NodeBufferElement nodeBuffer       = a_nodesBuffer [i_nodeIndex] ;
             
             nodeBuffer.f_baseLength            = f_baseLength ;
             nodeBuffer.f3_center               = f3_center ;
-            float f_adjustLength               = rootNodeData.f_looseness * f_baseLength ;
+            float f_adjustLength               = rootNode.f_looseness * f_baseLength ;
             nodeBuffer.f_adjLength             = f_adjustLength ;		    
 		    float3 size                        = new float3 ( f_adjustLength, f_adjustLength, f_adjustLength ) ;
             // Create the bounding box.
@@ -96,7 +96,7 @@ namespace Antypodish.ECS.Octree
             a_nodesBuffer [i_nodeIndex]        = nodeBuffer ;
             
 		    float f_quarter                    = f_baseLength / 4f ;
-		    float f_childActualLength          = ( f_baseLength / 2) * rootNodeData.f_looseness ;            
+		    float f_childActualLength          = ( f_baseLength / 2) * rootNode.f_looseness ;            
 		    float3 f3_childActualSize          = new float3 ( f_childActualLength, f_childActualLength, f_childActualLength );
             int i_childrenIndexOffset          = i_nodeIndex * 8 ;
 
@@ -136,10 +136,10 @@ namespace Antypodish.ECS.Octree
         /// <summary>
         /// Add required new spare instances.
         /// </summary>
-        static public void _AddInstanceSpares ( ref RootNodeData rootNodeData, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances )
+        static public void _AddInstanceSpares ( ref RootNodeData rootNode, ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer, int i_requiredNumberOfInstances )
         {
 
-            rootNodeData.i_instancesSpareLastIndex -- ;
+            rootNode.i_instancesSpareLastIndex -- ;
                     
             int i_initialSparesCount                                   = a_instanceBuffer.Length ;        
             int i_spareInstances2AddCount                              = i_requiredNumberOfInstances - i_initialSparesCount ;
@@ -164,12 +164,12 @@ namespace Antypodish.ECS.Octree
             // Populate indexes references, with new spares.
             for ( int i = 0; i < i_spareInstances2AddCount; i ++ )
             {
-                rootNodeData.i_instancesSpareLastIndex ++ ;
+                rootNode.i_instancesSpareLastIndex ++ ;
 
                 // Add new spares.
                 // Add spares in reversed order, from higher index, to lower index.                
                 instancesSpareIndexBuffer.i                                             = i_initialSparesCount + i_spareInstances2AddCount - i - 1 ;
-                a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex]    = instancesSpareIndexBuffer ;                   
+                a_instancesSpareIndexBuffer [rootNode.i_instancesSpareLastIndex]    = instancesSpareIndexBuffer ;                   
             
             }
                 
@@ -181,17 +181,17 @@ namespace Antypodish.ECS.Octree
         /// </summary>
         /// <param name="i_instanceIndex">Instance index, to pu back into spares of instances.</param>
         /// <param name="i_nodeIntstanceIndex">Node instance index holder, to be reset.</param>
-        static public void _PutBackSpareInstance ( ref RootNodeData rootNodeData, int i_instanceIndex, int i_nodeIntstanceIndex, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
+        static public void _PutBackSpareInstance ( ref RootNodeData rootNode, int i_instanceIndex, int i_nodeIntstanceIndex, ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, ref DynamicBuffer <InstancesSpareIndexBufferElement> a_instancesSpareIndexBuffer )
         {
 
             if ( i_instanceIndex < 0 ) return ; // This instance index has not been used.
         
-            rootNodeData.i_instancesSpareLastIndex ++ ; // Put back to spare
+            rootNode.i_instancesSpareLastIndex ++ ; // Put back to spare
 
             // Is assumed, that size of spares store, is appropriate.
             InstancesSpareIndexBufferElement instancesSpareIndexBuffer = new InstancesSpareIndexBufferElement () ;
             instancesSpareIndexBuffer.i = i_instanceIndex ;
-            a_instancesSpareIndexBuffer [rootNodeData.i_instancesSpareLastIndex] = instancesSpareIndexBuffer ;
+            a_instancesSpareIndexBuffer [rootNode.i_instancesSpareLastIndex] = instancesSpareIndexBuffer ;
                     
             NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = new NodeInstancesIndexBufferElement () ;
             nodeInstancesIndexBuffer.i = -1 ; // Reset instance index.
