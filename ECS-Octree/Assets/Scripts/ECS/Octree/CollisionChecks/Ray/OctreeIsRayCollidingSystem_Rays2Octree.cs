@@ -53,19 +53,7 @@ namespace Antypodish.ECS.Octree
             ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData                         = GetComponentDataFromEntity <RayMaxDistanceData> () ;
 
             ComponentDataFromEntity <IsCollidingData> a_isCollidingData                               = GetComponentDataFromEntity <IsCollidingData> () ;
-
-
-            ComponentDataFromEntity <IsActiveTag> a_isActiveTag                                       = GetComponentDataFromEntity <IsActiveTag> () ;
-
-
-            // Octree entity pair, for collision checks
-                        
-            ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData                               = GetComponentDataFromEntity <RootNodeData> () ;
-                                
-            BufferFromEntity <NodeBufferElement> nodeBufferElement                                    = GetBufferFromEntity <NodeBufferElement> () ;         
-            BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement        = GetBufferFromEntity <NodeInstancesIndexBufferElement> () ;            
-            BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement                    = GetBufferFromEntity <NodeChildrenBufferElement> () ;        
-            BufferFromEntity <InstanceBufferElement> instanceBufferElement                            = GetBufferFromEntity <InstanceBufferElement> () ;
+                                    
             
 
             // Test ray  
@@ -86,36 +74,30 @@ namespace Antypodish.ECS.Octree
             JobHandle setRayTestJobHandle = new SetRayTestJob 
             {
                 
-                a_collisionChecksEntities           = na_collisionChecksEntities,
+                // a_collisionChecksEntities           = na_collisionChecksEntities,
 
                 ray                                 = ray,
-                a_rayData                           = a_rayData,
+                // a_rayData                           = a_rayData,
                 // a_rayMaxDistanceData                = a_rayMaxDistanceData,
 
             }.Schedule ( group, inputDeps ) ;
+            
 
             JobHandle jobHandle = new Job 
             {
                       
-                a_collisionChecksEntities           = na_collisionChecksEntities,
-                                
-                a_octreeEntityPair4CollisionData    = a_octreeEntityPair4CollisionData,
-                a_rayData                           = a_rayData,
-                a_rayMaxDistanceData                = a_rayMaxDistanceData,
-                a_isCollidingData                   = a_isCollidingData,
-
-
+                // a_collisionChecksEntities           = na_collisionChecksEntities,
                 
                 // Octree entity pair, for collision checks
                 
-                a_isActiveTag                       = a_isActiveTag,
+                a_isActiveTag                       = GetComponentDataFromEntity <IsActiveTag> ( true ),
 
-                a_octreeRootNodeData                = a_octreeRootNodeData,
+                a_octreeRootNodeData                = GetComponentDataFromEntity <RootNodeData> ( true ),
 
-                nodeBufferElement                   = nodeBufferElement,
-                nodeInstancesIndexBufferElement     = nodeInstancesIndexBufferElement,
-                nodeChildrenBufferElement           = nodeChildrenBufferElement,
-                instanceBufferElement               = instanceBufferElement
+                nodeBufferElement                   = GetBufferFromEntity <NodeBufferElement> ( true ),
+                nodeInstancesIndexBufferElement     = GetBufferFromEntity <NodeInstancesIndexBufferElement> ( true ),
+                nodeChildrenBufferElement           = GetBufferFromEntity <NodeChildrenBufferElement> ( true ),
+                instanceBufferElement               = GetBufferFromEntity <InstanceBufferElement> ( true )
 
             }.Schedule ( group, setRayTestJobHandle ) ;
 
@@ -126,23 +108,25 @@ namespace Antypodish.ECS.Octree
 
         [BurstCompile]
         // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
-        struct SetRayTestJob : IJobParallelFor 
+        struct SetRayTestJob : IJobForEach <RayData>
+        // struct SetRayTestJob : IJobParallelFor 
         {
             
             [ReadOnly] public Ray ray ;
 
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
+            // [ReadOnly] public EntityArray a_collisionChecksEntities ;
 
-            [NativeDisableParallelForRestriction]
-            public ComponentDataFromEntity <RayData> a_rayData ;           
+            // [NativeDisableParallelForRestriction]
+            // public ComponentDataFromEntity <RayData> a_rayData ;           
             
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( ref RayData rayData )
+            // public void Execute ( int i_arrayIndex )
             {
 
-                Entity octreeRayEntity = a_collisionChecksEntities [i_arrayIndex] ;
+                // Entity octreeRayEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
-                RayData rayData = new RayData () { ray = ray } ;                
-                a_rayData [octreeRayEntity] = rayData ;
+                rayData = new RayData () { ray = ray } ;                
+                // a_rayData [octreeRayEntity] = rayData ;
             }
             
         }
@@ -150,19 +134,11 @@ namespace Antypodish.ECS.Octree
 
         [BurstCompile]
         // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
-        struct Job : IJobParallelFor 
+        struct Job : IJobForEach <IsCollidingData, OctreeEntityPair4CollisionData, RayData, RayMaxDistanceData>  
+        // struct Job : IJobParallelFor 
         {
             
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
-
-
-            
-            [ReadOnly] public ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData ;  
-            [ReadOnly] public ComponentDataFromEntity <RayData> a_rayData ;           
-            [ReadOnly] public ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData ;
-            
-            [NativeDisableParallelForRestriction]
-            public ComponentDataFromEntity <IsCollidingData> a_isCollidingData ;
+            // [ReadOnly] public EntityArray a_collisionChecksEntities ;
 
 
             // Octree entity pair, for collision checks
@@ -178,38 +154,39 @@ namespace Antypodish.ECS.Octree
             [ReadOnly] public BufferFromEntity <InstanceBufferElement> instanceBufferElement ;
 
 
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( ref IsCollidingData isColliding, [ReadOnly] ref OctreeEntityPair4CollisionData octreeEntityPair4Collision, [ReadOnly] ref RayData rayData, [ReadOnly] ref RayMaxDistanceData rayMaxDistance )
+            // public void Execute ( int i_arrayIndex )
             {
 
-                Entity octreeRayEntity = a_collisionChecksEntities [i_arrayIndex] ;
+                // Entity octreeRayEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
                 
                 // Its value should be 0, if no collision is detected.
                 // And >= 1, if instance collision is detected, or there is more than one collision, 
                 // indicating number of collisions. 
-                IsCollidingData isCollidingData                                                     = a_isCollidingData [octreeRayEntity] ;   
+                // IsCollidingData isCollidingData                                                     = a_isCollidingData [octreeRayEntity] ;   
                 
-                isCollidingData.i_collisionsCount                   = 0 ; // Reset colliding instances counter.
+                isColliding.i_collisionsCount = 0 ; // Reset colliding instances counter.
                 // isCollidingData.i_nearestInstanceCollisionIndex  = 0 ; // Unused
                 // isCollidingData.f_nearestDistance                = float.PositiveInfinity ; // Unused
 
                 
 
 
-                OctreeEntityPair4CollisionData octreeEntityPair4CollisionData                       = a_octreeEntityPair4CollisionData [octreeRayEntity] ;
-                RayData rayData                                                                     = a_rayData [octreeRayEntity] ;
-                RayMaxDistanceData rayMaxDistanceData                                               = a_rayMaxDistanceData [octreeRayEntity] ;
+                // OctreeEntityPair4CollisionData octreeEntityPair4CollisionData                       = a_octreeEntityPair4CollisionData [octreeRayEntity] ;
+                // RayData rayData                                                                     = a_rayData [octreeRayEntity] ;
+                // RayMaxDistanceData rayMaxDistanceData   = a_rayMaxDistanceData [octreeRayEntity] ;
             
 
                 // Octree entity pair, for collision checks
                     
-                Entity octreeRootNodeEntity                                                         = octreeEntityPair4CollisionData.octree2CheckEntity ;
+                Entity octreeRootNodeEntity  = octreeEntityPair4Collision.octree2CheckEntity ;
 
                 // Is target octree active
                 if ( a_isActiveTag.Exists (octreeRootNodeEntity) )
                 {
 
-                    RootNodeData octreeRootNodeData                                                  = a_octreeRootNodeData [octreeRootNodeEntity] ;
+                    RootNodeData octreeRootNodeData                                                 = a_octreeRootNodeData [octreeRootNodeEntity] ;
                 
                     DynamicBuffer <NodeBufferElement> a_nodesBuffer                                 = nodeBufferElement [octreeRootNodeEntity] ;
                     DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer      = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
@@ -223,7 +200,7 @@ namespace Antypodish.ECS.Octree
                     if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
                     {
                     
-                        if ( IsRayColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistanceData.f ) )                          
+                        if ( IsRayColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistance.f ) )                          
                         {   
                             /*
                             // Debug
@@ -234,7 +211,7 @@ namespace Antypodish.ECS.Octree
                 
                 }
 
-                a_isCollidingData [octreeRayEntity] = isCollidingData ; // Set back.
+                // a_isCollidingData [octreeRayEntity] = isCollidingData ; // Set back.
                     
             }
 

@@ -42,17 +42,8 @@ namespace Antypodish.ECS.Octree
             
             ComponentDataFromEntity <IsCollidingData> a_isCollidingData                               = GetComponentDataFromEntity <IsCollidingData> () ;
                         
-            ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData                               = GetComponentDataFromEntity <RootNodeData> () ;
-          
-            BufferFromEntity <NodeBufferElement> nodeBufferElement                                    = GetBufferFromEntity <NodeBufferElement> () ;         
-            BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement        = GetBufferFromEntity <NodeInstancesIndexBufferElement> () ;            
-            BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement                    = GetBufferFromEntity <NodeChildrenBufferElement> () ;        
-            BufferFromEntity <InstanceBufferElement> instanceBufferElement                            = GetBufferFromEntity <InstanceBufferElement> () ;
-
-
             // Ray entity pair, for collision checks
                         
-            ComponentDataFromEntity <IsActiveTag> a_isActiveTag                                       = GetComponentDataFromEntity <IsActiveTag> () ;
             
             ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
             ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData                         = GetComponentDataFromEntity <RayMaxDistanceData> () ;
@@ -77,8 +68,8 @@ namespace Antypodish.ECS.Octree
             JobHandle setRayTestJobHandle = new SetRayTestJob 
             {
                 
-                a_collisionChecksEntities           = na_collisionChecksEntities,
-                a_rayEntityPair4CollisionData       = a_rayEntityPair4CollisionData,
+                // a_collisionChecksEntities           = na_collisionChecksEntities,
+                // a_rayEntityPair4CollisionData       = a_rayEntityPair4CollisionData,
 
                 ray                                 = ray,
                 a_rayData                           = a_rayData,
@@ -91,23 +82,23 @@ namespace Antypodish.ECS.Octree
             {
                 
                 //ecb                                 = ecb,                
-                a_collisionChecksEntities           = na_collisionChecksEntities,
+                // a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
-                a_rayEntityPair4CollisionData       = a_rayEntityPair4CollisionData,
+                // a_rayEntityPair4CollisionData       = a_rayEntityPair4CollisionData,
 
-                a_isCollidingData                   = a_isCollidingData,
+                // a_isCollidingData                   = a_isCollidingData,
                 
-                a_octreeRootNodeData                = a_octreeRootNodeData,
+                a_octreeRootNodeData                = GetComponentDataFromEntity <RootNodeData> ( true ),
 
-                nodeBufferElement                   = nodeBufferElement,
-                nodeInstancesIndexBufferElement     = nodeInstancesIndexBufferElement,
-                nodeChildrenBufferElement           = nodeChildrenBufferElement,
-                instanceBufferElement               = instanceBufferElement,
+                nodeBufferElement                   = GetBufferFromEntity <NodeBufferElement> ( true ),
+                nodeInstancesIndexBufferElement     = GetBufferFromEntity <NodeInstancesIndexBufferElement> ( true ),
+                nodeChildrenBufferElement           = GetBufferFromEntity <NodeChildrenBufferElement> ( true ),
+                instanceBufferElement               = GetBufferFromEntity <InstanceBufferElement> ( true ),
 
                 
                 // Ray entity pair, for collision checks
                 
-                a_isActiveTag                       = a_isActiveTag,
+                a_isActiveTag                       = GetComponentDataFromEntity <IsActiveTag> ( true ),
                 
                 a_rayData                           = a_rayData,
                 a_rayMaxDistanceData                = a_rayMaxDistanceData,
@@ -123,25 +114,28 @@ namespace Antypodish.ECS.Octree
 
         [BurstCompile]
         // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
-        struct SetRayTestJob : IJobParallelFor 
+        struct SetRayTestJob : IJobForEach <RayEntityPair4CollisionData>
+        // struct SetRayTestJob : IJobParallelFor 
         {
             
-            [ReadOnly] public Ray ray ;
+            [ReadOnly] 
+            public Ray ray ;
 
             // [ReadOnly] public EntityArray a_collisionChecksEntities ;
-            [ReadOnly] public ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData ;
+            // [ReadOnly] public ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData ;
 
             [NativeDisableParallelForRestriction]
             public ComponentDataFromEntity <RayData> a_rayData ;           
 
             
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( ref RayEntityPair4CollisionData rayEntityPair4Collision )
+            // public void Execute ( int i_arrayIndex )
             {
 
                 // Entity octreeEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
-                RayEntityPair4CollisionData rayEntityPair4CollisionData = a_rayEntityPair4CollisionData [octreeEntity] ;
-                Entity octreeRayEntity = rayEntityPair4CollisionData.ray2CheckEntity ;
+                // RayEntityPair4CollisionData rayEntityPair4CollisionData = a_rayEntityPair4CollisionData [octreeEntity] ;
+                Entity octreeRayEntity = rayEntityPair4Collision.ray2CheckEntity ;
 
                 RayData rayData = new RayData () { ray = ray } ;                
                 a_rayData [octreeRayEntity] = rayData ;
@@ -153,56 +147,65 @@ namespace Antypodish.ECS.Octree
 
 
         [BurstCompile]        
-        struct Job : IJobParallelFor 
+        struct Job : IJobForEachWithEntity_EBCC <CollisionInstancesBufferElement, IsCollidingData, RayEntityPair4CollisionData>  
+        // struct Job : IJobParallelFor 
         {
             
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
+            // [ReadOnly] public EntityArray a_collisionChecksEntities ;
 
                         
-            [NativeDisableParallelForRestriction]
-            public ComponentDataFromEntity <IsCollidingData> a_isCollidingData ;   
+            // [NativeDisableParallelForRestriction]
+            // public ComponentDataFromEntity <IsCollidingData> a_isCollidingData ;   
             
  //           [NativeDisableParallelForRestriction]
  //           public BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement ; 
             
-            [ReadOnly] public ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData ; 
+            // [ReadOnly] public ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData ; 
 
-            [ReadOnly] public ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData ;
+            [ReadOnly] 
+            public ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData ;
                                    
-            [ReadOnly] public BufferFromEntity <NodeBufferElement> nodeBufferElement ;            
-            [ReadOnly] public BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement ;            
-            [ReadOnly] public BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement ;            
-            [ReadOnly] public BufferFromEntity <InstanceBufferElement> instanceBufferElement ;
+            [ReadOnly] 
+            public BufferFromEntity <NodeBufferElement> nodeBufferElement ;            
+            [ReadOnly] 
+            public BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement ;            
+            [ReadOnly] 
+            public BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement ;            
+            [ReadOnly] 
+            public BufferFromEntity <InstanceBufferElement> instanceBufferElement ;
             
             
             
             // Ray entity pair, for collision checks
             
             // Check if ray is active
-            [ReadOnly] public ComponentDataFromEntity <IsActiveTag> a_isActiveTag ;
+            [ReadOnly] 
+            public ComponentDataFromEntity <IsActiveTag> a_isActiveTag ;
 
-            [ReadOnly] public ComponentDataFromEntity <RayData> a_rayData ;           
-            [ReadOnly] public ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData ;
+            [ReadOnly] 
+            public ComponentDataFromEntity <RayData> a_rayData ;           
+            [ReadOnly] 
+            public ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData ;
             
 
 
-
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isColliding, [ReadOnly] ref RayEntityPair4CollisionData rayEntityPair4Collision )
+            // public void Execute ( int i_arrayIndex )
             {
 
-                Entity octreeRootNodeEntity = a_collisionChecksEntities [i_arrayIndex] ;
+                // Entity octreeRootNodeEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
                 
                 // Its value should be 0, if no collision is detected.
                 // And >= 1, if instance collision is detected, or there is more than one collision, 
                 // indicating number of collisions. 
-                IsCollidingData isCollidingData                                                     = a_isCollidingData [octreeRootNodeEntity] ;                   
-                isCollidingData.i_collisionsCount                   = 0 ; // Reset colliding instances counter.
-                //isCollidingData.i_nearestInstanceCollisionIndex   = 0 ; // Unused
-                //isCollidingData.f_nearestDistance                 = float.PositiveInfinity ; // Unused
+                //IsCollidingData isCollidingData                                                   = a_isCollidingData [octreeRootNodeEntity] ;                   
+                isColliding.i_collisionsCount                                                       = 0 ; // Reset colliding instances counter.
+                //isCollidingData.i_nearestInstanceCollisionIndex                                   = 0 ; // Unused
+                //isCollidingData.f_nearestDistance                                                 = float.PositiveInfinity ; // Unused
 
                 
-                RootNodeData octreeRootNodeData                                                           = a_octreeRootNodeData [octreeRootNodeEntity] ;
+                RootNodeData octreeRootNodeData                                                     = a_octreeRootNodeData [octreeRootNodeEntity] ;
                 
                 DynamicBuffer <NodeBufferElement> a_nodesBuffer                                     = nodeBufferElement [octreeRootNodeEntity] ;
                 DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer          = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
@@ -210,18 +213,18 @@ namespace Antypodish.ECS.Octree
                 DynamicBuffer <InstanceBufferElement> a_instanceBuffer                              = instanceBufferElement [octreeRootNodeEntity] ;   
 
                 
-                RayEntityPair4CollisionData rayEntityPair4CollisionData                             = a_rayEntityPair4CollisionData [octreeRootNodeEntity] ;
+                // RayEntityPair4CollisionData rayEntityPair4CollisionData                             = a_rayEntityPair4CollisionData [octreeRootNodeEntity] ;
 
                 // Ray entity pair, for collision checks
                                                                         
-                Entity ray2CheckEntity                                                              = rayEntityPair4CollisionData.ray2CheckEntity ;
+                Entity ray2CheckEntity                                                              = rayEntityPair4Collision.ray2CheckEntity ;
 
                 // Is target octree active
                 if ( a_isActiveTag.Exists (ray2CheckEntity) )
                 {
 
-                    RayData rayData                                                                     = a_rayData [ray2CheckEntity] ;
-                    RayMaxDistanceData rayMaxDistanceData                                               = a_rayMaxDistanceData [ray2CheckEntity] ;
+                    RayData rayData                       = a_rayData [ray2CheckEntity] ;
+                    RayMaxDistanceData rayMaxDistanceData = a_rayMaxDistanceData [ray2CheckEntity] ;
             
 
                     // To even allow instances collision checks, octree must have at least one instance.
@@ -229,7 +232,7 @@ namespace Antypodish.ECS.Octree
                     {
                     
                         
-                        if ( IsRayColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistanceData.f ) )                        
+                        if ( IsRayColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, rayData.ray, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer, rayMaxDistanceData.f ) )                        
                         {   
                             /*
                             // Debug
@@ -241,7 +244,7 @@ namespace Antypodish.ECS.Octree
                 
                 }
 
-                a_isCollidingData [octreeRootNodeEntity] = isCollidingData ; // Set back.
+                // a_isCollidingData [octreeRootNodeEntity] = isCollidingData ; // Set back.
                     
             }
 
