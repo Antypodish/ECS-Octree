@@ -1,4 +1,5 @@
-﻿using Unity.Entities;
+﻿using Unity.Collections ;
+using Unity.Entities;
 using Unity.Jobs;
 
 
@@ -13,12 +14,12 @@ namespace Antypodish.ECS.Octree
     class ForceCollisionCheckSystem : JobComponentSystem
     {
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
 
-            group = GetComponentGroup ( 
+            group = GetEntityQuery ( 
                 typeof ( ForceCollisionCheckTag )
             ) ;
 
@@ -26,14 +27,14 @@ namespace Antypodish.ECS.Octree
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-            EntityArray a_entities = group.GetEntityArray () ;
+            NativeArray <Entity> na_entities = group.ToEntityArray ( Allocator.Temp ) ;
             
-            Entity entity = a_entities [0] ;
+            Entity entity = na_entities [0] ;
+            na_entities.Dispose () ;
 
             EntityManager.RemoveComponent ( entity, typeof ( ForceCollisionCheckTag ) ) ;
 
-
-            return base.OnUpdate ( inputDeps );
+            return inputDeps ;
         }
     }
 

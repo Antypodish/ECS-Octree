@@ -12,22 +12,22 @@ namespace Antypodish.ECS.Octree
     class IsRayCollidingSystem_Octrees2Ray : JobComponentSystem
     {
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree IS Ray Colliding System" ) ;
             
-            group = GetComponentGroup ( 
-                typeof (IsActiveTag), 
-                typeof (IsRayCollidingTag),
-                typeof (RayEntityPair4CollisionData),
+            group = GetEntityQuery ( 
+                typeof ( IsActiveTag ), 
+                typeof ( IsRayCollidingTag ),
+                typeof ( RayEntityPair4CollisionData ),
                 // typeof (RayData), // Not used by octree entity
                 // typeof (RayMaxDistanceData), // Not used by octree entity
-                typeof (IsCollidingData),
+                typeof ( IsCollidingData ),
                 // typeof (CollisionInstancesBufferElement), // Not required in this system
-                typeof (RootNodeData) 
+                typeof ( RootNodeData ) 
             ) ;
 
         }
@@ -36,7 +36,7 @@ namespace Antypodish.ECS.Octree
         {
 
 
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;    
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;    
             
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData       = GetComponentDataFromEntity <RayEntityPair4CollisionData> () ;
             
@@ -63,9 +63,10 @@ namespace Antypodish.ECS.Octree
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
             IsRayColliding_Common._DebugRays ( ref na_collisionChecksEntities, ref a_rayData, ref a_rayMaxDistanceData, ref a_isCollidingData, ref a_rayEntityPair4CollisionData, false, false ) ;
+            
+            na_collisionChecksEntities.Dispose () ;
 
-
-            int i_groupLength = group.CalculateLength () ;
+            // int i_groupLength = group.CalculateLength () ;
 
             
             // Test ray            
@@ -73,7 +74,7 @@ namespace Antypodish.ECS.Octree
 
             // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
 
-            var setRayTestJob = new SetRayTestJob 
+            JobHandle setRayTestJobHandle = new SetRayTestJob 
             {
                 
                 a_collisionChecksEntities           = na_collisionChecksEntities,
@@ -83,13 +84,10 @@ namespace Antypodish.ECS.Octree
                 a_rayData                           = a_rayData,
                 // a_rayMaxDistanceData                = a_rayMaxDistanceData,
 
-            }.Schedule ( i_groupLength, 8, inputDeps ) ;
+            }.Schedule ( group, inputDeps ) ;
             
 
-
-
-
-            var job = new Job 
+            JobHandle jobHandle = new Job 
             {
                 
                 //ecb                                 = ecb,                
@@ -115,11 +113,10 @@ namespace Antypodish.ECS.Octree
                 a_rayMaxDistanceData                = a_rayMaxDistanceData,
 
 
-            }.Schedule ( i_groupLength, 8, setRayTestJob ) ;
+            }.Schedule ( group, setRayTestJobHandle ) ;
 
-            na_collisionChecksEntities.Dispose () ;
 
-            return job ;
+            return jobHandle ;
 
         }
 
@@ -131,7 +128,7 @@ namespace Antypodish.ECS.Octree
             
             [ReadOnly] public Ray ray ;
 
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
+            // [ReadOnly] public EntityArray a_collisionChecksEntities ;
             [ReadOnly] public ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData ;
 
             [NativeDisableParallelForRestriction]
@@ -141,7 +138,7 @@ namespace Antypodish.ECS.Octree
             public void Execute ( int i_arrayIndex )
             {
 
-                Entity octreeEntity = a_collisionChecksEntities [i_arrayIndex] ;
+                // Entity octreeEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
                 RayEntityPair4CollisionData rayEntityPair4CollisionData = a_rayEntityPair4CollisionData [octreeEntity] ;
                 Entity octreeRayEntity = rayEntityPair4CollisionData.ray2CheckEntity ;

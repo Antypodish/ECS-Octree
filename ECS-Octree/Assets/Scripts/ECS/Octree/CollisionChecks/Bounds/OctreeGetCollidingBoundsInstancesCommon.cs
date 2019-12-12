@@ -72,7 +72,7 @@ namespace Antypodish.ECS.Octree
         /// <param name="i_nodeIndex">Internal octree node index.</param>
 	    /// <param name="checkBounds">Bounds to check. Passing by ref as it improves performance with structs.</param>
 	    /// <param name="l_resultInstanceIDs">List result.</param>
-        static public bool _GetNodeColliding ( ref RootNodeData octreeRootNodeData, int i_nodeIndex, Bounds checkBounds, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isCollidingData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 	    
+        static public bool _GetNodeColliding ( [ReadOnly] ref RootNodeData octreeRootNode, int i_nodeIndex, Bounds checkBounds, ref DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isColliding, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer, [ReadOnly] ref DynamicBuffer <NodeChildrenBufferElement> a_nodeChildrenBuffer, [ReadOnly] ref DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer, [ReadOnly] ref DynamicBuffer <InstanceBufferElement> a_instanceBuffer ) 	    
         {
 
             // float f_distance ;
@@ -83,17 +83,17 @@ namespace Antypodish.ECS.Octree
             // Are the input bounds at least partially in this node?
 		    if ( !nodeBuffer.bounds.Intersects ( checkBounds ) ) 
             {
-			    return isCollidingData.i_collisionsCount > 0 ? true : false ; 
+			    return isColliding.i_collisionsCount > 0 ? true : false ; 
 		    }
         
 
             if ( nodeBuffer.i_instancesCount >= 0 ) 
             {            
 
-                int i_nodeInstancesIndexOffset = i_nodeIndex * octreeRootNodeData.i_instancesAllowedCount ;
+                int i_nodeInstancesIndexOffset = i_nodeIndex * octreeRootNode.i_instancesAllowedCount ;
 
 		        // Check against any objects in this node
-                for (int i = 0; i < octreeRootNodeData.i_instancesAllowedCount; i++) 
+                for (int i = 0; i < octreeRootNode.i_instancesAllowedCount; i++) 
                 {
             
                     NodeInstancesIndexBufferElement nodeInstancesIndexBuffer = a_nodeInstancesIndexBuffer [i_nodeInstancesIndexOffset + i] ;
@@ -122,7 +122,7 @@ namespace Antypodish.ECS.Octree
 
                             // Is expected, that the required length is no greater than current length + 1
                             // And is not negative.
-                            int i_collisionsCount = isCollidingData.i_collisionsCount ;
+                            int i_collisionsCount = isColliding.i_collisionsCount ;
                             collisionInstancesBuffer.i_ID = instanceBuffer.i_ID ;      
                             collisionInstancesBuffer.i_version = instanceBuffer.i_entityVersion ; // Optional, used when Id is used as entity index   
                                                         
@@ -137,7 +137,7 @@ namespace Antypodish.ECS.Octree
                                 a_collisionInstancesBuffer [i_collisionsCount] = collisionInstancesBuffer ;
                             }
                                                         
-                            isCollidingData.i_collisionsCount ++ ;
+                            isColliding.i_collisionsCount ++ ;
 
 			            }
                     }
@@ -162,12 +162,12 @@ namespace Antypodish.ECS.Octree
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
                     {
-                        _GetNodeColliding ( ref octreeRootNodeData, i_nodeChildIndex, checkBounds, ref a_collisionInstancesBuffer, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) ;
+                        _GetNodeColliding ( ref octreeRootNode, i_nodeChildIndex, checkBounds, ref a_collisionInstancesBuffer, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) ;
                     }
 			    }
 		    }
             
-            return isCollidingData.i_collisionsCount > 0 ? true : false ; 
+            return isColliding.i_collisionsCount > 0 ? true : false ; 
 
 	    }
 

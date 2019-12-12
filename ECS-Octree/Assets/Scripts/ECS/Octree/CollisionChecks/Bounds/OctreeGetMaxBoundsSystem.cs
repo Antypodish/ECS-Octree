@@ -13,17 +13,18 @@ namespace Antypodish.ECS.Octree
     class GetMaxBoundsSystem : JobComponentSystem
     {
         
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree Get Max Bounds Colliding Instances System" ) ;
             
-            group = GetComponentGroup (                 
-                typeof (IsActiveTag), 
-                typeof (GetMaxBoundsTag), 
-                typeof (RootNodeData) 
+            group = GetEntityQuery 
+            (                 
+                typeof ( IsActiveTag ), 
+                typeof ( GetMaxBoundsTag ), 
+                typeof ( RootNodeData ) 
             ) ;
 
         }
@@ -39,19 +40,21 @@ namespace Antypodish.ECS.Octree
                 size = new float3 ( 1, 1, 1 ) * 5 // Total size of boundry 
             } ;
 
-             
-            NativeArray <Entity> na_entities                       = group.GetEntityArray () ;
-            Entity rootNodeEntity                                  = na_entities [0] ;
+            int i_firstEntity = 0 ; 
+
+            NativeArray <Entity> na_entities                       = group.ToEntityArray ( Allocator.Temp ) ;
+            Entity rootNodeEntity                                  = na_entities [i_firstEntity] ;
             na_entities.Dispose () ;
             
-            ComponentDataArray <RootNodeData> a_rootNodeData       = group.GetComponentDataArray <RootNodeData> ( ) ;
-            RootNodeData rootNodeData                              = a_rootNodeData [0] ;
+            ComponentDataFromEntity <RootNodeData> a_rootNodeData  = GetComponentDataFromEntity <RootNodeData> ( true ) ;
+            // ComponentDataArray <RootNodeData> a_rootNodeData       = group.GetComponentDataArray <RootNodeData> ( ) ;
+            RootNodeData rootNodeData                              = a_rootNodeData [rootNodeEntity] ;
             
-            BufferFromEntity <NodeBufferElement> nodeBufferElement = GetBufferFromEntity <NodeBufferElement> () ;
+            BufferFromEntity <NodeBufferElement> nodeBufferElement = GetBufferFromEntity <NodeBufferElement> ( true ) ;
             DynamicBuffer <NodeBufferElement> a_nodesBuffer        = nodeBufferElement [rootNodeEntity] ;
 
 
-            Bounds maxBouds                                        = _GetOctreeMaxBounds ( rootNodeData, a_nodesBuffer ) ;
+            Bounds maxBouds                                        = _GetOctreeMaxBounds ( ref rootNodeData, ref a_nodesBuffer ) ;
 
 
             return inputDeps ;
@@ -62,7 +65,7 @@ namespace Antypodish.ECS.Octree
         /// Get total octree bounds (boundary box).
         /// </summary>
         /// <returns></returns>
-	    public Bounds _GetOctreeMaxBounds ( RootNodeData rootNodeData, DynamicBuffer <NodeBufferElement> a_nodesBuffer )
+	    public Bounds _GetOctreeMaxBounds ( [ReadOnly] ref RootNodeData rootNodeData, [ReadOnly] ref DynamicBuffer <NodeBufferElement> a_nodesBuffer )
 	    {
             NodeBufferElement nodeBuffer = a_nodesBuffer [rootNodeData.i_rootNodeIndex] ;
 		    // return _GetNodeBounds ( i_rootNodeIndex ) ;

@@ -17,7 +17,7 @@ namespace Antypodish.ECS.Octree
         
         EndInitializationEntityCommandBufferSystem eiecb ;
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
@@ -26,13 +26,14 @@ namespace Antypodish.ECS.Octree
             
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
-            group = GetComponentGroup ( 
-                typeof (IsActiveTag),
-                typeof (IsRayCollidingTag),
-                typeof (OctreeEntityPair4CollisionData),
-                typeof (RayData),
-                typeof (RayMaxDistanceData),
-                typeof (IsCollidingData)
+            group = GetEntityQuery 
+            ( 
+                typeof ( IsActiveTag ),
+                typeof ( IsRayCollidingTag ),
+                typeof ( OctreeEntityPair4CollisionData ),
+                typeof ( RayData ),
+                typeof ( RayMaxDistanceData ),
+                typeof ( IsCollidingData )
                 // typeof (CollisionInstancesBufferElement)
                 // typeof (RootNodeData) // Unused in ray
             ) ;
@@ -45,7 +46,8 @@ namespace Antypodish.ECS.Octree
             
             
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;     
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;     
+
             ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
             ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
             ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData                         = GetComponentDataFromEntity <RayMaxDistanceData> () ;
@@ -71,16 +73,17 @@ namespace Antypodish.ECS.Octree
             // ! Ensure test this only with single, or at most few ray entiities.
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData = new ComponentDataFromEntity<RayEntityPair4CollisionData> () ; // As empty.
             IsRayColliding_Common._DebugRays ( ref na_collisionChecksEntities, ref a_rayData, ref a_rayMaxDistanceData, ref a_isCollidingData, ref a_rayEntityPair4CollisionData, false, false ) ;
-
+            
+            na_collisionChecksEntities.Dispose () ;
             
             // Test ray
             Ray ray = Camera.main.ScreenPointToRay ( Input.mousePosition ) ;
 
             // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
 
-            int i_groupLength = group.CalculateLength () ;
+            // int i_groupLength = group.CalculateLength () ;
 
-            var setRayTestJob = new SetRayTestJob 
+            JobHandle setRayTestJobHandle = new SetRayTestJob 
             {
                 
                 a_collisionChecksEntities           = na_collisionChecksEntities,
@@ -89,9 +92,9 @@ namespace Antypodish.ECS.Octree
                 a_rayData                           = a_rayData,
                 // a_rayMaxDistanceData                = a_rayMaxDistanceData,
 
-            }.Schedule ( i_groupLength, 8, inputDeps ) ;
+            }.Schedule ( group, inputDeps ) ;
 
-            var job = new Job 
+            JobHandle jobHandle = new Job 
             {
                       
                 a_collisionChecksEntities           = na_collisionChecksEntities,
@@ -114,11 +117,10 @@ namespace Antypodish.ECS.Octree
                 nodeChildrenBufferElement           = nodeChildrenBufferElement,
                 instanceBufferElement               = instanceBufferElement
 
-            }.Schedule ( i_groupLength, 8, setRayTestJob ) ;
+            }.Schedule ( group, setRayTestJobHandle ) ;
 
-            na_collisionChecksEntities.Dispose () ;
 
-            return job ;
+            return jobHandle ;
         }
 
 

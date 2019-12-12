@@ -17,19 +17,20 @@ namespace Antypodish.ECS.Octree
     class IsBoundsCollidingSystem_Bounds2Octree : JobComponentSystem
     {
             
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
             
             Debug.Log ( "Start Octree Get Colliding Bounds Instances System" ) ;
             
-            group = GetComponentGroup ( 
-                typeof (IsActiveTag),
-                typeof (IsBoundsCollidingTag),
-                typeof (OctreeEntityPair4CollisionData),
-                typeof (BoundsData),
-                typeof (IsCollidingData)
+            group = GetEntityQuery 
+            ( 
+                typeof ( IsActiveTag ),
+                typeof ( IsBoundsCollidingTag ),
+                typeof ( OctreeEntityPair4CollisionData ),
+                typeof ( BoundsData ),
+                typeof ( IsCollidingData )
                 // typeof (CollisionInstancesBufferElement)
                 // typeof (RootNodeData) // Unused in bounds
             ) ;
@@ -41,31 +42,21 @@ namespace Antypodish.ECS.Octree
         {
             
             
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;     
-            ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
-            ComponentDataFromEntity <BoundsData> a_boundsData                                         = GetComponentDataFromEntity <BoundsData> () ;
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ; 
+            
+            // ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
+            // ComponentDataFromEntity <BoundsData> a_boundsData                                         = GetComponentDataFromEntity <BoundsData> () ;
 
-            ComponentDataFromEntity <IsCollidingData> a_isCollidingData                               = GetComponentDataFromEntity <IsCollidingData> () ;
-
-
-            ComponentDataFromEntity <IsActiveTag> a_isActiveTag                                       = GetComponentDataFromEntity <IsActiveTag> () ;
-
-
-            // Octree entity pair, for collision checks
-                        
-            ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData                               = GetComponentDataFromEntity <RootNodeData> () ;
-                                
-            BufferFromEntity <NodeBufferElement> nodeBufferElement                                    = GetBufferFromEntity <NodeBufferElement> () ;         
-            BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement        = GetBufferFromEntity <NodeInstancesIndexBufferElement> () ;            
-            BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement                    = GetBufferFromEntity <NodeChildrenBufferElement> () ;        
-            BufferFromEntity <InstanceBufferElement> instanceBufferElement                            = GetBufferFromEntity <InstanceBufferElement> () ;
+            ComponentDataFromEntity <IsCollidingData> a_isCollidingData                               = GetComponentDataFromEntity <IsCollidingData> ( true ) ;
             
 
             // Test bounds 
             // Debug
             // ! Ensure test this only with single, or at most few ray entiities.
             IsBoundsColliding_Common._DebugBounds ( ref na_collisionChecksEntities, ref a_isCollidingData, false ) ;
-
+            
+            // int i_groupLength = na_collisionChecksEntities.Length ;
+            na_collisionChecksEntities.Dispose () ;
             
 
             // Test bounds            
@@ -76,44 +67,39 @@ namespace Antypodish.ECS.Octree
             } ;
 
 
-            int i_groupLength = group.CalculateLength () ;
 
             var setBoundsTestJob = new SetBoundsTestJob 
             {
-                
-                a_collisionChecksEntities           = na_collisionChecksEntities,
+                //a_collisionChecksEntities           = na_collisionChecksEntities,
 
                 checkBounds                         = checkBounds,
-                a_boundsData                        = a_boundsData,
+                // a_boundsData                        = a_boundsData,
 
-            }.Schedule ( i_groupLength, 8, inputDeps ) ;
+            }.Schedule ( group, inputDeps ) ;
 
             var job = new Job 
             {
-                
-                //ecb                                 = ecb,                
-                a_collisionChecksEntities           = na_collisionChecksEntities,
+                // a_collisionChecksEntities           = na_collisionChecksEntities,
                                 
-                a_octreeEntityPair4CollisionData    = a_octreeEntityPair4CollisionData,
-                a_boundsData                        = a_boundsData,
-                a_isCollidingData                   = a_isCollidingData,
+                //a_octreeEntityPair4CollisionData    = a_octreeEntityPair4CollisionData,
+                //a_boundsData                        = a_boundsData,
+                //a_isCollidingData                   = a_isCollidingData,
 
 
                 
                 // Octree entity pair, for collision checks
                 
-                a_isActiveTag                       = a_isActiveTag,
+                a_isActiveTag                       = GetComponentDataFromEntity <IsActiveTag> ( true ),
 
-                a_octreeRootNodeData                = a_octreeRootNodeData,
+                a_octreeRootNodeData                = GetComponentDataFromEntity <RootNodeData> ( true ),
 
-                nodeBufferElement                   = nodeBufferElement,
-                nodeInstancesIndexBufferElement     = nodeInstancesIndexBufferElement,
-                nodeChildrenBufferElement           = nodeChildrenBufferElement,
-                instanceBufferElement               = instanceBufferElement
+                nodeBufferElement                   = GetBufferFromEntity <NodeBufferElement> ( true ),
+                nodeInstancesIndexBufferElement     = GetBufferFromEntity <NodeInstancesIndexBufferElement> ( true ),
+                nodeChildrenBufferElement           = GetBufferFromEntity <NodeChildrenBufferElement> ( true ),
+                instanceBufferElement               = GetBufferFromEntity <InstanceBufferElement> ( true )
 
-            }.Schedule ( i_groupLength, 8, setBoundsTestJob ) ;
+            }.Schedule ( group, setBoundsTestJob ) ;
 
-            na_collisionChecksEntities.Dispose () ;
 
             return job ;
         }
@@ -121,23 +107,25 @@ namespace Antypodish.ECS.Octree
 
         [BurstCompile]
         // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
-        struct SetBoundsTestJob : IJobParallelFor 
+        struct SetBoundsTestJob : IJobForEach <BoundsData>
+        // struct SetBoundsTestJob : IJobParallelFor 
         {
             
             [ReadOnly] public Bounds checkBounds ;
 
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
+            // [ReadOnly] public EntityArray a_collisionChecksEntities ;
 
-            [NativeDisableParallelForRestriction]
-            public ComponentDataFromEntity <BoundsData> a_boundsData ;           
+            // [NativeDisableParallelForRestriction]
+            //public ComponentDataFromEntity <BoundsData> a_boundsData ;           
             
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( ref BoundsData bounds )
+            // public void Execute ( int i_arrayIndex )
             {
 
-                Entity octreeRayEntity = a_collisionChecksEntities [i_arrayIndex] ;
+                // Entity octreeRayEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
-                BoundsData boundsData = new BoundsData () { bounds = checkBounds } ;                
-                a_boundsData [octreeRayEntity] = boundsData ;
+                bounds = new BoundsData () { bounds = checkBounds } ;                
+                // a_boundsData [octreeRayEntity] = boundsData ;
             }
             
         }
@@ -145,64 +133,72 @@ namespace Antypodish.ECS.Octree
 
         [BurstCompile]
         // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
-        struct Job : IJobParallelFor 
+        struct Job : IJobForEach_CCC <IsCollidingData, OctreeEntityPair4CollisionData, BoundsData> 
+        // struct Job : IJobParallelFor 
         {
             
-            [ReadOnly] public EntityArray a_collisionChecksEntities ;
+            // [ReadOnly] public EntityArray a_collisionChecksEntities ;
 
 
             
-            [ReadOnly] public ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData ;  
-            [ReadOnly] public ComponentDataFromEntity <BoundsData> a_boundsData ;  
+            // [ReadOnly] public ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData ;  
+            // [ReadOnly] public ComponentDataFromEntity <BoundsData> a_boundsData ;  
             
-            [NativeDisableParallelForRestriction]
-            public ComponentDataFromEntity <IsCollidingData> a_isCollidingData ;
+            // [NativeDisableParallelForRestriction]
+            // public ComponentDataFromEntity <IsCollidingData> a_isCollidingData ;
 
 
             // Octree entity pair, for collision checks
 
             // Check if octree is active
-            [ReadOnly] public ComponentDataFromEntity <IsActiveTag> a_isActiveTag ;
+            [ReadOnly] 
+            public ComponentDataFromEntity <IsActiveTag> a_isActiveTag ;
 
-            [ReadOnly] public ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData ;
+            [ReadOnly] 
+            public ComponentDataFromEntity <RootNodeData> a_octreeRootNodeData ;
                             
-            [ReadOnly] public BufferFromEntity <NodeBufferElement> nodeBufferElement ;            
-            [ReadOnly] public BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement ;            
-            [ReadOnly] public BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement ;            
-            [ReadOnly] public BufferFromEntity <InstanceBufferElement> instanceBufferElement ;
+            [ReadOnly] 
+            public BufferFromEntity <NodeBufferElement> nodeBufferElement ;            
+            [ReadOnly] 
+            public BufferFromEntity <NodeInstancesIndexBufferElement> nodeInstancesIndexBufferElement ;            
+            [ReadOnly] 
+            public BufferFromEntity <NodeChildrenBufferElement> nodeChildrenBufferElement ;            
+            [ReadOnly] 
+            public BufferFromEntity <InstanceBufferElement> instanceBufferElement ;
 
 
-            public void Execute ( int i_arrayIndex )
+            public void Execute ( ref IsCollidingData isColliding, [ReadOnly] ref OctreeEntityPair4CollisionData octreeEntityPair4Collision, [ReadOnly] ref BoundsData checkBounds )
+            // public void Execute ( int i_arrayIndex )
             {
 
-                Entity octreeBoundsEntity = a_collisionChecksEntities [i_arrayIndex] ;
+                // Entity octreeBoundsEntity = a_collisionChecksEntities [i_arrayIndex] ;
 
                 
                 // Its value should be 0, if no collision is detected.
                 // And >= 1, if instance collision is detected, or there is more than one collision, 
                 // indicating number of collisions. 
-                IsCollidingData isCollidingData                                                     = a_isCollidingData [octreeBoundsEntity] ;   
+                // IsCollidingData isCollidingData                                                     = a_isCollidingData [octreeBoundsEntity] ;   
                 
-                isCollidingData.i_collisionsCount                   = 0 ; // Reset colliding instances counter.
+                isColliding.i_collisionsCount                   = 0 ; // Reset colliding instances counter.
                 // isCollidingData.i_nearestInstanceCollisionIndex  = 0 ; // Unused
                 // isCollidingData.f_nearestDistance                = float.PositiveInfinity ; // Unused
 
                 
 
 
-                OctreeEntityPair4CollisionData octreeEntityPair4CollisionData                       = a_octreeEntityPair4CollisionData [octreeBoundsEntity] ;
-                BoundsData checkBounds                                                              = a_boundsData [octreeBoundsEntity] ;
+                // OctreeEntityPair4CollisionData octreeEntityPair4CollisionData                       = a_octreeEntityPair4CollisionData [octreeBoundsEntity] ;
+                // BoundsData checkBounds                                                              = a_boundsData [octreeBoundsEntity] ;
             
 
                 // Octree entity pair, for collision checks
                     
-                Entity octreeRootNodeEntity                                                         = octreeEntityPair4CollisionData.octree2CheckEntity ;
+                Entity octreeRootNodeEntity                                                         = octreeEntityPair4Collision.octree2CheckEntity ;
 
                 // Is target octree active
                 if ( a_isActiveTag.Exists (octreeRootNodeEntity) )
                 {
 
-                    RootNodeData octreeRootNodeData                                                 = a_octreeRootNodeData [octreeRootNodeEntity] ;
+                    RootNodeData octreeRootNode                                                 = a_octreeRootNodeData [octreeRootNodeEntity] ;
                 
                     DynamicBuffer <NodeBufferElement> a_nodesBuffer                                 = nodeBufferElement [octreeRootNodeEntity] ;
                     DynamicBuffer <NodeInstancesIndexBufferElement> a_nodeInstancesIndexBuffer      = nodeInstancesIndexBufferElement [octreeRootNodeEntity] ;   
@@ -211,10 +207,10 @@ namespace Antypodish.ECS.Octree
                 
                     
                     // To even allow instances collision checks, octree must have at least one instance.
-                    if ( octreeRootNodeData.i_totalInstancesCountInTree > 0 )
+                    if ( octreeRootNode.i_totalInstancesCountInTree > 0 )
                     {
                         // To even allow instances collision checks, octree must have at least one instance.
-                        if ( IsBoundsColliding_Common._IsNodeColliding ( ref octreeRootNodeData, octreeRootNodeData.i_rootNodeIndex, checkBounds.bounds, ref isCollidingData, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
+                        if ( IsBoundsColliding_Common._IsNodeColliding ( ref octreeRootNode, octreeRootNode.i_rootNodeIndex, checkBounds.bounds, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
                         {
                             // Debug.Log ( "Is colliding." ) ;
                         }
@@ -223,7 +219,7 @@ namespace Antypodish.ECS.Octree
 
                 }
 
-                a_isCollidingData [octreeBoundsEntity] = isCollidingData ; // Set back.
+                // a_isCollidingData [octreeBoundsEntity] = isColliding ; // Set back.
                     
             }
 

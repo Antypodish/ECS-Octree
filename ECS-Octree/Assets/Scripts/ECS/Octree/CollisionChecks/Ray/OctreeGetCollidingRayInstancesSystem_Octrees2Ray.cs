@@ -17,7 +17,7 @@ namespace Antypodish.ECS.Octree
 
         EndInitializationEntityCommandBufferSystem eiecb ;
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
@@ -26,15 +26,16 @@ namespace Antypodish.ECS.Octree
             
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
-            group = GetComponentGroup ( 
-                typeof (IsActiveTag),
-                typeof (GetCollidingRayInstancesTag),
-                typeof (RayEntityPair4CollisionData),
+            group = GetEntityQuery 
+            ( 
+                typeof ( IsActiveTag ),
+                typeof ( GetCollidingRayInstancesTag ),
+                typeof ( RayEntityPair4CollisionData ),
                 // typeof (RayData), // Not used by octree entity
                 // typeof (RayMaxDistanceData), // Not used by octree entity
-                typeof (IsCollidingData),
-                typeof (CollisionInstancesBufferElement),
-                typeof (RootNodeData) 
+                typeof ( IsCollidingData ),
+                typeof ( CollisionInstancesBufferElement ),
+                typeof ( RootNodeData ) 
             ) ;
 
         }
@@ -46,7 +47,7 @@ namespace Antypodish.ECS.Octree
             
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
 
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;    
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;    
             
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData       = GetComponentDataFromEntity <RayEntityPair4CollisionData> () ;
             

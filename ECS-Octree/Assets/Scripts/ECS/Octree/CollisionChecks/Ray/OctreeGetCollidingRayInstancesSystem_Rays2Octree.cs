@@ -17,7 +17,7 @@ namespace Antypodish.ECS.Octree
         
         EndInitializationEntityCommandBufferSystem eiecb ;
 
-        ComponentGroup group ;
+        EntityQuery group ;
 
         protected override void OnCreate ( )
         {
@@ -26,14 +26,15 @@ namespace Antypodish.ECS.Octree
             
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
 
-            group = GetComponentGroup ( 
-                typeof (IsActiveTag),
-                typeof (GetCollidingRayInstancesTag),
-                typeof (OctreeEntityPair4CollisionData),
-                typeof (RayData),
-                typeof (RayMaxDistanceData),
-                typeof (IsCollidingData),
-                typeof (CollisionInstancesBufferElement)
+            group = GetEntityQuery 
+            ( 
+                typeof ( IsActiveTag ),
+                typeof ( GetCollidingRayInstancesTag ),
+                typeof ( OctreeEntityPair4CollisionData ),
+                typeof ( RayData ),
+                typeof ( RayMaxDistanceData ),
+                typeof ( IsCollidingData ),
+                typeof ( CollisionInstancesBufferElement )
                 // typeof (RootNodeData) // Unused in ray
             ) ;
 
@@ -45,7 +46,7 @@ namespace Antypodish.ECS.Octree
             
             
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.GetEntityArray () ;     
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;     
             ComponentDataFromEntity <OctreeEntityPair4CollisionData> a_octreeEntityPair4CollisionData = GetComponentDataFromEntity <OctreeEntityPair4CollisionData> () ;
             ComponentDataFromEntity <RayData> a_rayData                                               = GetComponentDataFromEntity <RayData> () ;
             ComponentDataFromEntity <RayMaxDistanceData> a_rayMaxDistanceData                         = GetComponentDataFromEntity <RayMaxDistanceData> () ;
