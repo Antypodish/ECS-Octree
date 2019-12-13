@@ -74,7 +74,7 @@ namespace Antypodish.ECS.Octree
             
             // Debug.DrawLine ( ray.origin, ray.origin + ray.direction * 100, Color.red )  ;
 
-            int i_groupLength = group.CalculateLength () ;
+            int i_groupLength = group.CalculateEntityCount () ;
 
             JobHandle setRayTestJobHandle = new SetRayTestJob 
             {

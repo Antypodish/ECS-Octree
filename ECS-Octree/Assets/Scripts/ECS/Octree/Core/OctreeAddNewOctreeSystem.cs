@@ -69,7 +69,7 @@ namespace Antypodish.ECS.Octree
             na_newOctreeEntities.Dispose () ;
 
 
-            int i_groupLength = group.CalculateLength () ;
+            int i_groupLength = group.CalculateEntityCount () ;
 
             var initialiseOctreeJobHandle = new InitialiseOctreeJob 
             {

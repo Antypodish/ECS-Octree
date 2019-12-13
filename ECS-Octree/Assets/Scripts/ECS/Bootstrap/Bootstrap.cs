@@ -1,6 +1,7 @@
 ﻿// This script initializes the game with ECS
 using Unity.Collections ;
 using Unity.Mathematics ;
+using Unity.Transforms ;
 using Unity.Rendering ;
 using Unity.Entities ;
 
@@ -91,17 +92,24 @@ namespace Antypodish.ECS
             renderMeshTypes.defualt   = _GetRendererFromPrefab ( "ECS Prefabs/BlockPrefabDefault" ) ; // OOP.Prefabs.Default
             renderMeshTypes.prefab01  = _GetRendererFromPrefab ( "ECS Prefabs/BlockPrefab01" ) ; // OOP.Prefabs.Prefab01    
            
+            EntityManager em = World.Active.EntityManager ;
             entitiesPrefabs.blockEntity = em.CreateEntity () ;
+
+            Entity blockEntity = entitiesPrefabs.blockEntity ;
             
-            ecb.AddComponent <MeshTypeData> ( newEntity ) ;
+            em.AddComponent <MeshTypeData> ( blockEntity ) ;
 
             // AddBlockData
-            ecb.AddComponent ( blockEntity, new Translation { Value = float3.zero } ) ; // Default unset.
-            ecb.AddComponent ( blockEntity, new Rotation { Value = quaternion.identity} ) ; // Default unset.
-            ecb.AddComponent ( blockEntity, new NonUniformScale { Value = float3.zero } ) ; // Default unset.
-            ecb.AddSharedComponent ( jobIndex, blockEntity, renderer ) ;
+            em.AddComponentData ( blockEntity, new Translation { Value = float3.zero } ) ; // Default unset.
+            em.AddComponentData ( blockEntity, new Rotation { Value = quaternion.identity} ) ; // Default unset.
+            em.AddComponentData ( blockEntity, new NonUniformScale { Value = float3.zero } ) ; // Default unset.
+
+            RenderMesh renderMesh = new RenderMesh () ;
+            em.AddSharedComponentData ( blockEntity, renderMesh ) ;
 
             // ecb.AddComponent ( newEntity, new AddBlockData { }
+
+            ... Manual systems execution 
         }
 
         private static RenderMesh _GetRendererFromPrefab ( string s_goName )
