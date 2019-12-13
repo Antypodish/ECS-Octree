@@ -189,7 +189,7 @@ namespace Antypodish.ECS.Octree
 
                 ecb.AddComponent ( jobIndex, octreeRootNodeEntity, new IsActiveTag () ) ; // Octree initialized
                 ecb.RemoveComponent <AddNewOctreeData> ( jobIndex, octreeRootNodeEntity ) ; // Octree initialized
-                ...
+                
             }
 
         }

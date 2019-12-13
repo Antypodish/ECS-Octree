@@ -19,8 +19,8 @@ namespace Antypodish.ECS.Octree.Examples
 
             NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
 
-            entityManager.CreateEntity ( BlocksArchetypes.blockArchetype, a_instanceEntities ) ;
-             
+            // entityManager.CreateEntity ( BlocksArchetypes.blockArchetype, a_instanceEntities ) ;
+            entityManager.Instantiate ( Bootstrap.entitiesPrefabs.blockEntity, a_instanceEntities ) ;
             /*
             NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
             
@@ -38,7 +38,7 @@ namespace Antypodish.ECS.Octree.Examples
 
         // Request to add some instances.
         // User is responsible to ensure, that instances IDs are unique in the octrtree.        
-        static public void _RequesAddInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2AddCount, ref Bootstrap.EntitiesPrefabs entitiesPrefabs, ref Bootstrap.RenderMeshTypes renderMeshTypes )
+        static public void _RequesAddInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2AddCount, ref Bootstrap.RenderMeshTypes renderMeshTypes )
         {
 
             DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [octreeEntity] ;  
@@ -58,7 +58,7 @@ namespace Antypodish.ECS.Octree.Examples
                 float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 )  * 0.5f ;
 
                 
-                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.95f, MeshType.Prefab01, ref entitiesPrefabs, ref renderMeshTypes ) ;
+                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.95f, MeshType.Prefab01, ref renderMeshTypes ) ;
                 // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
 
 

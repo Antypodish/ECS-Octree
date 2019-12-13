@@ -20,7 +20,7 @@ namespace Antypodish.ECS.Octree
 
             blockArchetype = EntityManager.CreateArchetype 
             (
-                typeof ( AddInstanceTag ),
+                // typeof ( AddInstanceTag ),
                 typeof ( MeshTypeData ),
                 typeof ( RenderMesh ),
                 typeof ( Translation ),

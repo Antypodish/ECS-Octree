@@ -63,7 +63,7 @@ namespace Antypodish.ECS.Octree.Examples
             // EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
             BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
-            Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
+            Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount, ref Bootstrap.renderMeshTypes ) ;
 
 
 

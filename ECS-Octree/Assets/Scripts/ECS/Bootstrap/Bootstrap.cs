@@ -92,13 +92,16 @@ namespace Antypodish.ECS
             renderMeshTypes.prefab01  = _GetRendererFromPrefab ( "ECS Prefabs/BlockPrefab01" ) ; // OOP.Prefabs.Prefab01    
            
             entitiesPrefabs.blockEntity = em.CreateEntity () ;
-            AddBlockData
-            ecb.AddComponent ( jobIndex, blockEntity, new Translation { Value = float3.zero } ) ; // Default unset.
-            ecb.AddComponent ( jobIndex, blockEntity, new Rotation { Value = quaternion.identity} ) ; // Default unset.
-            ecb.AddComponent ( jobIndex, blockEntity, new NonUniformScale { Value = float3.zero } ) ; // Default unset.
+            
+            ecb.AddComponent <MeshTypeData> ( newEntity ) ;
+
+            // AddBlockData
+            ecb.AddComponent ( blockEntity, new Translation { Value = float3.zero } ) ; // Default unset.
+            ecb.AddComponent ( blockEntity, new Rotation { Value = quaternion.identity} ) ; // Default unset.
+            ecb.AddComponent ( blockEntity, new NonUniformScale { Value = float3.zero } ) ; // Default unset.
             ecb.AddSharedComponent ( jobIndex, blockEntity, renderer ) ;
 
-            ecb.AddComponent ( newEntity, new AddBlockData { }
+            // ecb.AddComponent ( newEntity, new AddBlockData { }
         }
 
         private static RenderMesh _GetRendererFromPrefab ( string s_goName )

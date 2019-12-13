@@ -53,7 +53,7 @@ namespace Antypodish.ECS.Octree.Examples
 
             int i_instances2AddCount                 = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 1000
             NativeArray <Entity> na_instanceEntities = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
-                
+                            
             // Request to add n instances.
             // User is responsible to ensure, that instances IDs are unique in the octrtree.
             
@@ -61,7 +61,7 @@ namespace Antypodish.ECS.Octree.Examples
             // EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
             BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
-            Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
+            Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount, ref Bootstrap.renderMeshTypes ) ;
 
 
 
@@ -91,7 +91,7 @@ namespace Antypodish.ECS.Octree.Examples
             float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
             // Only test
             Entity boundsEntity = EntityManager.CreateEntity ( BlocksArchetypes.blockArchetype ) ;            
-            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01, ref Bootstrap.entitiesPrefabs, ref Bootstrap.renderMeshTypes ) ;
+            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01, ref Bootstrap.renderMeshTypes ) ;
             // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, EntityManager.CreateEntity ( ), f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
             // Create test bounds
