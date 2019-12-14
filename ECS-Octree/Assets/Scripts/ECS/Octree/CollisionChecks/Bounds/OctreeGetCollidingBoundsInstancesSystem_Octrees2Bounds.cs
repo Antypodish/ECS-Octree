@@ -51,7 +51,8 @@ namespace Antypodish.ECS.Octree
             
             ComponentDataFromEntity <IsCollidingData> a_isCollidingData                               = GetComponentDataFromEntity <IsCollidingData> () ;
             BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement        = GetBufferFromEntity <CollisionInstancesBufferElement> () ;
-            
+
+            ComponentDataFromEntity <BoundsData> a_boundsData                                         = GetComponentDataFromEntity <BoundsData> () ;
             
             // Test bounds 
             // Debug
@@ -66,7 +67,7 @@ namespace Antypodish.ECS.Octree
             // Test bounds                        
             Bounds checkBounds = new Bounds () 
             { 
-                center = new float3 ( 10, 2, 10 ), 
+                center = new float3 ( 10, 2, 3 ), 
                 size = new float3 ( 1, 1, 1 ) * 5 // Total size of boundry 
             } ;
 
@@ -81,7 +82,7 @@ namespace Antypodish.ECS.Octree
                 // a_collisionChecksEntities           = na_collisionChecksEntities,
                 // a_boundsEntityPair4CollisionData    = a_boundsEntityPair4CollisionData,
                 
-                // a_boundsData                        = a_boundsData,
+                a_boundsData                        = a_boundsData,
 
             }.Schedule ( group, inputDeps ) ;
             
@@ -109,7 +110,7 @@ namespace Antypodish.ECS.Octree
                 
                 a_isActiveTag                       = GetComponentDataFromEntity <IsActiveTag> ( true ),
                 
-                a_boundsData                        = GetComponentDataFromEntity <BoundsData> ( true ),
+                a_boundsData                        = a_boundsData,
 
 
             }.Schedule ( group, setBoundsTestJobHandle ) ;

@@ -64,7 +64,7 @@ namespace Antypodish.ECS.Octree
             // Test bounds            
             Bounds checkBounds = new Bounds () 
             { 
-                center = new float3 ( 10, 2, 10 ), 
+                center = new float3 ( 10, 2, 3 ), 
                 size = new float3 ( 1, 1, 1 ) * 5 // Total size of boundry 
             } ;
 

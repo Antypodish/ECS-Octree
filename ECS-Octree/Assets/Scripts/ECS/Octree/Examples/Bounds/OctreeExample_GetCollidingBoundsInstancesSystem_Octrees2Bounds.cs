@@ -47,7 +47,7 @@ namespace Antypodish.ECS.Octree.Examples
 
             // Test bounds entity 
             // for each octree
-            Entity boundsEntity = EntityManager.CreateEntity () ;
+            Entity boundsEntity = EntityManager.Instantiate ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.boundingBoxEntity ) ;
                    
             EntityManager.AddComponentData ( boundsEntity, new IsActiveTag () ) ;             
             // This may be overritten by, other system. Check corresponding collision check system.
@@ -56,15 +56,16 @@ namespace Antypodish.ECS.Octree.Examples
                 bounds = new Bounds () { center = float3.zero, size = new float3 ( 5, 5, 5 ) }
             } ) ; 
             
-            Debug.Log ( "Octree: create dummy boundary box, to test for collision." ) ;
-            float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
+            Debug.Log ( "Octree: create dummy (for visualization only) boundary box, to test for collision." ) ;
+            float3 f3_blockCenter = new float3 ( 10, 2, 3 ) ;
             // Only test
-            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01 ) ;
+            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.BoundingBox ) ;
             // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
             // ***** Initialize Octree ***** //
 
-            int i_octreesCount = 100 ; // Example of x octrees.
+            // Creates x octrees with same amount of instances.
+            int i_octreesCount = 10 ; // Example of x octrees.
 
             NativeArray <Entity> a_entities = new NativeArray<Entity> ( i_octreesCount, Allocator.Temp ) ;
 

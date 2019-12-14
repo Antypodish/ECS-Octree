@@ -17,6 +17,7 @@ namespace Antypodish.ECS
         public RenderMesh highlight ;
         public RenderMesh prefab01 ;
         public RenderMesh defualt ;
+        // public RenderMesh boundingBox ;
     }
 
 

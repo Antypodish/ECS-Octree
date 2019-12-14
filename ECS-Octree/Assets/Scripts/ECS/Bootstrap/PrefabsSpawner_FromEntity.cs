@@ -13,6 +13,7 @@ namespace Antypodish.ECS
     {
         public Entity defaultEntity ;
         public Entity higlightEntity ;
+        public Entity boundingBoxEntity ;
         public Entity prefab01Entity ;
     }
 
@@ -20,14 +21,16 @@ namespace Antypodish.ECS
     {
         public RenderMesh defaultMesh ;
         public RenderMesh higlightMesh ;
+        public RenderMesh boundingBoxMesh ;
         public RenderMesh prefab01Mesh ;
     }
     
     public enum MeshType
     {
-        Highlight = -1,
-        Default   = 0,
-        Prefab01  = 1
+        Highlight   = -1,
+        Default     = 0,
+        BoundingBox = 1,
+        Prefab01    = 2
     }
 
     [RequiresEntityConversion]
@@ -41,6 +44,7 @@ namespace Antypodish.ECS
                
         public GameObject prefabDefault ;
         public GameObject prefabHiglight ;
+        public GameObject boundingBox ;
         public GameObject prefabBlock01 ;
 
         // Referenced prefabs have to be declared so that the conversion system knows about them ahead of time
@@ -48,7 +52,8 @@ namespace Antypodish.ECS
         {                       
             gameObjects.Add ( prefabDefault ) ;  
             gameObjects.Add ( prefabHiglight ) ; 
-            gameObjects.Add ( prefabBlock01 ) ;          
+            gameObjects.Add ( boundingBox ) ;   
+            gameObjects.Add ( prefabBlock01 ) ;        
         }
 
         public void Convert ( Entity spawnerEntity, EntityManager em, GameObjectConversionSystem conversionSystem )
@@ -60,104 +65,42 @@ namespace Antypodish.ECS
                 // So here we simply map the game object to an entity reference to that prefab.
                 defaultEntity  = conversionSystem.GetPrimaryEntity ( prefabDefault ),
                 higlightEntity = conversionSystem.GetPrimaryEntity ( prefabHiglight ),
-                prefab01Entity = conversionSystem.GetPrimaryEntity ( prefabBlock01 ),
+                boundingBoxEntity = conversionSystem.GetPrimaryEntity ( boundingBox ),
+                prefab01Entity = conversionSystem.GetPrimaryEntity ( prefabBlock01 )
             };
 
             SpawnerMeshData spawnerMeshData = new SpawnerMeshData ()
             {
                 defaultMesh = em.GetSharedComponentData <RenderMesh> ( spawnerEntitiesPrefabs.defaultEntity ),
                 higlightMesh = em.GetSharedComponentData <RenderMesh> ( spawnerEntitiesPrefabs.higlightEntity ),
+                boundingBoxMesh = em.GetSharedComponentData <RenderMesh> ( spawnerEntitiesPrefabs.boundingBoxEntity ),
                 prefab01Mesh = em.GetSharedComponentData <RenderMesh> ( spawnerEntitiesPrefabs.prefab01Entity )
             } ;
 
-            em.AddComponentData ( spawnerEntitiesPrefabs.defaultEntity, new MeshTypeData () { type = MeshType.Default } ) ;
-            em.AddComponentData ( spawnerEntitiesPrefabs.defaultEntity, new NonUniformScale () { Value = 1 } ) ;
-            em.AddComponent <Prefab> ( spawnerEntitiesPrefabs.defaultEntity ) ;
 
-            em.AddComponentData ( spawnerEntitiesPrefabs.higlightEntity, new MeshTypeData () { type = MeshType.Highlight } ) ;
-            em.AddComponentData ( spawnerEntitiesPrefabs.higlightEntity, new NonUniformScale () { Value = 1 } ) ;
-            em.AddComponent <Prefab> ( spawnerEntitiesPrefabs.higlightEntity ) ;
-
-            em.AddComponentData ( spawnerEntitiesPrefabs.prefab01Entity, new MeshTypeData () { type = MeshType.Prefab01 } ) ;
-            em.AddComponentData ( spawnerEntitiesPrefabs.prefab01Entity, new NonUniformScale () { Value = 1 } ) ;
-            em.AddComponent <Prefab> ( spawnerEntitiesPrefabs.prefab01Entity ) ;
-
+            _SetPrefabComponents ( em, spawnerEntitiesPrefabs.defaultEntity, MeshType.Default ) ;
+            _SetPrefabComponents ( em, spawnerEntitiesPrefabs.higlightEntity, MeshType.Highlight ) ;
+            _SetPrefabComponents ( em, spawnerEntitiesPrefabs.boundingBoxEntity, MeshType.BoundingBox ) ;
+            _SetPrefabComponents ( em, spawnerEntitiesPrefabs.prefab01Entity, MeshType.Prefab01 ) ;
+            
 
             em.AddComponentData ( spawnerEntity, spawnerEntitiesPrefabs );
 
-            /*
-            // This wont render yet, as prefab mesh is not generated yet. Must be created after Convert method.
-            Entity testEntity = em.Instantiate ( spawnerEntitiesPrefabs.prefab01Entity ) ;
-
-            RenderMesh renderer = Bootstrap._SelectRenderMesh ( MeshType.Prefab01 ) ;
-            em.SetSharedComponentData ( testEntity, renderer ) ;
-            
-            
-            em.AddComponentData ( spawnerEntitiesPrefabs.prefab01Entity, new NonUniformScale () { Value = 1 } ) ;
-            em.AddComponentData ( testEntity, new NonUniformScale () { Value = 1 } ) ;
-            em.AddComponentData ( testEntity, new LocalToWorld () { Value = float4x4.identity } ) ;
-            em.AddComponentData ( testEntity, new WorldRenderBounds () { Value = new AABB () { Extents = 0.5f } } ) ;
-            */
-
-            /*
-            var spawnerData = new SpawnerEntityPrefabsData
-            {
-                // The referenced prefab will be converted due to DeclareReferencedPrefabs.
-                // So here we simply map the game object to an entity reference to that prefab.
-                
-                defaultEntity = conversionSystem.GetPrimaryEntity ( prefabDefault )                
-                
-                //CountX = CountX,
-                //CountY = CountY
-            } ;
-            */
-                        
-            // _SetPrefabComponents ( em, spawnerData.prefabCellMeshEntity, MeshTypes.Cell ) ;
-            
-            // float4x4 f4x4 = float4x4.identity ;
-
-            
-            /*
-            em.SetName ( spawnerData.defaultEntity, "Prefab_" + MeshType.Prefab01.ToString () ) ;
-            em.AddComponent <Prefab> ( spawnerData.defaultEntity ) ;
-
-            em.SetComponentData ( spawnerData.defaultEntity, new Translation () { Value = 0 } ) ;
-            em.SetComponentData ( spawnerData.defaultEntity, new Rotation () { Value = quaternion.identity } ) ;
-            // em.AddComponent ( spawnerData.prefabCellMeshEntity, typeof ( Rotation ) ) ;
-            em.AddComponentData ( spawnerData.defaultEntity, new NonUniformScale () { Value = 1 }  ) ; 
-            // em.AddComponent ( spawnerData.prefabCellMeshEntity, typeof ( Parent ) ) ;            
-            // em.SetComponentData ( spawnerData.prefabCellMeshEntity, new LocalToParent () { Value = f4x4 } ) ;
-            // em.SetComponentData ( spawnerData.prefabCellMeshEntity, new LocalToWorld () { Value = f4x4 } ) ;
-            
-           
-            em.AddComponentData ( spawnerEntity, spawnerData ) ;
-
-            isConverted = true ;
-            */
                         
             var postBootstrapSystem = World.Active.GetOrCreateSystem <Octree.PostBootstrapSystem> () ;
             postBootstrapSystem.Update () ;
             
         }
 
-        /*
-        private void _SetPrefabComponents ( EntityManager em, Entity entity, MeshTypes meshTypes )
+        
+        private void _SetPrefabComponents ( EntityManager em, Entity entity, MeshType meshTypes )
         {            
-//            Debug.Log ( "Set prefab components: " + entity ) ;
-//            em.SetName ( entity, "Prefab" + meshTypes.ToString () + "Mesh_" + entity.Index ) ;
-            em.AddComponent ( entity, typeof ( Translation ) ) ;
-            em.AddComponent ( entity, typeof ( Rotation ) ) ;
-            em.AddComponent ( entity, typeof ( NonUniformScale ) ) ; 
-
-            // em.AddComponent ( entity, typeof ( ParentMeshEntityComponent ) ) ;
-            // em.AddComponent ( entity, typeof ( ChildMeshLocalPositionComponent ) ) ;            
-            // em.AddComponent ( entity, typeof ( MeshTypeComponent ) ) ;
-            // em.SetComponentData ( entity, new MeshTypeComponent () { i_reference = (int) meshTypes } ) ;
-
-            em.SetName ( entity, "Prefab_" + meshTypes.ToString () ) ;
+            em.AddComponentData ( entity, new MeshTypeData () { type = meshTypes } ) ;
+            em.AddComponentData ( entity, new NonUniformScale () { Value = 1 } ) ;
+            em.AddComponent <Prefab> ( entity ) ;
                         
         }
-        */
+        
     }
 
 }

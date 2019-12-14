@@ -93,11 +93,13 @@ namespace Antypodish.ECS.Octree.Examples
 
             // ***** Example Bounds Components For Collision Checks ***** //
             
-            Debug.Log ( "Octree: create dummy boundary box, to test for collision." ) ;
-            float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
+            Debug.Log ( "Octree: create dummy (for visualization only) boundary box, to test for collision." ) ;
+            float3 f3_blockCenter = new float3 ( 10, 2, 3 ) ;
             // Only test
-            Entity boundsEntity = EntityManager.CreateEntity ( ) ;
-            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01 ) ;
+            Entity boundsEntity = EntityManager.Instantiate ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.boundingBoxEntity ) ;
+            // EntityManager.AddComponent <MeshTypeData> ( boundsEntity ) ;
+
+            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.BoundingBox ) ;
             // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, EntityManager.CreateEntity (), f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
             // Create test bounds

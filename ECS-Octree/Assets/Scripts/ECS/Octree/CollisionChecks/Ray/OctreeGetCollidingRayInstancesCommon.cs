@@ -54,7 +54,7 @@ namespace Antypodish.ECS.Octree
                 {
                     RayData rayData = a_rayData [octreeRayEntity2] ;
                     RayMaxDistanceData rayMaxDistanceData = a_rayMaxDistanceData [octreeRayEntity2] ;
-
+                                        
                     Debug.DrawLine ( rayData.ray.origin, rayData.ray.origin + rayData.ray.direction * rayMaxDistanceData.f, Color.red )  ;
                 }
                 else if ( i_collisionChecksIndex == 0 ) 

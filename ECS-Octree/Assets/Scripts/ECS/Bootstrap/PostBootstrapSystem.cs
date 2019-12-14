@@ -31,6 +31,8 @@ namespace Antypodish.ECS.Octree
             // Examples.OctreeExample_Selector octreeExample_Selector = new Examples.OctreeExample_Selector () ;
             // octreeExample_Selector._Initialize () ;
             
+            Debug.LogWarning ( "Example selector: " + Examples.OctreeExample_Selector.selector.ToString () + "(" + (int) Examples.OctreeExample_Selector.selector + ")" ) ;
+
             switch ( Examples.OctreeExample_Selector.selector )
             {
                 case Examples.Selector.GetCollidingBoundsInstancesSystem_Bounds2Octree :

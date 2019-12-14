@@ -45,21 +45,22 @@ namespace Antypodish.ECS.Octree.Examples
 
             // Test bounds entity 
             // for each octree
-            Entity boundsEntity = EntityManager.CreateEntity () ;
+            Entity boundsEntity = EntityManager.Instantiate ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.boundingBoxEntity ) ;
                    
-            EntityManager.AddComponentData ( boundsEntity, new IsActiveTag () ) ; 
+            EntityManager.AddComponent <IsActiveTag> ( boundsEntity ) ; 
+            // EntityManager.AddComponent <MeshTypeData> ( boundsEntity ) ;
 
-            // This may be overritten by, other system. Check corresponding collision check system.
+            // This may be overritten, by other system. Check corresponding "collision check system".
             EntityManager.AddComponentData ( boundsEntity, new BoundsData ()
             {                
-                bounds = new Bounds () { center = float3.zero, size = new float3 ( 1, 1, 1 ) * 5}
+                bounds = new Bounds () { center = float3.zero, size = new float3 ( 1, 1, 1 ) * 5 }
             } ) ; 
                         
             
-            Debug.Log ( "Octree: create dummy boundary box, to test for collision." ) ;
-            float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
+            Debug.Log ( "Octree: create dummy (for visualization only) boundary box, to test for collision." ) ;
+            float3 f3_blockCenter = new float3 ( 10, 2, 3 ) ;
             // Only test
-            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01 ) ;
+            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.BoundingBox ) ;
             //Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
 

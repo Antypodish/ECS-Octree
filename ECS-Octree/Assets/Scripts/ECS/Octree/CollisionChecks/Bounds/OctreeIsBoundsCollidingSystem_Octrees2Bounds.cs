@@ -64,7 +64,7 @@ namespace Antypodish.ECS.Octree
             // Test bounds                        
             Bounds checkBounds = new Bounds () 
             { 
-                center = new float3 ( 10, 2, 10 ), 
+                center = new float3 ( 10, 2, 3 ), 
                 size = new float3 ( 1, 1, 1 ) * 5 // Total size of boundry 
             } ;
 
@@ -144,7 +144,7 @@ namespace Antypodish.ECS.Octree
         }
 
 
-        [BurstCompile]
+ //       [BurstCompile]
         // [RequireComponentTag ( typeof (AddNewOctreeData) ) ]
         struct Job : IJobForEachWithEntity_ECC <IsCollidingData, BoundsEntityPair4CollisionData> 
         {
@@ -228,10 +228,10 @@ namespace Antypodish.ECS.Octree
                     
                         if ( IsBoundsColliding_Common._IsNodeColliding ( ref octreeRootNode, octreeRootNode.i_rootNodeIndex, checkBounds.bounds, ref isColliding, ref a_nodesBuffer, ref a_nodeChildrenBuffer, ref a_nodeInstancesIndexBuffer, ref a_instanceBuffer ) )
                         {   
-                            /*
+                            
                             // Debug
                             Debug.Log ( "Is colliding." ) ;  
-                            */                          
+                                                   
                         }
                     }
                 

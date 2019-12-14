@@ -30,17 +30,7 @@ namespace Antypodish.ECS.Octree.Examples
             
             Debug.Log ( "Start Test Get Colliding Ray Instances System" ) ;
 
-            /*
-            PrefabsSpawner_FromEntity.spawnerMesh = new SpawnerMeshData ()
-            {
-                defaultMesh = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.defaultEntity ),
-                higlightMesh = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.higlightEntity ),
-                prefab01Mesh = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.prefab01Entity )
-            } ;
-
-            Debug.Log ( PrefabsSpawner_FromEntity.spawnerMesh.prefab01Mesh.mesh ) ;
-            */
-
+          
             // Create new octree
             // See arguments details (names) of _CreateNewOctree and coresponding octree readme file.
 
@@ -70,10 +60,11 @@ namespace Antypodish.ECS.Octree.Examples
 
             // ***** Initialize Octree ***** //
             
+            // Creates x octrees with same amount of instances.
             int i_octreesCount = 1 ; // Example of x octrees.
             // int i_octreesCount = 100 ; // Example of x octrees.
 
-            NativeArray <Entity> a_entities = new NativeArray<Entity> ( i_octreesCount, Allocator.Temp ) ;
+            NativeArray <Entity> a_entities = new NativeArray <Entity> ( i_octreesCount, Allocator.Temp ) ;
 
             EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
 
@@ -110,16 +101,13 @@ namespace Antypodish.ECS.Octree.Examples
 
 
                 // Add
-                // RenderMeshTypesData renderMeshTypes = EntityManager.GetComponentData <RenderMeshTypesData> ( Bootstrap.renderMeshTypesEntity ) ;
-                // Bootstrap.EntitiesPrefabsData entitiesPrefabs = EntityManager.GetComponentData <Bootstrap.EntitiesPrefabsData> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.prefab01Entity ) ;
-                // Bootstrap.EntitiesPrefabsData = PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs ;
-                int i_instances2AddCount                      = OctreeExample_Selector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 10000
-                NativeArray <Entity> na_instanceEntities      = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
+
+                int i_instances2AddCount                 = OctreeExample_Selector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 10000
+                NativeArray <Entity> na_instanceEntities = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
                 // Request to add n instances.
                 // User is responsible to ensure, that instances IDs are unique in the octrtree.
                 ecb.AddComponent <AddInstanceTag> ( octreeEntity ) ; // Once system executed and instances were added, tag component will be deleted.  
-                // EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
                 BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
                 Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount ) ;
@@ -129,7 +117,6 @@ namespace Antypodish.ECS.Octree.Examples
                 // Remove
                 
                 ecb.AddComponent <RemoveInstanceTag> ( octreeEntity ) ; // Once system executed and instances were removed, tag component will be deleted.
-                // EntityManager.AddBuffer <RemoveInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were removed, component will be deleted.
                 BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement = GetBufferFromEntity <RemoveInstanceBufferElement> () ;
                 
                 // Request to remove some instances
