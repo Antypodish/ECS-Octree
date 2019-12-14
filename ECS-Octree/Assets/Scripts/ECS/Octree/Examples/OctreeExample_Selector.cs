@@ -1,13 +1,41 @@
-﻿namespace Antypodish.ECS.Octree.Examples
+﻿using UnityEngine ;
+
+namespace Antypodish.ECS.Octree.Examples
 {
     
-    internal class ExampleSelector
+    class OctreeExample_Selector
     { 
+                
         // Edit this manually and rebuild project, to select relevant example.
-        static public Selector selector = Selector.GetCollidingRayInstancesSystem_Octrees2Ray ;
+        // static public Selector selector = Selector.IsRayCollidingSystem_Rays2Octree ; // OK
+        // static public Selector selector = Selector.IsRayCollidingSystem_Octrees2Ray ; // Memory leak !!
+        // static public Selector selector = Selector.IsBoundsCollidingSystem_Octrees2Bounds ; // MeshTypeData not added        
+        // static public Selector selector = Selector.IsBoundsCollidingSystem_Bounds2Octrees ; // MeshTypeData not added
+        // static public Selector selector = Selector.GetCollidingRayInstancesSystem_Rays2Octree ; // Optimization required.
+        // static public Selector selector = Selector.GetCollidingRayInstancesSystem_Octrees2Ray ; // OK // Defualt
+        // static public Selector selector = Selector.GetCollidingBoundsInstancesSystem_Octrees2Bounds ; // need check bounds.
+        // static public Selector selector = Selector.GetCollidingBoundsInstancesSystem_Bounds2Octree ; // Ok
+                 
+        /// <summary>
+        /// Example of x octrees instances / entities to added.
+        /// </summary>
+        static public int i_generateInstanceInOctreeCount = 2000 ; // = 1000 ;
+        /// <summary>
+        /// Example of x octrees instances / entities to deleted.
+        /// </summary>
+        static public int i_deleteInstanceInOctreeCount = 0 ; // = 5 ; // = 750 ;
 
-        static public int i_generateInstanceInOctreeCount = 10 ; // Example of x octrees instances / entities to added.
-        static public int i_deleteInstanceInOctreeCount = 0 ; // Example of x octrees instances / entities to deleted.
+        /*
+        public void Start ( )
+        {
+            Debug.LogError ( "ZZZ" ) ;
+
+            selector = setSelector ;
+            i_generateInstanceInOctreeCount = setGenerateInstanceInOctreeCount ;
+            i_deleteInstanceInOctreeCount = setDeleteInstanceInOctreeCount ;
+        }
+        */        
+
     }
 
     /// <summary>
@@ -59,7 +87,7 @@
         /// Check if target bounds intersects instances bounds, inside octree nodes.
         /// Optimised with multithreaded burst job system, when having many bounds, to test against one, or few octrees.
         /// </summary>
-        IsBoundsCollidingSystem_Bounds2Octree = 6,
+        IsBoundsCollidingSystem_Bounds2Octrees = 6,
 
         /// <summary>
         /// Check if target bounds intersects instances bounds, inside octree nodes.

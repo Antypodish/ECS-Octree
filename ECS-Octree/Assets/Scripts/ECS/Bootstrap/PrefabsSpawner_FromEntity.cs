@@ -33,7 +33,7 @@ namespace Antypodish.ECS
     [RequiresEntityConversion]
     public class PrefabsSpawner_FromEntity : MonoBehaviour, IDeclareReferencedPrefabs, IConvertGameObjectToEntity
     {
-
+        
         static public SpawnerEntityPrefabsData spawnerEntitiesPrefabs ;
         static public SpawnerMeshData spawnerMesh ;
 
@@ -42,7 +42,6 @@ namespace Antypodish.ECS
         public GameObject prefabDefault ;
         public GameObject prefabHiglight ;
         public GameObject prefabBlock01 ;
-        
 
         // Referenced prefabs have to be declared so that the conversion system knows about them ahead of time
         public void DeclareReferencedPrefabs ( List<GameObject> gameObjects )
@@ -135,7 +134,7 @@ namespace Antypodish.ECS
 
             isConverted = true ;
             */
-            
+                        
             var postBootstrapSystem = World.Active.GetOrCreateSystem <Octree.PostBootstrapSystem> () ;
             postBootstrapSystem.Update () ;
             

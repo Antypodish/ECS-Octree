@@ -45,7 +45,7 @@ namespace Antypodish.ECS.Octree
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
             
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;     
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.TempJob ) ;     
 
             ComponentDataFromEntity <IsCollidingData> a_isCollidingData                               = GetComponentDataFromEntity <IsCollidingData> ( true ) ;
             BufferFromEntity <CollisionInstancesBufferElement> collisionInstancesBufferElement        = GetBufferFromEntity <CollisionInstancesBufferElement> ( true ) ;

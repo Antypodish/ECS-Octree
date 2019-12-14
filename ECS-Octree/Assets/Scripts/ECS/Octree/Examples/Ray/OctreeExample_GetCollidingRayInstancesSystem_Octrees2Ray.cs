@@ -25,7 +25,7 @@ namespace Antypodish.ECS.Octree.Examples
             // and distance to the nearest instance.
 
             // Toggle manually only one example systems at the time
-            if ( !( ExampleSelector.selector == Selector.GetCollidingRayInstancesSystem_Octrees2Ray ) ) return ; // Early exit
+            // if ( !( OctreeExample_Selector.selector == Selector.GetCollidingRayInstancesSystem_Octrees2Ray ) ) return ; // Early exit
 
             
             Debug.Log ( "Start Test Get Colliding Ray Instances System" ) ;
@@ -113,7 +113,7 @@ namespace Antypodish.ECS.Octree.Examples
                 // RenderMeshTypesData renderMeshTypes = EntityManager.GetComponentData <RenderMeshTypesData> ( Bootstrap.renderMeshTypesEntity ) ;
                 // Bootstrap.EntitiesPrefabsData entitiesPrefabs = EntityManager.GetComponentData <Bootstrap.EntitiesPrefabsData> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.prefab01Entity ) ;
                 // Bootstrap.EntitiesPrefabsData = PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs ;
-                int i_instances2AddCount                      = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 10000
+                int i_instances2AddCount                      = OctreeExample_Selector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 10000
                 NativeArray <Entity> na_instanceEntities      = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
                 // Request to add n instances.
@@ -134,7 +134,7 @@ namespace Antypodish.ECS.Octree.Examples
                 
                 // Request to remove some instances
                 // Se inside method, for details
-                int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
+                int i_instances2RemoveCount = OctreeExample_Selector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
                 Common._RequestRemoveInstances ( ref ecb, octreeEntity, removeInstanceBufferElement, ref na_instanceEntities, i_instances2RemoveCount ) ;
                 
                 

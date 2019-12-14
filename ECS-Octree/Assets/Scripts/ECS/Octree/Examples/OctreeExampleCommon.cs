@@ -53,13 +53,22 @@ namespace Antypodish.ECS.Octree.Examples
                 Entity newBlockEntity = na_instanceEntities [i_instanceEntityIndex] ;
                 i_instanceEntityIndex ++ ;
                 
+                // Formation A
+                /*
                 int x = i_instanceID % 1000 ;
                 int y = i_instanceID % 100 ;
                 int z = (int) math.floor ( i_instanceID / 1000 ) ;
+                */ 
+
+                // Formation B
+                int z = (int) math.floor ( i_instanceID / 625 ) ; // 25*25 = 625
+                int y = (int) math.floor ( i_instanceID / 25 ) - z * 25 ;
+                int x = i_instanceID % 25 ;
+
                 float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 )  * 0.5f ;
 
                 // For rendering.
-                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.80f, MeshType.Prefab01 ) ;
+                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.90f, MeshType.Prefab01 ) ;
 
                 // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
 

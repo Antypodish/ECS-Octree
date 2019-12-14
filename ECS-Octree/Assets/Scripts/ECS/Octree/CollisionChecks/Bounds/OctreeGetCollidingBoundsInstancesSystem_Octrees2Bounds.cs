@@ -45,7 +45,7 @@ namespace Antypodish.ECS.Octree
         {
                         
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;    
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.TempJob ) ;    
             
             ComponentDataFromEntity <BoundsEntityPair4CollisionData> a_boundsEntityPair4CollisionData = GetComponentDataFromEntity <BoundsEntityPair4CollisionData> () ;
             

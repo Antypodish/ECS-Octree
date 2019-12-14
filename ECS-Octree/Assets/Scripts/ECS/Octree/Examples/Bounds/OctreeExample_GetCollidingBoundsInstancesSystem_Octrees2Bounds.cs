@@ -24,7 +24,7 @@ namespace Antypodish.ECS.Octree.Examples
             // and distance to the nearest instance.
 
             // Toggle manually only one example systems at the time
-            if ( !( ExampleSelector.selector == Selector.GetCollidingBoundsInstancesSystem_Octrees2Bounds ) ) return ; // Early exit
+            // if ( !( OctreeExample_Selector.selector == Selector.GetCollidingBoundsInstancesSystem_Octrees2Bounds ) ) return ; // Early exit
 
             
             Debug.Log ( "Start Test Get Colliding Bounds Instances System" ) ;
@@ -70,8 +70,7 @@ namespace Antypodish.ECS.Octree.Examples
 
             for ( int i_octreeEntityIndex = 0; i_octreeEntityIndex < i_octreesCount; i_octreeEntityIndex ++ ) 
             {
-                // ...
-                // ecb = barrier.CreateCommandBuffer () ;
+
                 Entity newOctreeEntity = EntityManager.CreateEntity ( AddNewOctreeSystem.octreeArchetype ) ;
 
                 AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ;
@@ -102,10 +101,7 @@ namespace Antypodish.ECS.Octree.Examples
 
                 // Add
                 
-                //Bootstrap.RenderMeshTypesData renderMeshTypes = EntityManager.GetComponentData <Bootstrap.RenderMeshTypesData> ( Bootstrap.renderMeshTypesEntity ) ;
-                // Bootstrap.EntitiesPrefabsData entitiesPrefabs = EntityManager.GetComponentData <Bootstrap.EntitiesPrefabsData> ( Bootstrap.entitiesPrefabsEntity ) ;
-
-                int i_instances2AddCount                      = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 100
+                int i_instances2AddCount                      = OctreeExample_Selector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 100
                 NativeArray <Entity> na_instanceEntities      = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
                 // Request to add n instances.
@@ -126,7 +122,7 @@ namespace Antypodish.ECS.Octree.Examples
                 
                 // Request to remove some instances
                 // Se inside method, for details
-                int i_instances2RemoveCount = ExampleSelector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
+                int i_instances2RemoveCount = OctreeExample_Selector.i_deleteInstanceInOctreeCount ; // Example of x octrees instances / entities to delete. // 53
                 Common._RequestRemoveInstances ( ref ecb, octreeEntity, removeInstanceBufferElement, ref na_instanceEntities, i_instances2RemoveCount ) ;
                 
                 

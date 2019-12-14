@@ -42,7 +42,7 @@ namespace Antypodish.ECS.Octree
 
             int i_firstEntity = 0 ; 
 
-            NativeArray <Entity> na_entities                       = group.ToEntityArray ( Allocator.Temp ) ;
+            NativeArray <Entity> na_entities                       = group.ToEntityArray ( Allocator.TempJob ) ;
             Entity rootNodeEntity                                  = na_entities [i_firstEntity] ;
             na_entities.Dispose () ;
             
