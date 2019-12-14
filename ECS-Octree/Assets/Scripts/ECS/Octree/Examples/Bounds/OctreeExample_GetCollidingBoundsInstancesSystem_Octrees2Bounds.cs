@@ -7,6 +7,7 @@ using Unity.Jobs;
 namespace Antypodish.ECS.Octree.Examples
 {
 
+    [DisableAutoCreation]
     class OctreeExample_GetCollidingBoundsInstancesSystem_Octrees2Bounds : JobComponentSystem
     {
         
@@ -41,6 +42,8 @@ namespace Antypodish.ECS.Octree.Examples
             // Where each octree has one bounds entity target.
 
             // ***** Example bounds Components For Collision Checks ***** //
+            
+            // RenderMeshTypesData renderMeshTypes = EntityManager.GetComponentData <RenderMeshTypesData> ( Bootstrap.renderMeshTypesEntity ) ;
 
             // Test bounds entity 
             // for each octree
@@ -56,7 +59,7 @@ namespace Antypodish.ECS.Octree.Examples
             Debug.Log ( "Octree: create dummy boundary box, to test for collision." ) ;
             float3 f3_blockCenter = new float3 ( 10, 2, 10 ) ;
             // Only test
-            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01, ref Bootstrap.renderMeshTypes ) ;
+            Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.Prefab01 ) ;
             // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
             // ***** Initialize Octree ***** //
@@ -98,9 +101,12 @@ namespace Antypodish.ECS.Octree.Examples
 
 
                 // Add
+                
+                //Bootstrap.RenderMeshTypesData renderMeshTypes = EntityManager.GetComponentData <Bootstrap.RenderMeshTypesData> ( Bootstrap.renderMeshTypesEntity ) ;
+                // Bootstrap.EntitiesPrefabsData entitiesPrefabs = EntityManager.GetComponentData <Bootstrap.EntitiesPrefabsData> ( Bootstrap.entitiesPrefabsEntity ) ;
 
-                int i_instances2AddCount                 = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 100
-                NativeArray <Entity> na_instanceEntities = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
+                int i_instances2AddCount                      = ExampleSelector.i_generateInstanceInOctreeCount ; // Example of x octrees instances. // 100
+                NativeArray <Entity> na_instanceEntities      = Common._CreateInstencesArray ( EntityManager, i_instances2AddCount ) ;
                 
                 // Request to add n instances.
                 // User is responsible to ensure, that instances IDs are unique in the octrtree.
@@ -108,7 +114,7 @@ namespace Antypodish.ECS.Octree.Examples
                 // EntityManager.AddBuffer <AddInstanceBufferElement> ( octreeEntity ) ; // Once system executed and instances were added, buffer will be deleted.        
                 BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement = GetBufferFromEntity <AddInstanceBufferElement> () ;
 
-                Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount, ref Bootstrap.renderMeshTypes ) ;
+                Common._RequesAddInstances ( ref ecb, octreeEntity, addInstanceBufferElement, ref na_instanceEntities, i_instances2AddCount ) ;
 
 
 

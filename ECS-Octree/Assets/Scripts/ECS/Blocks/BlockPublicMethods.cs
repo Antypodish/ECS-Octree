@@ -14,22 +14,18 @@ namespace Antypodish.ECS.Blocks
         /// Requests to adds new entity with block component.
         /// Call it from whatever place
         /// </summary>
-        static public void _AddBlockRequestViaCustomBufferWithEntity ( ref EntityCommandBuffer ecb, Entity blockEntity, float3 f3_position, float3 f3_scale, MeshType meshType, [ReadOnly] ref Bootstrap.RenderMeshTypes renderMeshTypes )
+        static public void _AddBlockRequestViaCustomBufferWithEntity ( ref EntityCommandBuffer ecb, Entity blockEntity, float3 f3_position, float3 f3_scale, MeshType meshType )
         {
-            //Debug.Log ( "Requested add new Block #" + blockEntity.Index + " from entity # " + entitySrc.Index + "; at postion " + f3_position ) ;
+            // Debug.Log ( "Requested add new Block #" + blockEntity.Index + " from entity # " + entitySrc.Index + "; at postion " + f3_position ) ;
                           
-//             UnityEngine.Debug.LogWarning ( entity ) ;
-            
             ecb.SetComponent ( blockEntity, new MeshTypeData { type = meshType } ) ;
-            
+
             ecb.SetComponent ( blockEntity, new Translation { Value = f3_position } ) ;
             ecb.SetComponent ( blockEntity, new Rotation { Value = quaternion.identity } ) ;
             ecb.SetComponent ( blockEntity, new NonUniformScale { Value = f3_scale } ) ;
                     
-            RenderMesh renderer = Bootstrap._SelectRenderMesh ( meshType, ref renderMeshTypes ) ;
+            RenderMesh renderer = Bootstrap._SelectRenderMesh ( meshType ) ;
             ecb.SetSharedComponent ( blockEntity, renderer ) ;
-            //    ... keep eye on this tag!
-            // ecb.AddComponent <AddBlockTag> ( blockEntity ) ; // Block added. Remove tag
 
         }
 

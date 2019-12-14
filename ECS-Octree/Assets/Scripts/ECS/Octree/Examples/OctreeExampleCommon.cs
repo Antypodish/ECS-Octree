@@ -17,10 +17,11 @@ namespace Antypodish.ECS.Octree.Examples
         static public NativeArray <Entity> _CreateInstencesArray ( EntityManager entityManager, int i_instances2AddCount )
         {
 
-            NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
-
+            NativeArray <Entity> na_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
+            
+            entityManager.Instantiate ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.prefab01Entity, na_instanceEntities ) ;
             // entityManager.CreateEntity ( BlocksArchetypes.blockArchetype, a_instanceEntities ) ;
-            entityManager.Instantiate ( Bootstrap.entitiesPrefabs.blockEntity, a_instanceEntities ) ;
+            // entityManager.Instantiate ( entitiesPrefabs.blockEntity, a_instanceEntities ) ;
             /*
             NativeArray <Entity> a_instanceEntities = new NativeArray <Entity> ( i_instances2AddCount, Allocator.Temp ) ;
             
@@ -31,14 +32,14 @@ namespace Antypodish.ECS.Octree.Examples
             }
             */
 
-            return a_instanceEntities ;
+            return na_instanceEntities ;
         }
 
 
 
         // Request to add some instances.
         // User is responsible to ensure, that instances IDs are unique in the octrtree.        
-        static public void _RequesAddInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2AddCount, ref Bootstrap.RenderMeshTypes renderMeshTypes )
+        static public void _RequesAddInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <AddInstanceBufferElement> addInstanceBufferElement, ref NativeArray <Entity> na_instanceEntities, int i_instances2AddCount )
         {
 
             DynamicBuffer <AddInstanceBufferElement> a_addInstanceBufferElement = addInstanceBufferElement [octreeEntity] ;  
@@ -49,7 +50,7 @@ namespace Antypodish.ECS.Octree.Examples
             for ( int i_instanceID = 0; i_instanceID < i_instances2AddCount; i_instanceID ++ )
             {  
 
-                Entity newBlockEntity = a_instanceEntities [i_instanceEntityIndex] ;
+                Entity newBlockEntity = na_instanceEntities [i_instanceEntityIndex] ;
                 i_instanceEntityIndex ++ ;
                 
                 int x = i_instanceID % 1000 ;
@@ -57,8 +58,9 @@ namespace Antypodish.ECS.Octree.Examples
                 int z = (int) math.floor ( i_instanceID / 1000 ) ;
                 float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 )  * 0.5f ;
 
-                
-                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.95f, MeshType.Prefab01, ref renderMeshTypes ) ;
+                // For rendering.
+                Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.80f, MeshType.Prefab01 ) ;
+
                 // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 1 ) ;
 
 
@@ -69,8 +71,8 @@ namespace Antypodish.ECS.Octree.Examples
                 
                 a_addInstanceBufferElement [i_instanceID] = new AddInstanceBufferElement () 
                 {
-                    i_instanceID = newBlockEntity.Index,
-                    i_version = newBlockEntity.Version,
+                    i_instanceID   = newBlockEntity.Index,
+                    i_version      = newBlockEntity.Version,
                     instanceBounds = bounds
                 };
 
@@ -84,7 +86,7 @@ namespace Antypodish.ECS.Octree.Examples
         /// Request to remove some instances.
         /// User is responsible to ensure, that requested instance ID to delete exists in the octree.  
         /// </summary>
-        static public void _RequestRemoveInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement, ref NativeArray <Entity> a_instanceEntities, int i_instances2RemoveCount )
+        static public void _RequestRemoveInstances ( ref EntityCommandBuffer ecb, Entity octreeEntity, BufferFromEntity <RemoveInstanceBufferElement> removeInstanceBufferElement, ref NativeArray <Entity> na_instanceEntities, int i_instances2RemoveCount )
         {
 
             DynamicBuffer <RemoveInstanceBufferElement> a_removeInstanceBufferElement = removeInstanceBufferElement [octreeEntity] ;  
@@ -96,7 +98,7 @@ namespace Antypodish.ECS.Octree.Examples
             for ( int i_instanceID = 0; i_instanceID < i_instances2RemoveCount; i_instanceID ++ )
             {            
                 
-                Entity removeEntity = a_instanceEntities [i_instanceEntityIndex] ;                 
+                Entity removeEntity = na_instanceEntities [i_instanceEntityIndex] ;                 
                 i_instanceEntityIndex ++ ;
 
                 /*

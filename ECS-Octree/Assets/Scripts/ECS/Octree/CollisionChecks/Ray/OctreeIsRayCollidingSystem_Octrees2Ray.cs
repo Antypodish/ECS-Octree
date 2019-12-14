@@ -8,7 +8,7 @@ namespace Antypodish.ECS.Octree
 {
     
 
-    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
+    // [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
     class IsRayCollidingSystem_Octrees2Ray : JobComponentSystem
     {
 
@@ -34,7 +34,6 @@ namespace Antypodish.ECS.Octree
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-
 
             NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;    
             

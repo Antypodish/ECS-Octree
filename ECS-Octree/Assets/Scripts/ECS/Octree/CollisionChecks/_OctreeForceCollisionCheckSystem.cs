@@ -10,7 +10,7 @@ namespace Antypodish.ECS.Octree
     public struct ForceCollisionCheckTag : IComponentData { }
 
     
-    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]   
+    // [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]   
     class ForceCollisionCheckSystem : JobComponentSystem
     {
 
@@ -27,6 +27,8 @@ namespace Antypodish.ECS.Octree
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
+            UnityEngine.Debug.Log ( "CC" ) ;
+
             NativeArray <Entity> na_entities = group.ToEntityArray ( Allocator.Temp ) ;
             
             Entity entity = na_entities [0] ;

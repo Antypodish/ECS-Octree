@@ -8,7 +8,7 @@ using UnityEngine ;
 
 namespace Antypodish.ECS.Octree
 {
-
+    
     public class AddNewOctreeSystem : JobComponentSystem
     {
 
@@ -55,7 +55,7 @@ namespace Antypodish.ECS.Octree
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-            NativeArray <Entity> na_newOctreeEntities = group.ToEntityArray ( Allocator.Temp ) ;
+            NativeArray <Entity> na_newOctreeEntities = group.ToEntityArray ( Allocator.TempJob ) ;
                         
             Debug.Log ( "Add New Octree System" ) ;
 

@@ -9,7 +9,7 @@ namespace Antypodish.ECS.Octree
 {
     
 
-    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
+    // [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
     class GetMaxBoundsSystem : JobComponentSystem
     {
         
@@ -32,7 +32,7 @@ namespace Antypodish.ECS.Octree
         
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-
+            
             // Debug.LogWarning ( "Col" ) ;
             Bounds checkBounds = new Bounds () 
             { 

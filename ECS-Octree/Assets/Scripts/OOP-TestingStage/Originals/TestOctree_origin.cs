@@ -39,12 +39,12 @@ namespace OOP.OctreeOriginalReference
             boundsOctree.Add ( 4, new Bounds () { center = new Vector3 ( -1, 2, -1 ) + Vector3.one * 0.0f, size = Vector3.one * 1 } ) ;
                 GameObject.Instantiate ( GameObject.Find ( "TempInstance" ), new Vector3 ( -1, 2 ,-1 ), Quaternion.identity ) ;
 
-
+            /*
             int x = 0 ;
             int y = 0 ;
             int z = 0 ;
 
-            /*
+            
             for ( int i = 0; i < 10; i ++ )
             {            
                 x = i ;

@@ -12,32 +12,37 @@ using UnityEngine.SceneManagement ;
 namespace Antypodish.ECS
 {
     
-    public enum MeshType
+    public struct RenderMeshTypesData // : IComponentData
     {
-        Highlight = -1,
-        Default   = 0,
-        Prefab01  = 1
-            
+        public RenderMesh highlight ;
+        public RenderMesh prefab01 ;
+        public RenderMesh defualt ;
     }
+
 
     public sealed class Bootstrap
     {
             
-        static public RenderMeshTypes renderMeshTypes ;
-
-        public struct RenderMeshTypes
-        {
-            public RenderMesh highlight ;
-            public RenderMesh prefab01 ;
-            public RenderMesh defualt ;
-        }
+        static public RenderMeshTypesData renderMeshTypes ;
         
-        static public EntitiesPrefabs entitiesPrefabs ;
+            
+        static EntityManager em ; // = World.Active.EntityManager ;
+        
+        //static EntityArchetype renderMeshTypesArchetype ;
 
-        public struct EntitiesPrefabs
+        // static public Entity renderMeshTypesEntity ;
+
+        
+        // static public EntitiesPrefabsData entitiesPrefabs ;
+        
+        static public Entity entitiesPrefabsEntity ;
+
+        public struct EntitiesPrefabsData : IComponentData
         {
             public Entity blockEntity ;
         }
+
+        
 
         // meshes prefabs
         // static public MeshInstanceRenderer blockPrefabDefault ;
@@ -45,7 +50,7 @@ namespace Antypodish.ECS
         // static public MeshInstanceRenderer highlightRenderer ;
         
         
-        [ RuntimeInitializeOnLoadMethod ( RuntimeInitializeLoadType.BeforeSceneLoad ) ]
+        [RuntimeInitializeOnLoadMethod ( RuntimeInitializeLoadType.BeforeSceneLoad ) ]
         public static void Initialize ()
         {
             // This method creates archetypes for entities we will spawn frequently in this game.
@@ -54,13 +59,27 @@ namespace Antypodish.ECS
             
             Debug.Log ( "Bootstrap Initialization" ) ;
 
-            renderMeshTypes = new RenderMeshTypes () ;
-            entitiesPrefabs = new EntitiesPrefabs () ;
+            em = World.Active.EntityManager ;
+            
+            //renderMeshTypesArchetype = em.CreateArchetype
+            //(
+            //    typeof ( RenderMeshTypesData )
+            //) ;
+
+            // renderMeshTypesEntity = em.CreateEntity ( renderMeshTypesArchetype ) ;
+            // em.AddComponent <RenderMeshTypesData> ( renderMeshTypesEntity ) ;
+            // em.SetName ( renderMeshTypesEntity, "renderMeshTypes" ) ;
+
+            entitiesPrefabsEntity = em.CreateEntity ( typeof ( EntitiesPrefabsData )  ) ;
+            em.SetName ( entitiesPrefabsEntity, "entitiesPrefabs" ) ;
+
+            // renderMeshTypes = new RenderMeshTypesData () ;
+            // entitiesPrefabs = new EntitiesPrefabsData () ;
         }
 
         
         
-        [ RuntimeInitializeOnLoadMethod ( RuntimeInitializeLoadType.AfterSceneLoad ) ]
+        [RuntimeInitializeOnLoadMethod ( RuntimeInitializeLoadType.AfterSceneLoad ) ]
         public static void InitializeAfterSceneLoad ()
         {            
             _InitializeWithScene ();
@@ -85,15 +104,23 @@ namespace Antypodish.ECS
         public static void _InitializeWithScene ()
         {
 
-            Debug.Log ("Bootstrap ini") ;
+            Debug.Log ("Bootstrap init inihibited.") ;
             
+            
+            /*
+            // RenderMeshTypesData renderMeshTypes = new RenderMeshTypesData () ;
+
             renderMeshTypes.highlight = _GetRendererFromPrefab ( "ECS Prefabs/PrefabHighlight01" );
 
             renderMeshTypes.defualt   = _GetRendererFromPrefab ( "ECS Prefabs/BlockPrefabDefault" ) ; // OOP.Prefabs.Default
             renderMeshTypes.prefab01  = _GetRendererFromPrefab ( "ECS Prefabs/BlockPrefab01" ) ; // OOP.Prefabs.Prefab01    
-           
-            EntityManager em = World.Active.EntityManager ;
+
+            // em.SetComponentData <RenderMeshTypesData> ( renderMeshTypesEntity, renderMeshTypes ) ;
+
+            EntitiesPrefabsData entitiesPrefabs = new EntitiesPrefabsData () ; 
             entitiesPrefabs.blockEntity = em.CreateEntity () ;
+            
+            em.SetComponentData <EntitiesPrefabsData> ( entitiesPrefabsEntity, entitiesPrefabs ) ;
 
             Entity blockEntity = entitiesPrefabs.blockEntity ;
             
@@ -108,28 +135,50 @@ namespace Antypodish.ECS
             em.AddSharedComponentData ( blockEntity, renderMesh ) ;
 
             // ecb.AddComponent ( newEntity, new AddBlockData { }
-
-            ... Manual systems execution 
+                        
+            var octreeExample_GetCollidingBoundsInstancesSystem_Bounds2Octree = World.Active.GetOrCreateSystem <Octree.Examples.OctreeExample_GetCollidingBoundsInstancesSystem_Bounds2Octree> () ;
+            octreeExample_GetCollidingBoundsInstancesSystem_Bounds2Octree.Update () ;
+            
+            var octreeExample_GetCollidingRayInstancesSystem_Octrees2Ray = World.Active.GetOrCreateSystem <Octree.Examples.OctreeExample_GetCollidingRayInstancesSystem_Octrees2Ray> () ;
+            octreeExample_GetCollidingRayInstancesSystem_Octrees2Ray.Update () ;
+            */
         }
 
         private static RenderMesh _GetRendererFromPrefab ( string s_goName )
         {
             GameObject prefab = GameObject.Find ( s_goName ) ;
-            var result = prefab.GetComponent <RenderMesh> () ;
+            RenderMeshProxy renderMeshProxy = prefab.GetComponent <RenderMeshProxy> () ;
+            RenderMesh renderMesh = new RenderMesh () ;
+            /*
+            renderMesh.castShadows = UnityEngine.Rendering.ShadowCastingMode.Off ;
+            renderMesh.layer = 0 ;
+            renderMesh.receiveShadows = false ;
+            renderMesh.mesh = renderMeshProxy.Value.mesh ;
+            renderMesh.material = renderMeshProxy.Value.material ;
+            */
+
+            renderMesh = renderMeshProxy.Value ;
+
             // var result = prefab.GetComponent <RenderMesh> ().Value ;
             Object.Destroy (prefab) ;
-            return result ;
+            return renderMesh ;
         }
         
-        static public RenderMesh _SelectRenderMesh ( MeshType meshType, [ReadOnly] ref Bootstrap.RenderMeshTypes renderMeshTypes )
+        static public RenderMesh _SelectRenderMesh ( MeshType meshType )
         {
             switch ( meshType )
             {
                 case MeshType.Highlight:
-                    return renderMeshTypes.highlight ;
+                    return PrefabsSpawner_FromEntity.spawnerMesh.higlightMesh ;
+                    // return Bootstrap.renderMeshTypes.highlight ;
+                    // break ;
+                case MeshType.Prefab01:
+                    return PrefabsSpawner_FromEntity.spawnerMesh.prefab01Mesh ;
+                    // return Bootstrap.renderMeshTypes.prefab01 ;
                     // break ;
                 default :
-                    return renderMeshTypes.defualt ;
+                    return PrefabsSpawner_FromEntity.spawnerMesh.defaultMesh ;
+                    // return Bootstrap.renderMeshTypes.defualt ;
                     // break ;
             }
         }

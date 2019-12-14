@@ -11,7 +11,7 @@ namespace Antypodish.ECS.Octree
     /// <summary>
     /// Octree to ray system, checks one or more octress, against its paired target ray entity.
     /// </summary>
-    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
+    // [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]   
     class GetCollidingRayInstancesSystem_Octrees2Ray : JobComponentSystem
     {
 
@@ -44,10 +44,9 @@ namespace Antypodish.ECS.Octree
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
             
-            
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
 
-            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;    
+            NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.TempJob ) ;    
             
             ComponentDataFromEntity <RayEntityPair4CollisionData> a_rayEntityPair4CollisionData       = GetComponentDataFromEntity <RayEntityPair4CollisionData> () ;
             
@@ -147,10 +146,10 @@ namespace Antypodish.ECS.Octree
 
                 // RayEntityPair4CollisionData rayEntityPair4CollisionData =  a_rayEntityPair4CollisionData [octreeEntity] ;
                 Entity octreeRayEntity = rayEntityPair4Collision.ray2CheckEntity ;
-
+                
                 RayData rayData = new RayData () { ray = ray } ;                
                 a_rayData [octreeRayEntity] = rayData ;
-
+                
             }
                         
         }
@@ -234,7 +233,7 @@ namespace Antypodish.ECS.Octree
                 // Ray entity pair, for collision checks
                                                                         
                 Entity ray2CheckEntity                                                      = rayEntityPair4Collision.ray2CheckEntity ;
-
+                
                 // Is target octree active
                 if ( a_isActiveTag.Exists ( ray2CheckEntity ) )
                 {

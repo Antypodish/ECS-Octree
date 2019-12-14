@@ -8,8 +8,8 @@ using UnityEngine ;
 namespace Antypodish.ECS.Octree
 {
         
-    [UpdateAfter ( typeof ( Octree.AddNewOctreeSystem ) ) ]
-    [UpdateAfter ( typeof ( Octree.AddInstanceTag ) ) ]
+    [UpdateAfter ( typeof ( AddNewOctreeSystem ) ) ]
+    [UpdateAfter ( typeof ( AddInstanceSystem ) ) ]    
     class RemoveInstanceSystem : JobComponentSystem
     {
         

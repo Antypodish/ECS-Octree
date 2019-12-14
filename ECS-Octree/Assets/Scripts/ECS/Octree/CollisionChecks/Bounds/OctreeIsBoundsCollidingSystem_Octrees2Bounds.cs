@@ -13,7 +13,7 @@ namespace Antypodish.ECS.Octree
     /// <summary>
     /// Bounds to octree system, checks one or more bounds, against its paired target octree entity.
     /// </summary>
-    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]   
+    // [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]   
     class IsBoundsCollidingSystem_Octrees2Bounds : JobComponentSystem
     {
             
@@ -39,7 +39,6 @@ namespace Antypodish.ECS.Octree
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-            
             
             NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;    
             

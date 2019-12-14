@@ -21,11 +21,11 @@ namespace Antypodish.ECS.Highlight
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-            
+                              
             JobHandle jobHandle = new Job
             {                   
-                ecb                = eiecb.CreateCommandBuffer ().ToConcurrent (),
-                renderMeshTypes    = Bootstrap.renderMeshTypes
+                ecb                = eiecb.CreateCommandBuffer ().ToConcurrent ()
+                // renderMeshTypes    = EntityManager.GetComponentData <RenderMeshTypesData> ( Bootstrap.renderMeshTypesEntity )
 
             }.Schedule ( this, inputDeps ) ;
 
@@ -45,14 +45,14 @@ namespace Antypodish.ECS.Highlight
             
             public EntityCommandBuffer.Concurrent ecb ;
             
-            [ReadOnly] 
-            public Bootstrap.RenderMeshTypes renderMeshTypes ;
+            // [ReadOnly] 
+            // public RenderMeshTypesData renderMeshTypes ;
 
             public void Execute ( Entity highlightEntity, int jobIndex, [ReadOnly] ref MeshTypeData meshType )
             {
                 
                 // renderer
-                RenderMesh renderMesh = Bootstrap._SelectRenderMesh ( meshType.type, ref renderMeshTypes ) ;
+                RenderMesh renderMesh = Bootstrap._SelectRenderMesh ( meshType.type ) ;
                                       
                 ecb.SetSharedComponent <RenderMesh> ( jobIndex, highlightEntity, renderMesh ) ; // replace renderer with material and mesh
 

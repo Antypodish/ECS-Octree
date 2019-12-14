@@ -9,7 +9,7 @@ using UnityEngine ;
 namespace Antypodish.ECS.Octree
 {
     
-    [UpdateAfter ( typeof ( Octree.AddNewOctreeSystem ) ) ]
+    [UpdateAfter ( typeof ( AddNewOctreeSystem ) ) ]    
     class AddInstanceSystem : JobComponentSystem
     {
         

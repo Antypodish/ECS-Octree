@@ -11,7 +11,7 @@ namespace Antypodish.ECS.Octree
     /// <summary>
     /// Ray to octree system, checks one or more rays, against its paired target octree entity.
     /// </summary>
-    [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
+    // [UpdateAfter ( typeof ( UnityEngine.PlayerLoop.PostLateUpdate ) ) ]    
     class GetCollidingRayInstancesSystem_Rays2Octree : JobComponentSystem
     {
         
@@ -43,7 +43,6 @@ namespace Antypodish.ECS.Octree
 
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
-            
             
             // EntityCommandBuffer ecb = barrier.CreateCommandBuffer () ;
             NativeArray <Entity> na_collisionChecksEntities                                           = group.ToEntityArray ( Allocator.Temp ) ;     
