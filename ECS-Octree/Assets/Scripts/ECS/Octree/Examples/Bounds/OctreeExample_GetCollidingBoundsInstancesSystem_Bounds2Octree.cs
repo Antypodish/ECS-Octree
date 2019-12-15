@@ -16,6 +16,12 @@ namespace Antypodish.ECS.Octree.Examples
         protected override void OnCreate ( )
         {   
 
+        }
+
+        
+        protected override JobHandle OnUpdate ( JobHandle inputDeps )
+        {
+
             // Test bounds
             // Many bounds, to octree pair
             // Where each bounds entty has one octree entity target.
@@ -106,10 +112,13 @@ namespace Antypodish.ECS.Octree.Examples
             Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, boundsEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 5, MeshType.BoundingBox ) ;
             // Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ecb, EntityManager.CreateEntity ( ), f3_blockCenter, new float3 ( 1, 1, 1 ) * 5 ) ;
 
+            
+            int i_boundsCount = OctreeExample_Selector.i_boundsCount ; // Example of x bounds.
+
             // Create test bounds
             // Many bounds, to single or many octrees
             // Where each bounds has one octree entity target.
-            for ( int i = 0; i < 1; i ++ ) 
+            for ( int i = 0; i < i_boundsCount; i ++ ) 
             {
 
                 Entity testEntity = ecb.CreateEntity ( BlocksArchetypes.blockArchetype ) ; // Check bounds collision with octree and return colliding instances.      
@@ -130,11 +139,7 @@ namespace Antypodish.ECS.Octree.Examples
                 ecb.AddBuffer <CollisionInstancesBufferElement> ( testEntity ) ;
 
             } // for
-                
-        }
-
-        protected override JobHandle OnUpdate ( JobHandle inputDeps )
-        {
+         
             return inputDeps ;
         }
 

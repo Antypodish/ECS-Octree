@@ -28,6 +28,13 @@ namespace Antypodish.ECS.Octree.Examples
         /// </summary>
         static public int i_deleteInstanceInOctreeCount = 0 ; // = 5 ; // = 750 ;
 
+        /// <summary>        
+        /// Creates x octrees with same amount of instances.
+        /// </summary>
+        static public int i_octreesCount = 1 ;
+        static public int i_raysCount    = 1000 ;
+        static public int i_boundsCount  = 1 ;
+
         /*
         public void Start ( )
         {

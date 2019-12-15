@@ -65,7 +65,7 @@ namespace Antypodish.ECS.Octree.Examples
             // ***** Initialize Octree ***** //
 
             // Creates x octrees with same amount of instances.
-            int i_octreesCount = 1 ; // Example of x octrees.
+            int i_octreesCount = OctreeExample_Selector.i_octreesCount ; // Example of x octrees.
 
             NativeArray <Entity> a_entities = new NativeArray<Entity> ( i_octreesCount, Allocator.Temp ) ;
 

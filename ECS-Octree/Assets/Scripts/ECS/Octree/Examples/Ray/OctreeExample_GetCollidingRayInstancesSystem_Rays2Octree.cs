@@ -15,7 +15,10 @@ namespace Antypodish.ECS.Octree.Examples
 
         protected override void OnCreate ( )
         {
+        }
 
+        protected override JobHandle OnUpdate ( JobHandle inputDeps )
+        {
             // Test rays
             // Many rays, to octree pair
             // Where each ray entty has one octree entity target.
@@ -100,10 +103,12 @@ namespace Antypodish.ECS.Octree.Examples
 
             // ***** Example Ray Components For Collision Checks ***** //
             
+            int i_raysCount = OctreeExample_Selector.i_raysCount ; // Example of x rays.
+
             // Create test rays
             // Many rays, to single or many octrees
             // Where each ray has one octree entity target.
-            for ( int i = 0; i < 1000; i ++ ) 
+            for ( int i = 0; i < i_raysCount; i ++ ) 
             {
                 Entity testEntity = ecb.CreateEntity ( ) ; // Check bounds collision with octree and return colliding instances.    
                 
@@ -122,11 +127,7 @@ namespace Antypodish.ECS.Octree.Examples
                 ecb.AddComponent ( testEntity, new IsCollidingData () ) ; // Check bounds collision with octree and return colliding instances.
                 ecb.AddBuffer <CollisionInstancesBufferElement> ( testEntity ) ;
             } // for
-                                     
-        }
-
-        protected override JobHandle OnUpdate ( JobHandle inputDeps )
-        {
+              
             return inputDeps ;
         }
 

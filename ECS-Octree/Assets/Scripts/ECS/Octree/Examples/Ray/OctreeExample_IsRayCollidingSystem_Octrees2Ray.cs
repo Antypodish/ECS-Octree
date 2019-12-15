@@ -56,7 +56,7 @@ namespace Antypodish.ECS.Octree.Examples
             // ***** Initialize Octree ***** //
             
             // Creates x octrees with same amount of instances.
-            int i_octreesCount = 1 ; // Example of x octrees.
+            int i_octreesCount = OctreeExample_Selector.i_octreesCount ; // Example of x octrees.
             // int i_octreesCount = 100 ; // Example of x octrees.
 
             for ( int i_octreeEntityIndex = 0; i_octreeEntityIndex < i_octreesCount; i_octreeEntityIndex ++ ) 

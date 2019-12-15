@@ -588,7 +588,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &184835298
 GameObject:
@@ -646,7 +646,7 @@ Transform:
   m_Children:
   - {fileID: 1202928980}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &193149537
 GameObject:
@@ -779,7 +779,7 @@ Transform:
   - {fileID: 1439332493}
   - {fileID: 1378190017}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &304775921
 MonoBehaviour:
@@ -2807,92 +2807,9 @@ Transform:
   m_LocalPosition: {x: 5.5, y: 0.5, z: 5.5}
   m_LocalScale: {x: 10, y: 1, z: 10}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_Father: {fileID: 1965705577}
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1436266207
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1436266210}
-  - component: {fileID: 1436266209}
-  - component: {fileID: 1436266208}
-  m_Layer: 0
-  m_Name: Main Camera (1)
-  m_TagString: MainCamera
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!81 &1436266208
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1436266207}
-  m_Enabled: 1
---- !u!20 &1436266209
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1436266207}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 50
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: -1
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!4 &1436266210
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1436266207}
-  m_LocalRotation: {x: 0.3750398, y: -0.109455444, z: 0.044646844, w: 0.9194408}
-  m_LocalPosition: {x: 10.62, y: 23.89, z: -8.4}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 44.381, y: -13.578001, z: 0}
 --- !u!1 &1439332489 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 527825880892501811, guid: 05a70452854f09441a9ac05fc9996211,
@@ -3096,7 +3013,7 @@ GameObject:
   - component: {fileID: 1636200100}
   - component: {fileID: 1636200099}
   m_Layer: 0
-  m_Name: Main Camera (2)
+  m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3165,7 +3082,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 33.097, y: 6.3120003, z: 0}
 --- !u!1 &1687344151 stripped
 GameObject:
@@ -3649,6 +3566,63 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1746958473}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1798653697
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1798653698}
+  - component: {fileID: 1798653699}
+  m_Layer: 0
+  m_Name: OctreeExample_Startup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1798653698
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1798653697}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 14.4, y: 67.52, z: -62.88}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1798653699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1798653697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c82757235f692641beb5b02d5274b3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  readme: 'See OctreeExampleCommon.cs for more details about options.
+
+    Block
+    highlighting example GetCollidingRayInstancesSystem_Rays2Octree'
+  manualInitialize: 0
+  exampleSelector: 4
+  generateInstanceInOctreeCount: 100
+  deleteInstanceInOctreeCount: 0
+  readme1: Only applicable to _Octrees2 selection.
+  octreesCount: 1
+  readme2: Only applicable to _Bounds2Octree selection.
+  boundsCount: 1
+  readme3: Only applicable to _Rays2Octree selection.
+  raysCount: 1000
 --- !u!1 &1807207953
 GameObject:
   m_ObjectHideFlags: 0
@@ -3740,8 +3714,8 @@ Transform:
   m_LocalPosition: {x: -6.41, y: -2.69, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_Father: {fileID: 1965705577}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 9.615001, y: -40.532, z: -8.595}
 --- !u!1 &1965705576
 GameObject:
@@ -3758,7 +3732,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1965705577
 Transform:
   m_ObjectHideFlags: 0
@@ -3772,8 +3746,11 @@ Transform:
   m_Children:
   - {fileID: 334588310}
   - {fileID: 113841866}
+  - {fileID: 1807207957}
+  - {fileID: 1974449623}
+  - {fileID: 1429735971}
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1974449619
 GameObject:
@@ -3866,8 +3843,8 @@ Transform:
   m_LocalPosition: {x: -4.15, y: -2.69, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_Father: {fileID: 1965705577}
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 9.615001, y: -40.532, z: -8.595}
 --- !u!1 &1999340481
 GameObject:
@@ -4067,12 +4044,12 @@ GameObject:
   m_Component:
   - component: {fileID: 2013801562}
   m_Layer: 0
-  m_Name: Octree
+  m_Name: Octree Nodes Dummy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2013801562
 Transform:
   m_ObjectHideFlags: 0
@@ -4098,7 +4075,7 @@ Transform:
   - {fileID: 1035535471}
   - {fileID: 2133304269}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2133304268
 GameObject:

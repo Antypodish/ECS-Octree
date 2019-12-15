@@ -97,11 +97,13 @@ namespace Antypodish.ECS.Octree.Examples
 
 
             // ***** Example Ray Components For Collision Checks ***** //
+            
+            int i_raysCount = OctreeExample_Selector.i_raysCount ; // Example of x rays.
 
             // Create test rays
             // Many rays, to many octrees
             // Where each ray has one octree entity target.
-            for ( int i = 0; i < 1000; i ++ ) 
+            for ( int i = 0; i < i_raysCount; i ++ ) 
             {
                 Entity testEntity = ecb.CreateEntity ( ) ; // Check bounds collision with octree and return colliding instances.                
 

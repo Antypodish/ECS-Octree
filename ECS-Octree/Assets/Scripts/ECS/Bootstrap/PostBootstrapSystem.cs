@@ -10,8 +10,6 @@ namespace Antypodish.ECS.Octree
     [DisableAutoCreation]
     class PostBootstrapSystem : JobComponentSystem
     {
-        
-        EndInitializationEntityCommandBufferSystem eiecb ;
 
         protected override void OnCreate ( )
         {
@@ -21,9 +19,10 @@ namespace Antypodish.ECS.Octree
             
             PrefabsSpawner_FromEntity.spawnerMesh = new SpawnerMeshData ()
             {
-                defaultMesh = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.defaultEntity ),
-                higlightMesh = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.higlightEntity ),
-                prefab01Mesh = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.prefab01Entity )
+                defaultMesh     = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.defaultEntity ),
+                higlightMesh    = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.higlightEntity ),
+                boundingBoxMesh = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.boundingBoxEntity ),
+                prefab01Mesh    = EntityManager.GetSharedComponentData <RenderMesh> ( PrefabsSpawner_FromEntity.spawnerEntitiesPrefabs.prefab01Entity ),
             } ;
 
             // Debug.Log ( PrefabsSpawner_FromEntity.spawnerMesh.prefab01Mesh.mesh ) ;
@@ -31,6 +30,7 @@ namespace Antypodish.ECS.Octree
             // Examples.OctreeExample_Selector octreeExample_Selector = new Examples.OctreeExample_Selector () ;
             // octreeExample_Selector._Initialize () ;
             
+            /*
             Debug.LogWarning ( "Example selector: " + Examples.OctreeExample_Selector.selector.ToString () + "(" + (int) Examples.OctreeExample_Selector.selector + ")" ) ;
 
             switch ( Examples.OctreeExample_Selector.selector )
@@ -86,7 +86,7 @@ namespace Antypodish.ECS.Octree
                 default :
                     break ;
             }
-
+            */
             
 
             
