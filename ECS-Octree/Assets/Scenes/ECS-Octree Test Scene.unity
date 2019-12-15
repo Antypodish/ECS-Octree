@@ -3613,7 +3613,7 @@ MonoBehaviour:
 
     Block
     highlighting example GetCollidingRayInstancesSystem_Rays2Octree'
-  manualInitialize: 0
+  manualInitialize: 1
   exampleSelector: 4
   generateInstanceInOctreeCount: 100
   deleteInstanceInOctreeCount: 0
