@@ -750,9 +750,10 @@ NodeChildrenBufferElement nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeIndex
                 }
 
 
+                /*
                 NodeBufferElement rootNodeBufferElement = a_nodesBuffer [rootNode.i_rootNodeIndex] ;
    
-Debug.LogError ( "Found no child node, to fit instance. Try grow octree; Instance ID " + i_instanceID + " bounds: " + instanceBounds + "; root node bounds: " + rootNodeBufferElement.bounds ) ;
+/Debug.LogError ( "Found no child node, to fit instance. Try grow octree; Instance ID " + i_instanceID + " bounds: " + instanceBounds + "; root node bounds: " + rootNodeBufferElement.bounds ) ;
                 
                 // Check if still fits in the root node.
                 if ( CommonMethods._Encapsulates ( rootNodeBufferElement.bounds, instanceBounds ) ) 
@@ -778,7 +779,9 @@ Debug.LogError ( "Grow again." ) ;
                     
 
                 }
+                */
 
+// TODO: Requires double check.
                 /*
                 _AddNodeInstance ( ref rootNode, 
                     i_instanceID,                             

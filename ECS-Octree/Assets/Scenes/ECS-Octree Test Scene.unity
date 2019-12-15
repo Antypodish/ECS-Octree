@@ -2292,7 +2292,7 @@ PrefabInstance:
     - target: {fileID: 2887645280981242483, guid: a3c8e3796f3b6b540aff736e25fdc3f5,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2887645280981242494, guid: a3c8e3796f3b6b540aff736e25fdc3f5,
         type: 3}
@@ -2565,7 +2565,7 @@ PrefabInstance:
     - target: {fileID: 2887645280981242483, guid: a3c8e3796f3b6b540aff736e25fdc3f5,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2887645280981242494, guid: a3c8e3796f3b6b540aff736e25fdc3f5,
         type: 3}
@@ -2936,7 +2936,7 @@ PrefabInstance:
     - target: {fileID: 2887645280981242483, guid: a3c8e3796f3b6b540aff736e25fdc3f5,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2887645280981242494, guid: a3c8e3796f3b6b540aff736e25fdc3f5,
         type: 3}
@@ -3077,13 +3077,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1636200098}
-  m_LocalRotation: {x: 0.28439844, y: 0.05277606, z: -0.015681803, w: 0.957124}
-  m_LocalPosition: {x: 14.4, y: 67.52, z: -62.88}
+  m_LocalRotation: {x: 0.25963113, y: 0.3942028, z: -0.11713287, w: 0.873771}
+  m_LocalPosition: {x: -14.7, y: 33.9, z: -13.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 33.097, y: 6.3120003, z: 0}
+  m_LocalEulerAnglesHint: {x: 33.097, y: 48.565002, z: 0}
 --- !u!1 &1687344151 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 127496499682482604, guid: 96c2a022584466a429a7af4a852e214b,
@@ -3609,13 +3609,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c82757235f692641beb5b02d5274b3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  readme: 'See OctreeExampleCommon.cs for more details about options.
+  readme: 'Please be aware of RenderMeshSysteV2 culling performance hit.
 
-    Block
-    highlighting example GetCollidingRayInstancesSystem_Rays2Octree'
+    See
+    OctreeExampleCommon.cs for more details about options.
+
+    Block highlighting
+    example GetCollidingRayInstancesSystem_Rays2Octree
+
+    For best results, please
+    restart game, after changes.'
   manualInitialize: 1
   exampleSelector: 4
-  generateInstanceInOctreeCount: 100
+  generateInstanceInOctreeCount: 10000
   deleteInstanceInOctreeCount: 0
   readme1: Only applicable to _Octrees2 selection.
   octreesCount: 1
@@ -4133,7 +4139,7 @@ PrefabInstance:
     - target: {fileID: 127496499682482592, guid: 96c2a022584466a429a7af4a852e214b,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 127496499682482592, guid: 96c2a022584466a429a7af4a852e214b,
         type: 3}
@@ -4207,7 +4213,7 @@ PrefabInstance:
     - target: {fileID: 527825880892501815, guid: 05a70452854f09441a9ac05fc9996211,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 527825880892501815, guid: 05a70452854f09441a9ac05fc9996211,
         type: 3}
@@ -4276,7 +4282,7 @@ PrefabInstance:
     - target: {fileID: 6395484365660482004, guid: 2aad653d1fe4ab4448e51da4d5cab49c,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.5
+      value: 4.5
       objectReference: {fileID: 0}
     - target: {fileID: 6395484365660482004, guid: 2aad653d1fe4ab4448e51da4d5cab49c,
         type: 3}

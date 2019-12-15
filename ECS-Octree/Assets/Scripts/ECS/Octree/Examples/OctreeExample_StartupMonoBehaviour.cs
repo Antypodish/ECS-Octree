@@ -11,8 +11,10 @@ namespace Antypodish.ECS.Octree
     {
         
         [TextArea]
-        public string readme = "See OctreeExampleCommon.cs for more details about options." +
-            "Block highlighting example GetCollidingRayInstancesSystem_Rays2Octree" ;
+        public string readme = "Please be aware of RenderMeshSysteV2 culling performance hit." +
+            "See OctreeExampleCommon.cs for more details about options." +
+            "Block highlighting example GetCollidingRayInstancesSystem_Rays2Octree" +
+            "For best results, please restart game, after changes." ;
 
         public bool manualInitialize             = false ;
 
