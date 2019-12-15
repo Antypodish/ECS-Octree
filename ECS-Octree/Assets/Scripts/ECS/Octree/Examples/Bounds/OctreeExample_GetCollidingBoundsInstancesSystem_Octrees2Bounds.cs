@@ -65,7 +65,7 @@ namespace Antypodish.ECS.Octree.Examples
             // ***** Initialize Octree ***** //
 
             // Creates x octrees with same amount of instances.
-            int i_octreesCount = 10 ; // Example of x octrees.
+            int i_octreesCount = 1 ; // Example of x octrees.
 
             NativeArray <Entity> a_entities = new NativeArray<Entity> ( i_octreesCount, Allocator.Temp ) ;
 
@@ -74,7 +74,15 @@ namespace Antypodish.ECS.Octree.Examples
 
                 Entity newOctreeEntity = EntityManager.CreateEntity ( AddNewOctreeSystem.octreeArchetype ) ;
 
-                AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ;
+                AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 4, float3.zero - new float3 ( 1, 1, 1 ) * 2, 2, 1 ) ; // ok // Minimum node size of 2 -> up to 8 instances per node.
+
+                // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 1, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+                // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 2, float3.zero - new float3 ( 1, 1, 1 ), 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+                // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 4, float3.zero - new float3 ( 1, 1, 1 ) * 2, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+                // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 4, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+                // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 16, float3.zero - new float3 ( 1, 1, 1 ) * 8, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+                // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1 ) ; // Faulty
+                // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ; // Faulty
             
                 EntityManager.AddComponent ( newOctreeEntity, typeof ( GetCollidingBoundsInstancesTag ) ) ;
                 

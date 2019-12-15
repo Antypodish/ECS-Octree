@@ -61,7 +61,7 @@ namespace Antypodish.ECS.Octree
                     // Generate 8 new empty children.                    
                     for ( int j = 0; j < 8; j ++ )
                     {
-                        nodeChildrenBuffer.i_nodesIndex = -1 ;
+                        nodeChildrenBuffer.i_group8NodesIndex = -1 ;
                         nodeChildrenBuffer.bounds = new Bounds () ;
                         a_nodeChildrenBuffer.Add ( new NodeChildrenBufferElement () ) ;                
                     }
@@ -88,7 +88,9 @@ namespace Antypodish.ECS.Octree
             
             nodeBuffer.f_baseLength            = f_baseLength ;
             nodeBuffer.f3_center               = f3_center ;
-            float f_adjustLength               = rootNode.f_looseness * f_baseLength ;
+            float f_loosness                   = rootNode.f_looseness - 1 ;
+            float f_adjustLength               = f_baseLength + f_loosness ;
+            // float f_adjustLength               = rootNode.f_looseness * f_baseLength ;
             nodeBuffer.f_adjLength             = f_adjustLength ;		    
 		    float3 size                        = new float3 ( f_adjustLength, f_adjustLength, f_adjustLength ) ;
             // Create the bounding box.
@@ -96,7 +98,8 @@ namespace Antypodish.ECS.Octree
             a_nodesBuffer [i_nodeIndex]        = nodeBuffer ;
             
 		    float f_quarter                    = f_baseLength / 4f ;
-		    float f_childActualLength          = ( f_baseLength / 2) * rootNode.f_looseness ;            
+            float f_childActualLength          = ( f_baseLength / 2 ) + f_loosness ;            
+		    // float f_childActualLength          = ( f_baseLength / 2 ) * rootNode.f_looseness ;            
 		    float3 f3_childActualSize          = new float3 ( f_childActualLength, f_childActualLength, f_childActualLength );
             int i_childrenIndexOffset          = i_nodeIndex * 8 ;
 
@@ -249,7 +252,7 @@ namespace Antypodish.ECS.Octree
                     NodeChildrenBufferElement nodeChildBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
 
                     // Has child any instances
-                    if ( _HasAnyInstances ( nodeChildBuffer.i_nodesIndex, a_nodesBuffer, a_nodeChildrenBuffer ) ) return true ;
+                    if ( _HasAnyInstances ( nodeChildBuffer.i_group8NodesIndex, a_nodesBuffer, a_nodeChildrenBuffer ) ) return true ;
 			    }
 		    }
 

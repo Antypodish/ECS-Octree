@@ -126,8 +126,13 @@ namespace Antypodish.ECS.Octree
             
 		    if ( !nodeBuffer.bounds.IntersectRay ( checkRay, out f_distance ) || f_distance > f_maxDistance ) 
             {
+                
+            // Debug.Log ( "None intersect: " + rootNode.i_rootNodeIndex + "; " + i_nodeIndex + "; " + isCollidingData.i_collisionsCount + "; ch count: " + nodeBuffer.i_childrenCount + "; i count: " + nodeBuffer.i_instancesCount ) ; 
+
 			    return isCollidingData.i_collisionsCount > 0 ? true : false ; 
 		    }
+
+            // Debug.Log ( "Intersect: " + rootNode.i_rootNodeIndex + "; " + i_nodeIndex + "; " + isCollidingData.i_collisionsCount + "; ch count: " + nodeBuffer.i_childrenCount + "; i count: " + nodeBuffer.i_instancesCount ) ; 
 
             if ( nodeBuffer.i_instancesCount > 0 ) 
             {            
@@ -186,7 +191,6 @@ namespace Antypodish.ECS.Octree
 		        }
             }
 
-
             // Check children for collisions
             // Check if having children
 		    if ( nodeBuffer.i_childrenCount > 0 )  
@@ -199,7 +203,7 @@ namespace Antypodish.ECS.Octree
                 {        
 
                     NodeChildrenBufferElement nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
-                    int i_nodeChildIndex = nodeChildrenBuffer.i_nodesIndex ;
+                    int i_nodeChildIndex = nodeChildrenBuffer.i_group8NodesIndex ;
                     
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )

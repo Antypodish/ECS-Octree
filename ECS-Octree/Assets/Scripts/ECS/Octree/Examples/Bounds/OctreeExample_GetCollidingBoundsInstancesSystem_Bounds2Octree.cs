@@ -38,7 +38,15 @@ namespace Antypodish.ECS.Octree.Examples
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
             EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
 
-            AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ;
+            AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 4, float3.zero - new float3 ( 1, 1, 1 ) * 2, 2, 1 ) ; // ok // Minimum node size of 2 -> up to 8 instances per node.
+
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 1, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 2, float3.zero - new float3 ( 1, 1, 1 ), 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 4, float3.zero - new float3 ( 1, 1, 1 ) * 2, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 4, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 16, float3.zero - new float3 ( 1, 1, 1 ) * 8, 1, 1 ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1 ) ; // Faulty
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero, 1, 1 ) ; // Faulty
 
             // Assign target bounds entity, to octree entity
             Entity octreeEntity = newOctreeEntity ;    
@@ -101,7 +109,7 @@ namespace Antypodish.ECS.Octree.Examples
             // Create test bounds
             // Many bounds, to single or many octrees
             // Where each bounds has one octree entity target.
-            for ( int i = 0; i < 10; i ++ ) 
+            for ( int i = 0; i < 1; i ++ ) 
             {
 
                 Entity testEntity = ecb.CreateEntity ( BlocksArchetypes.blockArchetype ) ; // Check bounds collision with octree and return colliding instances.      

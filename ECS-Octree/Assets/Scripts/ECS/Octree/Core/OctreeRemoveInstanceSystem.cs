@@ -318,7 +318,7 @@ namespace Antypodish.ECS.Octree
                     // Get children index of this node
                     
                     NodeChildrenBufferElement nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
-                    int i_childNodeIndex = nodeChildrenBuffer.i_nodesIndex ;
+                    int i_childNodeIndex = nodeChildrenBuffer.i_group8NodesIndex ;
 
                     // Ignore negative index
                     if ( i_childNodeIndex >= 0 )
@@ -383,7 +383,7 @@ namespace Antypodish.ECS.Octree
                 {
 
                     NodeChildrenBufferElement nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
-                    int i_childNodeIndex = nodeChildrenBuffer.i_nodesIndex ;
+                    int i_childNodeIndex = nodeChildrenBuffer.i_group8NodesIndex ;
                 
                     if ( i_childNodeIndex >= 0 )
                     {
@@ -435,7 +435,7 @@ namespace Antypodish.ECS.Octree
             {
             
                 nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
-                int i_childNodeIndex = nodeChildrenBuffer.i_nodesIndex ;
+                int i_childNodeIndex = nodeChildrenBuffer.i_group8NodesIndex ;
             
                 if ( i_childNodeIndex >= 0 )
                 {
@@ -524,7 +524,7 @@ namespace Antypodish.ECS.Octree
 
                 int i_childNodeIndexOffset = i_nodeChildrenIndexOffset + i ;
                 nodeChildrenBuffer = a_nodeChildrenBuffer [i_childNodeIndexOffset] ;
-                int i_childNodeIndex = nodeChildrenBuffer.i_nodesIndex ;
+                int i_childNodeIndex = nodeChildrenBuffer.i_group8NodesIndex ;
 
                 if ( i_childNodeIndex >= 0 )
                 {
@@ -539,7 +539,7 @@ namespace Antypodish.ECS.Octree
                         for (int j = 0; j < 8; j++) 
                         {
                             // Reset child
-                            nodeChildrenBuffer.i_nodesIndex = -1 ; // Bounds are ignored
+                            nodeChildrenBuffer.i_group8NodesIndex = -1 ; // Bounds are ignored
                             a_nodeChildrenBuffer [i_childNodeIndex + j] = nodeChildrenBuffer ; // Set back                            
                         }
             
@@ -565,7 +565,7 @@ namespace Antypodish.ECS.Octree
                     a_nodeSparesBuffer [rootNode.i_nodeSpareLastIndex]  = new NodeSparesBufferElement () { i = i_childNodeIndex } ;
              
                     // Reset child
-                    nodeChildrenBuffer.i_nodesIndex                         = -1 ; // Bounds are ignored
+                    nodeChildrenBuffer.i_group8NodesIndex                         = -1 ; // Bounds are ignored
                     a_nodeChildrenBuffer [i_childNodeIndexOffset]           = nodeChildrenBuffer ; // Set back
                 }
             }
@@ -670,7 +670,7 @@ namespace Antypodish.ECS.Octree
                     nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
 
                     // Has child any instances
-                    if ( CommonMethods._HasAnyInstances ( nodeChildrenBuffer.i_nodesIndex, a_nodesBuffer, a_nodeChildrenBuffer ) )
+                    if ( CommonMethods._HasAnyInstances ( nodeChildrenBuffer.i_group8NodesIndex, a_nodesBuffer, a_nodeChildrenBuffer ) )
                     {
                     
                         if ( childHadContent ) 
@@ -709,7 +709,7 @@ namespace Antypodish.ECS.Octree
 
 		    // We have children. Use the appropriate child as the new root node
             nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i_bestFit] ;
-            return nodeChildrenBuffer.i_nodesIndex ;
+            return nodeChildrenBuffer.i_group8NodesIndex ;
 
 	    }
 

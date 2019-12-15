@@ -229,7 +229,7 @@ namespace Antypodish.ECS.Octree
         /// Group of 8 children per node
         /// Reference to child node by index, if any
         /// </summary>
-        public int i_nodesIndex ;
+        public int i_group8NodesIndex ;
 
         /// <summary>
         /// Group of 8 children per node

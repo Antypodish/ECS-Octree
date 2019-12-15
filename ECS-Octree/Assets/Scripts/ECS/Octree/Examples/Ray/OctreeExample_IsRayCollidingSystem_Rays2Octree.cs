@@ -38,7 +38,14 @@ namespace Antypodish.ECS.Octree.Examples
             eiecb = World.GetOrCreateSystem <EndInitializationEntityCommandBufferSystem> () ;
             EntityCommandBuffer ecb = eiecb.CreateCommandBuffer () ;
             
-            AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1.01f ) ;
+            AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 4, float3.zero - new float3 ( 1, 1, 1 ) * 2, 2, 1.01f ) ; // ok // Minimum node size of 2 -> up to 8 instances per node.
+
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 1, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1.01f ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 2, float3.zero - new float3 ( 1, 1, 1 ), 1, 1.01f ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 4, float3.zero - new float3 ( 1, 1, 1 ) * 2, 1, 1.01f ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 4, 1, 1.01f ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 16, float3.zero - new float3 ( 1, 1, 1 ) * 8, 1, 1.01f ) ; // ok // Minimum node size of 1 -> up to 1 instances per node.
+            // AddNewOctreeSystem._CreateNewOctree ( ref ecb, newOctreeEntity, 8, float3.zero - new float3 ( 1, 1, 1 ) * 0.5f, 1, 1.01f ) ; // Faulty
             
             // EntityManager.AddComponent ( newOctreeEntity, typeof ( IsRayCollidingTag ) ) ;
 
@@ -94,7 +101,7 @@ namespace Antypodish.ECS.Octree.Examples
             // Create test rays
             // Many rays, to many octrees
             // Where each ray has one octree entity target.
-            for ( int i = 0; i < 10; i ++ ) 
+            for ( int i = 0; i < 1000; i ++ ) 
             {
                 Entity testEntity = ecb.CreateEntity ( ) ; // Check bounds collision with octree and return colliding instances.                
 

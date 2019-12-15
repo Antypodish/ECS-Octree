@@ -22,6 +22,8 @@ namespace Antypodish.ECS.Highlight
         protected override JobHandle OnUpdate ( JobHandle inputDeps )
         {
                               
+            UnityEngine.Debug.LogWarning ( "Reset Higlight" ) ;
+
             JobHandle jobHandle = new Job
             {                   
                 ecb                = eiecb.CreateCommandBuffer ().ToConcurrent ()

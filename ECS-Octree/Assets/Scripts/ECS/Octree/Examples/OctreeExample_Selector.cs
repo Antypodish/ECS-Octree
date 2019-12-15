@@ -5,21 +5,24 @@ namespace Antypodish.ECS.Octree.Examples
     
     class OctreeExample_Selector
     { 
+
+        // Rendering bottleneck (see RenderMeshSystemV2)
+        // Be careful, when rendering multiple octrees. Consider disabling culling or implement own rendering.
                 
         // Edit this manually and rebuild project, to select relevant example.
         // static public Selector selector = Selector.IsRayCollidingSystem_Rays2Octree ; // Ok
-        // static public Selector selector = Selector.IsRayCollidingSystem_Octrees2Ray ; // Memory leak !!
+        // static public Selector selector = Selector.IsRayCollidingSystem_Octrees2Ray ; // Ok 
         // static public Selector selector = Selector.IsBoundsCollidingSystem_Octrees2Bounds ; // Ok     
         // static public Selector selector = Selector.IsBoundsCollidingSystem_Bounds2Octrees ; // Ok
-        static public Selector selector = Selector.GetCollidingRayInstancesSystem_Rays2Octree ; // Optimization required.
-        // static public Selector selector = Selector.GetCollidingRayInstancesSystem_Octrees2Ray ; // Ok // Defualt
-        // static public Selector selector = Selector.GetCollidingBoundsInstancesSystem_Octrees2Bounds ; // Ok
+        static public Selector selector = Selector.GetCollidingRayInstancesSystem_Rays2Octree ; // Ok // Required for block highlighting.
+        // static public Selector selector = Selector.GetCollidingRayInstancesSystem_Octrees2Ray ; // Ok
+        // static public Selector selector = Selector.GetCollidingBoundsInstancesSystem_Octrees2Bounds ; // Ok // Rendering bottleneck (see RenderMeshSystemV2)
         // static public Selector selector = Selector.GetCollidingBoundsInstancesSystem_Bounds2Octree ; // Ok
                  
         /// <summary>
         /// Example of x octrees instances / entities to added.
         /// </summary>
-        static public int i_generateInstanceInOctreeCount = 100 ; // = 1000 ;
+        static public int i_generateInstanceInOctreeCount = 5000 ; // = 1000 ;
         /// <summary>
         /// Example of x octrees instances / entities to deleted.
         /// </summary>

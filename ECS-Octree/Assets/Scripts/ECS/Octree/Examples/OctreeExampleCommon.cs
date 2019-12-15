@@ -65,7 +65,7 @@ namespace Antypodish.ECS.Octree.Examples
                 int y = (int) math.floor ( i_instanceID / 25 ) - z * 25 ;
                 int x = i_instanceID % 25 ;
 
-                float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 )  * 0.5f ;
+                float3 f3_blockCenter = new float3 ( x, y, z ) + new float3 ( 1, 1, 1 ) * 0.5f ;
 
                 // For rendering.
                 Blocks.PublicMethods._AddBlockRequestViaCustomBufferWithEntity ( ref ecb, newBlockEntity, f3_blockCenter, new float3 ( 1, 1, 1 ) * 0.90f, MeshType.Prefab01 ) ;

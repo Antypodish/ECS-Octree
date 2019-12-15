@@ -146,7 +146,7 @@ namespace Antypodish.ECS.Octree
 
 
         [BurstCompile]        
-        struct Job : IJobForEachWithEntity_EBCC <CollisionInstancesBufferElement, IsCollidingData, RayEntityPair4CollisionData>  
+        struct Job : IJobForEachWithEntity_ECC <IsCollidingData, RayEntityPair4CollisionData>  
         // struct Job : IJobParallelFor 
         {
             
@@ -188,7 +188,7 @@ namespace Antypodish.ECS.Octree
             
 
 
-            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, DynamicBuffer <CollisionInstancesBufferElement> a_collisionInstancesBuffer, ref IsCollidingData isColliding, [ReadOnly] ref RayEntityPair4CollisionData rayEntityPair4Collision )
+            public void Execute ( Entity octreeRootNodeEntity, int jobIndex, ref IsCollidingData isColliding, [ReadOnly] ref RayEntityPair4CollisionData rayEntityPair4Collision )
             // public void Execute ( int i_arrayIndex )
             {
 

@@ -101,7 +101,7 @@ namespace Antypodish.ECS.Octree
                 {        
                     
                     NodeChildrenBufferElement nodeChildrenBuffer = a_nodeChildrenBuffer [i_nodeChildrenIndexOffset + i] ;
-                    int i_nodeChildIndex = nodeChildrenBuffer.i_nodesIndex ;
+                    int i_nodeChildIndex = nodeChildrenBuffer.i_group8NodesIndex ;
 
                     // Check if node exists
                     if ( i_nodeChildIndex >= 0 )
