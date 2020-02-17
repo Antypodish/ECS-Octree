@@ -1,4 +1,4 @@
-# DOTS (ECS) Octree
+# Unity DOTS (ECS) Octree
 
 [![Watch the video](https://forum.unity.com/attachments/upload_2019-1-9_8-21-26-png.355738/)](https://www.youtube.com/watch?v=OlGUWbtUBsM)
 
