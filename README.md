@@ -1,7 +1,5 @@
 # ECS-Octree
 
-![ECS Octree Example](https://forum.unity.com/attachments/upload_2019-1-9_8-21-26-png.355738/)
-
 [![Watch the video](https://forum.unity.com/attachments/upload_2019-1-9_8-21-26-png.355738/)](https://www.youtube.com/watch?v=OlGUWbtUBsM)
 
 This Unity project is inspired by Unity-Technologies/UnityOctree github repository (https://github.com/Unity-Technologies/UnityOctree) which is Classic OOP based octree system.
