@@ -38,6 +38,19 @@ Main Unity forum thread for this project.
 [WIP] Octree in Pure ECS : BufferArray based with source code
 https://forum.unity.com/threads/wip-octree-in-pure-ecs-bufferarray-based-with-source-code.546240/#post-4071661
 
+#### Conversion from Unity 2018.3b to 2020.1a (Update 2019 December 11)
+
+Upgrade form
+Entitities 0.0.12 p 21 to 0.2.0 p 18
+Burst 0.2.4 p37 to 1.2.0 p 10
+Collections 0.0.9 to 0.2.0 p 13
+Jobs 0.0.7 to 0.2.1 p 3
+Mathematics 0.0.12 p 19 to 1.1.0
+
+Added:
+Hybrid Renderer 0.2.0
+"Antypodish" to namespace.
+
 #### Ray Highlight implemented  (Update 2019 January 09)
 
 Most relevant systems are burst complaint. There may be still a bit room to work on that.
